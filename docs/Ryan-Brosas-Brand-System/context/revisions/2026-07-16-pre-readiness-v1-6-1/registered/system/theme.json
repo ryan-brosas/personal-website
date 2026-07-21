@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Ryan Brosas Brand System",
+  "version": "1.6.0",
+  "designSystemId": "user:brand-design-system",
+  "canonicalTokenSource": "colors_and_type.css",
+  "packagedTokenEntry": "system/variables.css",
+  "showcase": {
+    "light": "system/kit.html",
+    "dark": "system/kit.dark.html"
+  },
+  "sourcePigments": {
+    "paper": "#FEFEFE",
+    "charcoal": "#1A1A1A",
+    "coral": "#FF5555",
+    "signal": "#ECC90F"
+  },
+  "modes": {
+    "light": {
+      "canvas": "paper",
+      "surfaceSteps": ["paper", "4% charcoal into paper", "8% charcoal into paper"],
+      "text": ["charcoal", "68% charcoal", "52% charcoal"],
+      "stroke": ["16% charcoal", "28% charcoal", "42% charcoal"]
+    },
+    "dark": {
+      "canvas": "charcoal",
+      "surfaceSteps": ["5% paper into charcoal", "9% paper into charcoal", "14% paper into charcoal"],
+      "text": ["paper", "70% paper", "54% paper"],
+      "stroke": ["16% paper", "28% paper", "44% paper"]
+    }
+  },
+  "roleFamilies": {
+    "surface": ["--canvas", "--surface-1", "--surface-2", "--surface-3", "--surface-inverse", "--surface-interactive", "--surface-interactive-hover", "--surface-interactive-active"],
+    "text": ["--text-1", "--text-2", "--text-3", "--text-inverse"],
+    "stroke": ["--stroke-subtle", "--stroke-default", "--stroke-strong"],
+    "action": ["--action-primary-*", "--action-secondary-*", "--action-quiet-*", "--action-disabled-*"],
+    "field": ["--field-*"],
+    "status": ["--status-verified-*", "--status-proposed-*", "--status-open-*"],
+    "feedback": ["--feedback-neutral-*", "--feedback-error-*", "--feedback-notice-*"],
+    "content": ["--link-*", "--evidence-media-*", "--evidence-caption-*"],
+    "logo": ["--logo-tile-bg", "--logo-tile-fg"]
+  },
+  "fixedPairings": {
+    "primaryAction": "charcoal on coral",
+    "openState": "charcoal on signal",
+    "darkReading": "paper on charcoal",
+    "lightReading": "charcoal on paper"
+  },
+  "typography": {
+    "display": "Segoe UI Variable Display",
+    "body": "Segoe UI Variable Text",
+    "mono": "Cascadia Mono",
+    "normalWidthOnly": true,
+    "bodyMeasure": "45-65ch preferred; 70ch maximum"
+  },
+  "layout": {
+    "baseline": 8,
+    "opticalHalfStep": 4,
+    "contentMax": 1480,
+    "breakpoints": [600, 820, 1024],
+    "radii": {"editorial": 0, "control": 4, "panel": 8, "statusOnly": 999},
+    "minimumTarget": 44
+  },
+  "assets": {
+    "viewBox": "0 0 255 211",
+    "primaryLogo": "logos/Logo---Ryan-1.svg",
+    "alternates": [
+      "logos/Logo---Ryan-2.svg",
+      "logos/Logo---Ryan-3.svg",
+      "logos/Logo---Ryan-4.svg"
+    ],
+    "centering": "Use grid or flex centering and inspect the visible glyph optically."
+  },
+  "acceptance": {
+    "modes": "Every component keeps anatomy across modes and changes only semantic roles.",
+    "voice": "Verified names a source; Proposed names a tradeoff; Open starts with Still needed and names the proof.",
+    "showcase": "The registered surface displays all adopted SVGs, light and dark role proofs, real states, and the current version."
+  }
+}

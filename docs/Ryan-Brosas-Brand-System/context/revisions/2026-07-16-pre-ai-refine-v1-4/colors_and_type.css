@@ -1,0 +1,180 @@
+/* Ryan Brosas Brand System v1.3 — source pigments + semantic mode roles */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Source pigments — never replace these with mode-specific approximations. */
+  --color-paper: #FEFEFE;
+  --color-charcoal: #1A1A1A;
+  --color-coral: #FF5555;
+  --color-signal: #ECC90F;
+
+  /* Semantic surfaces. */
+  --canvas: var(--color-paper);
+  --surface-1: var(--color-paper);
+  --surface-2: color-mix(in oklch, var(--color-charcoal) 4%, var(--color-paper));
+  --surface-3: color-mix(in oklch, var(--color-charcoal) 8%, var(--color-paper));
+  --surface-inverse: var(--color-charcoal);
+  --feature-bg: var(--color-charcoal);
+  --feature-fg: var(--color-paper);
+  --feature-muted: color-mix(in oklch, var(--color-paper) 70%, transparent);
+
+  /* Semantic text and strokes. */
+  --text-1: var(--color-charcoal);
+  --text-2: color-mix(in oklch, var(--color-charcoal) 68%, transparent);
+  --text-3: color-mix(in oklch, var(--color-charcoal) 52%, transparent);
+  --text-inverse: var(--color-paper);
+  --stroke-subtle: color-mix(in oklch, var(--color-charcoal) 16%, transparent);
+  --stroke-default: color-mix(in oklch, var(--color-charcoal) 28%, transparent);
+  --stroke-strong: color-mix(in oklch, var(--color-charcoal) 42%, transparent);
+
+  /* Actions and evidence states. */
+  --action-primary-bg: var(--color-coral);
+  --action-primary-fg: var(--color-charcoal);
+  --action-primary-hover: color-mix(in oklch, var(--color-coral) 88%, var(--color-paper));
+  --action-secondary-bg: var(--surface-1);
+  --action-secondary-fg: var(--text-1);
+  --action-secondary-border: var(--stroke-default);
+  --state-selected-bg: var(--surface-inverse);
+  --state-selected-fg: var(--text-inverse);
+  --status-verified-bg: var(--color-charcoal);
+  --status-verified-fg: var(--color-paper);
+  --status-proposed-bg: var(--surface-1);
+  --status-proposed-fg: var(--text-1);
+  --status-proposed-border: var(--color-coral);
+  --status-open-bg: var(--color-signal);
+  --status-open-fg: var(--color-charcoal);
+  --focus-ring: var(--color-coral);
+  --overlay-scrim: color-mix(in oklch, var(--color-charcoal) 72%, transparent);
+
+  /* Compatibility aliases for preserved source examples. */
+  --bg: var(--canvas);
+  --surface: var(--surface-1);
+  --fg: var(--text-1);
+  --muted: var(--text-2);
+  --border: var(--stroke-subtle);
+  --border-strong: var(--stroke-strong);
+  --accent: var(--color-coral);
+  --signal: var(--color-signal);
+  --on-dark: var(--color-paper);
+  --on-light: var(--color-charcoal);
+
+  --shadow-raised: 0 12px 28px color-mix(in oklch, var(--color-charcoal) 14%, transparent);
+  --shadow-overlay: 0 20px 56px color-mix(in oklch, var(--color-charcoal) 22%, transparent);
+  --shadow-focus: 0 0 0 2px var(--canvas), 0 0 0 4px var(--focus-ring);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: var(--color-charcoal);
+  --surface-1: color-mix(in oklch, var(--color-paper) 5%, var(--color-charcoal));
+  --surface-2: color-mix(in oklch, var(--color-paper) 9%, var(--color-charcoal));
+  --surface-3: color-mix(in oklch, var(--color-paper) 14%, var(--color-charcoal));
+  --surface-inverse: var(--color-paper);
+  --feature-bg: var(--surface-2);
+  --feature-fg: var(--color-paper);
+  --feature-muted: color-mix(in oklch, var(--color-paper) 68%, transparent);
+
+  --text-1: var(--color-paper);
+  --text-2: color-mix(in oklch, var(--color-paper) 70%, transparent);
+  --text-3: color-mix(in oklch, var(--color-paper) 54%, transparent);
+  --text-inverse: var(--color-charcoal);
+  --stroke-subtle: color-mix(in oklch, var(--color-paper) 16%, transparent);
+  --stroke-default: color-mix(in oklch, var(--color-paper) 28%, transparent);
+  --stroke-strong: color-mix(in oklch, var(--color-paper) 44%, transparent);
+
+  --action-primary-hover: color-mix(in oklch, var(--color-coral) 84%, var(--color-paper));
+  --action-secondary-bg: var(--surface-2);
+  --action-secondary-fg: var(--text-1);
+  --action-secondary-border: var(--stroke-default);
+  --state-selected-bg: var(--color-paper);
+  --state-selected-fg: var(--color-charcoal);
+  --status-verified-bg: var(--surface-3);
+  --status-verified-fg: var(--color-paper);
+  --status-proposed-bg: var(--surface-1);
+  --status-proposed-fg: var(--color-paper);
+  --overlay-scrim: color-mix(in oklch, var(--color-charcoal) 84%, transparent);
+
+  --shadow-raised: 0 12px 28px color-mix(in oklch, var(--color-charcoal) 46%, transparent);
+  --shadow-overlay: 0 20px 56px color-mix(in oklch, var(--color-charcoal) 68%, transparent);
+}
+
+:root {
+  /* Typography roles measured from the source workbook. */
+  --font-display: "Segoe UI Variable Display", "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  --font-body: "Segoe UI Variable Text", "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  --weight-regular: 400;
+  --weight-medium: 600;
+  --weight-strong: 700;
+  --weight-display: 750;
+  --leading-display: 0.92;
+  --leading-heading: 1;
+  --leading-body: 1.6;
+  --leading-label: 1.2;
+  --tracking-display: -0.045em;
+  --tracking-label: 0.12em;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: clamp(2rem, 4vw, 3.5rem);
+  --text-3xl: clamp(2.75rem, 6vw, 5.5rem);
+  --text-display: clamp(3.75rem, 8vw, 7.5rem);
+
+  /* 8px baseline with a 4px optical half-step. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  --radius-editorial: 0px;
+  --radius-control: 4px;
+  --radius-panel: 8px;
+  --radius-pill: 999px;
+
+  --rule: 1px solid var(--stroke-subtle);
+  --rule-default: 1px solid var(--stroke-default);
+  --rule-strong: 1px solid var(--stroke-strong);
+
+  --duration-fast: 150ms;
+  --duration-panel: 220ms;
+  --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --target-min: 44px;
+  --content-max: 1480px;
+  --measure-compact: 45ch;
+  --measure-body: 65ch;
+  --measure-wide: 70ch;
+}
+
+::selection {
+  background: var(--action-primary-bg);
+  color: var(--action-primary-fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+

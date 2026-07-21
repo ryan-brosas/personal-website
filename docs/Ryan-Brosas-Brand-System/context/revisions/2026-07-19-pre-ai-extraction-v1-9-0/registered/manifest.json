@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "od-design-system-project/v1",
+  "id": "brand-design-system",
+  "name": "Ryan Brosas Brand System",
+  "category": "Brands",
+  "description": "A practical, failure-aware system with contrast-safe semantic roles, applied runtime components, explicit lifecycles, and source-backed brand guidance.",
+  "files": {
+    "design": "DESIGN.md",
+    "tokens": "tokens.css"
+  },
+  "usage": "AI-BRAND-GUIDE.md",
+  "componentsManifest": "component-manifest.json",
+  "preview": {
+    "pages": [
+      { "path": "showcase-landing-page.html", "title": "Ryan Brosas landing page", "role": "primary Design System Assets preview and living applied proof" },
+      { "path": "preview/index.html", "title": "Review index", "role": "foundation and implementation overview" },
+      { "path": "preview/colors-primary.html", "title": "Color", "role": "source pigment and contrast proof" },
+      { "path": "preview/typography-specimens.html", "title": "Typography", "role": "display, body, and mono specimens" },
+      { "path": "preview/spacing-rhythm.html", "title": "Spacing", "role": "8px rhythm and layout proof" },
+      { "path": "preview/radius-shadows.html", "title": "Radius and elevation", "role": "geometry and elevation proof" },
+      { "path": "preview/components-states.html", "title": "Components", "role": "state and accessibility proof" },
+      { "path": "preview/light-dark-kits.html", "title": "Modes", "role": "simultaneous light and dark proof" },
+      { "path": "preview/brand-assets.html", "title": "Brand assets", "role": "adopted logo usage proof" },
+      { "path": "preview/voice-content.html", "title": "Voice", "role": "Verified, Proposed, and Open content proof" },
+      { "path": "preview/applied-ui-surfaces.html", "title": "Applied UI", "role": "workbench implementation proof" }
+    ]
+  },
+  "assetsDir": "assets",
+  "sourceFiles": {
+    "evidence": "context/provenance.md",
+    "appliedKit": "ui_kits/app/index.html",
+    "appliedLandingPage": "ryan-brosas-landing-page.html",
+    "indexedDesignSystemAsset": "showcase-landing-page.html",
+    "renderedDesignSystemAsset": "system/artifacts/landing.html",
+    "renderedDesignSystemAssetBase": "../../",
+    "appliedLandingCapture": "assets/source-previews/ryan-brosas-landing-page-applied.png",
+    "appliedStyles": "ui_kits/app/app.css",
+    "runtimeStateProof": "preview/light-dark-kits.html",
+    "componentContentSafety": "component-manifest.json",
+    "componentPrimitivesSource": "ui_kits/app/components/Primitives.js",
+    "componentLifecycleSource": "ui_kits/app/components/LifecycleComponents.js",
+    "componentNavigationSource": "ui_kits/app/components/Navigation.js",
+    "componentStatusPanelSource": "ui_kits/app/components/StatusPanel.js",
+    "componentSystemMapSource": "ui_kits/app/components/SystemMap.js",
+    "componentProjectCardSource": "ui_kits/app/components/ProjectCard.js",
+    "componentAppShellSource": "ui_kits/app/components/AppShell.js",
+    "componentDistribution": "assets/components/"
+  }
+}

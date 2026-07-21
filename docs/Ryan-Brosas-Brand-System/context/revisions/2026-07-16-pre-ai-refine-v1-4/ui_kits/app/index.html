@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="description" content="Applied Ryan Brosas brand workbench component kit." />
+  <title>Ryan Brosas Applied Brand Workbench</title>
+  <link rel="stylesheet" href="../../colors_and_type.css" />
+  <link rel="stylesheet" href="app.css" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("ryan-brand-theme");
+        var preferredTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", savedTheme === "light" || savedTheme === "dark" ? savedTheme : preferredTheme);
+      } catch (_) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
+  <style>
+    /* Entry safety: the composed app remains legible if the component runtime is delayed. */
+    #app:empty{min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--fg);font:700 var(--text-base)/1.4 var(--font-body)}#app:empty::after{content:"Loading the source-backed workbench…"}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="components/Navigation.js"></script>
+  <script src="components/StatusPanel.js"></script>
+  <script src="components/SystemMap.js"></script>
+  <script src="components/ProjectCard.js"></script>
+  <script src="components/AppShell.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var data = {
+        tracks: {
+          personal: {
+            label: "Personal Branding",
+            headline: "Build the system behind the task.",
+            intro: "A practical brand workbench for agent systems, honest build logs, and reusable explanations that show context, checks, handoffs, and recovery.",
+            statuses: [
+              { id: "kit-personal-verified", status: "Verified", kicker: "Identity", title: "Systems before spectacle.", body: "Use the smallest reliable intervention and show the operating system around it." },
+              { id: "kit-personal-proposed", status: "Proposed", kicker: "Build log", title: "Share what broke.", body: "Explain the expectation, the actual behavior, the tradeoff, and the next rabbit hole." },
+              { id: "kit-personal-open", status: "Open", kicker: "Media", title: "Owned project evidence needed.", body: "Add a real workflow, terminal capture, product screen, or documented failure before publishing." }
+            ]
+          },
+          client: {
+            label: "Client Branding",
+            headline: "Map the recurring decision first.",
+            intro: "A clearer client-facing track that keeps the same honesty: define the problem, choose the system, state the tradeoff, show evidence, and name the next step.",
+            statuses: [
+              { id: "kit-client-verified", status: "Verified", kicker: "Audience", title: "Overworked founders first.", body: "Start with recurring work and decisions that still route through the founder." },
+              { id: "kit-client-proposed", status: "Proposed", kicker: "System choice", title: "Agent, script, or process change?", body: "Use AI only when it is the more reliable tool for the actual workflow." },
+              { id: "kit-client-open", status: "Open", kicker: "Proof", title: "Client evidence not supplied.", body: "Do not invent outcomes, testimonials, metrics, or before-and-after claims." }
+            ]
+          }
+        },
+        projects: [
+          { slug: "recurring-map", category: "strategy", title: "Recurring-work map", prompt: "Show the real decision, its context source, owner, checks, and recovery path." },
+          { slug: "build-log", category: "presentation", title: "Agent coding system", prompt: "Add one owned screenshot or terminal capture and the bug that changed the design." },
+          { slug: "handoff-guide", category: "guidelines", title: "Operational handoff", prompt: "Document inputs, expected output, verification, escalation, and failure ownership." }
+        ]
+      };
+
+      var componentsReady = [window.Navigation, window.StatusPanel, window.SystemMap, window.ProjectCard, window.AppShell].every(function (component) { return typeof component === "function"; });
+      if (!componentsReady) throw new Error("Applied kit components did not load.");
+
+      var currentTrack = "personal";
+      var currentFilter = "all";
+      var currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+
+      function announce(message) {
+        var toast = document.querySelector("[data-toast]");
+        if (!toast) return;
+        toast.textContent = message;
+        toast.hidden = false;
+        window.setTimeout(function () { toast.hidden = true; }, 1800);
+      }
+
+      function applyFilter(filter) {
+        currentFilter = filter;
+        document.querySelectorAll("[data-filter]").forEach(function (button) {
+          button.setAttribute("aria-pressed", String(button.getAttribute("data-filter") === filter));
+        });
+        document.querySelectorAll("[data-module]").forEach(function (module) {
+          module.hidden = filter !== "all" && module.getAttribute("data-module") !== filter;
+        });
+      }
+
+      function bindInteractions() {
+        document.querySelectorAll("[data-track]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            currentTrack = button.getAttribute("data-track");
+            render();
+            announce(currentTrack === "personal" ? "Personal Branding track active." : "Client Branding track active.");
+          });
+        });
+        document.querySelectorAll("[data-theme-choice]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            currentTheme = button.getAttribute("data-theme-choice");
+            document.documentElement.setAttribute("data-theme", currentTheme);
+            try { localStorage.setItem("ryan-brand-theme", currentTheme); } catch (_) {}
+            render();
+            announce((currentTheme === "dark" ? "Dark" : "Light") + " theme active.");
+          });
+        });
+        document.querySelectorAll("[data-filter]").forEach(function (button) {
+          button.addEventListener("click", function () { applyFilter(button.getAttribute("data-filter")); });
+        });
+        document.querySelectorAll("[data-check]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            var selected = button.getAttribute("aria-pressed") === "true";
+            button.setAttribute("aria-pressed", String(!selected));
+            button.textContent = selected ? "Mark request ready" : "Evidence request ready";
+          });
+        });
+        var copyButton = document.querySelector("[data-action=copy-statement]");
+        if (copyButton) copyButton.addEventListener("click", function () {
+          var statement = "I build agent systems so repetitive work stops coming back to you.";
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(statement).then(function () { announce("Primary statement copied."); }).catch(function () { announce("Copy is unavailable in this preview context."); });
+          } else {
+            announce("Copy is unavailable in this preview context.");
+          }
+        });
+      }
+
+      function render() {
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        document.getElementById("app").innerHTML = window.AppShell(data, currentTrack, currentTheme);
+        bindInteractions();
+        applyFilter(currentFilter);
+      }
+
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+{
+  "name": "Ryan Brosas Component Contract",
+  "version": "1.4.0",
+  "designSystemId": "user:brand-design-system",
+  "tokens": "colors_and_type.css",
+  "preview": "preview/components-states.html",
+  "appliedKit": "ui_kits/app/index.html",
+  "contentTaxonomy": ["Verified", "Proposed", "Open"],
+  "requiredStateVocabulary": ["default", "hover", "focus-visible", "selected", "disabled", "loading", "invalid"],
+  "components": {
+    "navigation": {
+      "implementation": "ui_kits/app/components/Navigation.js",
+      "anatomy": ["brand home", "three primary page links", "mobile disclosure", "secondary track control", "theme preference"],
+      "tokens": ["--nav-hover-bg", "--nav-current-fg", "--nav-current-rule", "--state-selected-bg", "--state-selected-fg", "--stroke-subtle"],
+      "states": ["default", "hover", "current page", "focus-visible", "mobile collapsed", "mobile expanded"],
+      "accessibility": ["Use a labelled nav landmark.", "Mark the current destination with aria-current=page.", "Connect the mobile disclosure with aria-controls and aria-expanded."],
+      "responsive": ["Keep all three primary pages visible above 820px.", "At 820px and below, replace the page row with a labelled disclosure.", "Keep track and theme preferences reachable after the disclosure."],
+      "contentIntegrity": "Brand Strategy, Brand Presentation, and Brand Guidelines are the only primary pages. Personal and Client remain secondary tracks."
+    },
+    "button": {
+      "implementation": "preview/components-states.html",
+      "anatomy": ["visible label", "44px minimum target", "semantic fill and border", "focus outline"],
+      "tokens": ["--action-primary-bg", "--action-primary-fg", "--action-primary-hover", "--action-secondary-bg", "--action-secondary-fg", "--action-secondary-border", "--control-disabled-opacity", "--focus-ring"],
+      "states": ["default", "hover", "focus-visible", "selected", "disabled", "loading"],
+      "accessibility": ["Use a native button for actions.", "Use aria-pressed only for persistent selection.", "Use aria-busy and a real progress label during loading."],
+      "responsive": ["Preserve a 44px target.", "Allow labels to wrap when translation or context makes them longer.", "Stack primary actions at 600px when horizontal space is tight."],
+      "contentIntegrity": "Use a concrete verb and object. Do not use generic labels such as Learn more when the destination can be named."
+    },
+    "statusPanel": {
+      "implementation": "ui_kits/app/components/StatusPanel.js",
+      "anatomy": ["written status", "evidence category", "claim title", "supporting evidence or missing-input sentence", "optional action"],
+      "tokens": ["--status-verified-bg", "--status-verified-fg", "--status-proposed-bg", "--status-proposed-fg", "--status-proposed-border", "--status-open-bg", "--status-open-fg", "--status-open-border"],
+      "states": ["Verified", "Proposed", "Open"],
+      "accessibility": ["Write the state label; never rely on color alone.", "Keep status and claim in the same reading group."],
+      "responsive": ["Use three columns only when each claim remains readable.", "Collapse to two columns at 1024px and one at 600px."],
+      "contentIntegrity": "The supporting sentence must identify the source, tradeoff, or proof still needed."
+    },
+    "formField": {
+      "implementation": "preview/components-states.html",
+      "anatomy": ["visible label", "input", "optional format hint", "validation message"],
+      "tokens": ["--field-bg", "--field-fg", "--field-placeholder", "--field-border", "--field-invalid-border", "--field-invalid-bg", "--field-disabled-bg"],
+      "states": ["default", "focus-visible", "disabled", "invalid", "validating"],
+      "accessibility": ["Keep the visible label outside the placeholder.", "Connect invalid feedback with aria-describedby.", "Set aria-invalid=true only after validation fails."],
+      "responsive": ["Keep fields full-width on narrow panels.", "Preserve 44px minimum input height."],
+      "contentIntegrity": "Ask for the exact evidence source or operating input; never imply that missing proof already exists."
+    },
+    "systemMap": {
+      "implementation": "ui_kits/app/components/SystemMap.js",
+      "anatomy": ["ordered index", "step name", "concrete operating question"],
+      "tokens": ["--panel-bg", "--panel-fg", "--panel-border", "--text-2"],
+      "states": ["complete five-part sequence"],
+      "accessibility": ["Use an ordered list.", "Do not communicate the sequence through arrows alone."],
+      "responsive": ["Five columns on wide screens.", "Two columns at 1024px.", "One column at 600px."],
+      "contentIntegrity": "Always include Context, Work, Checks, Handoffs, and Recovery. Do not convert the map into invented progress percentages."
+    },
+    "projectEvidence": {
+      "implementation": "ui_kits/app/components/ProjectCard.js",
+      "anatomy": ["honest Open visual", "evidence category", "project title", "proof request", "readiness control"],
+      "tokens": ["--panel-bg", "--panel-fg", "--panel-border", "--feature-bg", "--status-open-bg", "--status-open-fg", "--status-open-border"],
+      "states": ["Open", "request ready"],
+      "accessibility": ["Use aria-pressed for the readiness control.", "Keep decorative visual scaffolding hidden from assistive technology."],
+      "responsive": ["Three columns on wide screens.", "Two columns at 1024px.", "One column at 600px."],
+      "contentIntegrity": "Replace the Open visual only with owned evidence. Never generate a fake product result, client outcome, or terminal capture."
+    },
+    "logoTile": {
+      "implementation": "ui_kits/app/components/Navigation.js",
+      "anatomy": ["protected tile", "approved SVG mark"],
+      "tokens": ["--color-signal", "--radius-panel"],
+      "states": ["light surface", "dark surface"],
+      "accessibility": ["Treat a repeated decorative symbol as empty-alt when the adjacent brand name is present."],
+      "responsive": ["Keep the tile square and preserve the 255 by 211 source proportion inside it."],
+      "contentIntegrity": "Center the visible glyph optically. Do not recolor, stretch, shadow, or add the descriptor to the permanent mark geometry."
+    }
+  }
+}

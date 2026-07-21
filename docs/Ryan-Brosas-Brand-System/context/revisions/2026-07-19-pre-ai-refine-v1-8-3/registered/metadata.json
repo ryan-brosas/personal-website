@@ -1,0 +1,15 @@
+{
+  "title": "Ryan Brosas Brand System",
+  "category": "Brands",
+  "surface": "web",
+  "status": "published",
+  "artifactMode": "agent-managed",
+  "createdAt": "2026-07-15T23:47:55.154Z",
+  "updatedAt": "2026-07-19T12:00:00.000Z",
+  "provenance": {
+    "companyBlurb": "Ryan Brosas builds practical agent systems that stop repetitive work from routing back through overworked founders.",
+    "notes": "Version 1.8.2 AI-refined and synchronized in place under the existing user:brand-design-system identity without creating a duplicate.",
+    "sourceNotes": "Added the existing landing page as a living applied asset proof, mapped identity, hero, editorial, and interface roles in the Showcase, introduced labelled canonical utility icons on the page, and preserved the exact runtime inventory, four-pigment palette, evidence boundaries, and light/dark theme contract."
+  },
+  "projectId": "4c103428-67e3-485d-9213-4bcf97c890eb"
+}

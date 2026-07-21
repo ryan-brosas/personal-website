@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
+  <title>Agent build breakdown — reusable newsletter template</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; }
+    body {
+      background: var(--surface-2);
+      color: var(--text-1);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    table { border-collapse: collapse; border-spacing: 0; }
+    img { border: 0; display: block; height: auto; line-height: 100%; }
+    p, h1, h2, h3 { margin: 0; }
+    .preheader {
+      display: none !important;
+      max-height: 0;
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      mso-hide: all;
+    }
+    .page-shell { width: 100%; background: var(--surface-2); }
+    .newsletter-shell {
+      width: 100%;
+      max-width: 640px;
+      background: var(--campaign-canvas-bg);
+      color: var(--campaign-canvas-fg);
+      border: 1px solid var(--stroke-subtle);
+    }
+    .pad { padding-left: 48px; padding-right: 48px; }
+    .topbar { padding-top: 30px; padding-bottom: 26px; border-bottom: 1px solid var(--campaign-rule); }
+    .brand-name {
+      font: var(--weight-strong) 14px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .brand-role, .issue-meta {
+      padding-top: 7px;
+      color: var(--campaign-meta);
+      font: var(--weight-regular) 11px/1.35 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .logo-tile { width: 56px; height: 56px; background: var(--logo-tile-bg); }
+    .logo-tile img { width: 31px; margin: 0 auto; }
+    .hero { padding-top: 48px; }
+    .eyebrow, .slot-label {
+      color: var(--accent-text);
+      font: var(--weight-strong) 11px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .title {
+      padding-top: 18px;
+      max-width: 10ch;
+      font-family: var(--font-display);
+      font-size: 54px;
+      font-weight: var(--weight-strong);
+      letter-spacing: var(--tracking-display);
+      line-height: var(--leading-display-lg);
+    }
+    .title-rule { width: 128px; height: 8px; margin-top: 24px; background: var(--accent-decoration); }
+    .lead {
+      padding-top: 28px;
+      max-width: var(--measure-compact);
+      font-size: 20px;
+      font-weight: var(--weight-medium);
+      line-height: 1.48;
+    }
+    .copy {
+      padding-top: 22px;
+      max-width: var(--measure-body);
+      color: var(--text-2);
+      font-size: 17px;
+      line-height: 1.68;
+    }
+    .copy strong { color: var(--text-1); }
+    .template-note {
+      margin-top: 28px;
+      background: var(--surface-2);
+      border: 1px solid var(--stroke-subtle);
+    }
+    .template-note-inner { padding: 20px; }
+    .template-note p { padding-top: 8px; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+    .hero-art { padding-top: 28px; }
+    .hero-plate { width: 100%; background: var(--surface-1); border: 1px solid var(--stroke-subtle); }
+    .hero-plate img { width: 340px; max-width: 78%; margin: 16px auto 0; }
+    .image-caption {
+      padding: 14px 18px 16px;
+      border-top: 1px solid var(--stroke-subtle);
+      color: var(--text-2);
+      font: var(--weight-regular) 11px/1.5 var(--font-mono);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .section { padding-top: 48px; }
+    .section-title {
+      padding-top: 13px;
+      max-width: 16ch;
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: var(--weight-strong);
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+    }
+    .fact-grid { margin-top: 28px; border-top: 1px solid var(--stroke-default); }
+    .fact-row { border-bottom: 1px solid var(--stroke-default); }
+    .fact-label {
+      width: 118px;
+      padding: 21px 18px 21px 0;
+      vertical-align: top;
+      color: var(--accent-text);
+      font: var(--weight-strong) 11px/1.35 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .fact-copy { padding: 19px 0 20px 18px; vertical-align: top; }
+    .fact-copy h3 { font-family: var(--font-display); font-size: 19px; line-height: 1.25; }
+    .fact-copy p { padding-top: 7px; color: var(--text-2); font-size: 15px; line-height: 1.58; }
+    .break-plate { margin-top: 28px; background: var(--feature-bg); color: var(--feature-fg); }
+    .break-inner { padding: 30px; }
+    .break-label {
+      color: var(--feature-muted);
+      font: var(--weight-strong) 10px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .break-title { padding-top: 14px; font-family: var(--font-display); font-size: 29px; line-height: 1.12; }
+    .break-copy { padding-top: 14px; color: var(--feature-muted); font-size: 16px; line-height: 1.62; }
+    .loop { margin-top: 28px; background: var(--surface-2); border: 1px solid var(--stroke-subtle); }
+    .loop-label { padding: 18px 20px 0; color: var(--text-2); font: var(--weight-strong) 10px/1.2 var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
+    .loop-flow { padding: 12px 20px 20px; font: var(--weight-strong) 12px/1.75 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+    .choice { margin-top: 28px; border: 1px solid var(--stroke-default); }
+    .choice-inner { padding: 24px; }
+    .choice-title { padding-top: 10px; font-family: var(--font-display); font-size: 24px; line-height: 1.15; }
+    .choice-copy { padding-top: 12px; color: var(--text-2); font-size: 15px; line-height: 1.6; }
+    .status { margin-top: 18px; }
+    .status-cell { padding: 17px 18px; vertical-align: top; }
+    .status-cell strong { display: block; font: var(--weight-strong) 11px/1.2 var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
+    .status-cell p { padding-top: 7px; font-size: 14px; line-height: 1.55; }
+    .status-verified { background: var(--status-verified-bg); color: var(--status-verified-fg); }
+    .status-proposed { background: var(--status-proposed-bg); color: var(--status-proposed-fg); border: 1px solid var(--status-proposed-border); }
+    .status-open { background: var(--status-open-bg); color: var(--status-open-fg); }
+    .rabbit-hole { margin-top: 28px; background: var(--surface-2); border: 1px solid var(--stroke-subtle); }
+    .rabbit-hole-inner { padding: 24px; }
+    .rabbit-hole h3 { padding-top: 10px; font-family: var(--font-display); font-size: 24px; line-height: 1.15; }
+    .rabbit-hole p { padding-top: 12px; color: var(--text-2); font-size: 15px; line-height: 1.6; }
+    .reply-box { margin-top: 34px; background: var(--campaign-accent-bg); color: var(--campaign-accent-fg); }
+    .reply-box-inner { padding: 30px; }
+    .reply-title { padding-top: 12px; font-family: var(--font-display); font-size: 31px; line-height: 1.08; letter-spacing: -0.025em; }
+    .reply-copy { padding-top: 14px; font-size: 16px; line-height: 1.6; }
+    .reply-prompt { padding-top: 16px; font: var(--weight-medium) 14px/1.65 var(--font-mono); }
+    .signoff { padding-top: 36px; padding-bottom: 48px; }
+    .signoff p { font-size: 16px; line-height: 1.65; }
+    .footer { background: var(--campaign-footer-bg); color: var(--campaign-footer-fg); }
+    .footer-copy { padding: 22px 48px; }
+    .footer-copy p { color: var(--campaign-footer-muted); font: var(--weight-regular) 10px/1.6 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+    .footer-copy strong { color: var(--campaign-footer-fg); }
+    @media screen and (max-width: 680px) {
+      .page-cell { padding: 0 !important; }
+      .newsletter-shell { border-left: 0; border-right: 0; }
+      .pad { padding-left: 24px !important; padding-right: 24px !important; }
+      .topbar { padding-top: 24px !important; padding-bottom: 22px !important; }
+      .title { font-size: 44px !important; }
+      .lead { font-size: 18px !important; }
+      .hero-plate img { max-width: 90% !important; }
+      .fact-label { width: 94px !important; }
+      .break-inner, .reply-box-inner { padding: 24px !important; }
+      .footer-copy { padding-left: 24px !important; padding-right: 24px !important; }
+    }
+  </style>
+</head>
+<body data-od-id="agent-build-newsletter-template">
+  <div class="preheader">[Replace with one concrete sentence about what changed, failed, or became clearer in this build.]</div>
+  <table role="presentation" class="page-shell" width="100%">
+    <tr>
+      <td class="page-cell" align="center" style="padding:32px 16px;">
+        <table role="presentation" class="newsletter-shell" width="640" data-od-id="newsletter-canvas">
+          <tr>
+            <td class="pad topbar" data-od-id="newsletter-brand-header">
+              <table role="presentation" width="100%">
+                <tr>
+                  <td valign="middle">
+                    <p class="brand-name">Ryan Brosas</p>
+                    <p class="brand-role">Agent Systems Builder</p>
+                    <p class="issue-meta">Build Notes / [Issue 01] / [Month YYYY]</p>
+                  </td>
+                  <td align="right" valign="middle" width="56">
+                    <table role="presentation" class="logo-tile" width="56" height="56">
+                      <tr><td align="center" valign="middle"><img src="logos/Logo---Ryan-1.svg" width="31" alt="Ryan Brosas R lightning symbol" /></td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad hero" data-od-id="newsletter-hero">
+              <p class="eyebrow">Agent build breakdown / reusable issue</p>
+              <h1 class="title" data-od-id="newsletter-title">[The workflow I tried to remove]</h1>
+              <div class="title-rule"></div>
+              <p class="lead">[Lead with the operating consequence: what kept returning, who absorbed it, and why it was worth examining.]</p>
+              <p class="copy">This template is for one real build at a time. Name the workflow, the smallest reliable system choice, what actually happened, and the part that still needs human judgment. If a script or process change was enough, say that plainly.</p>
+              <table role="presentation" class="template-note" width="100%" data-od-id="newsletter-template-note">
+                <tr><td class="template-note-inner"><strong class="slot-label">Before publishing</strong><p>Replace every bracketed slot with inspected build notes. Delete this instruction plate, keep the evidence labels, and never turn a missing screenshot, result, or owned run into proof.</p></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad hero-art" data-od-id="newsletter-hero-art">
+              <table role="presentation" class="hero-plate" width="100%">
+                <tr><td><img src="assets/illustrations/agent-operator-work-execution-clean-print.png" width="340" alt="Illustrated agent operator working through a practical system" /></td></tr>
+                <tr><td class="image-caption">Narrative illustration — Work Execution. Explanation, not operating proof.</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="newsletter-exploration-section">
+              <p class="eyebrow">01 / What I was exploring</p>
+              <h2 class="section-title">[Name the recurring work.]</h2>
+              <p class="copy">[Describe where the workflow starts, how often it returns, and why the current route depends on a founder or operator. Keep the scope narrow enough that a reader can picture the actual task.]</p>
+              <table role="presentation" class="fact-grid" width="100%">
+                <tr class="fact-row"><td class="fact-label">Trigger</td><td class="fact-copy"><h3>[What starts the work?]</h3><p>[A message, scheduled event, record change, request, or other concrete trigger.]</p></td></tr>
+                <tr class="fact-row"><td class="fact-label">Input</td><td class="fact-copy"><h3>[What context is required?]</h3><p>[Name the source, owner, freshness requirement, and any missing information.]</p></td></tr>
+                <tr class="fact-row"><td class="fact-label">Boundary</td><td class="fact-copy"><h3>[What must stay human?]</h3><p>[Name the decision, exception, approval, or recovery step that should not be automated away.]</p></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="newsletter-expectation-section">
+              <p class="eyebrow">02 / What I expected</p>
+              <h2 class="section-title">[State the smallest useful hypothesis.]</h2>
+              <p class="copy">I expected <strong>[agent / script / process change]</strong> to handle <strong>[specific part of the workflow]</strong> because <strong>[source-backed reason]</strong>. The tradeoff was <strong>[cost, latency, brittleness, review load, or loss of flexibility]</strong>.</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="newsletter-observed-section">
+              <p class="eyebrow">03 / What actually happened</p>
+              <h2 class="section-title">[Describe the observed run.]</h2>
+              <p class="copy">[Name the inspected source: a terminal capture, trace, workflow log, screenshot, or owned test. Describe only what that source supports. Separate one successful behavior from one unresolved behavior.]</p>
+              <table role="presentation" class="break-plate" width="100%" data-od-id="newsletter-break-point">
+                <tr><td class="break-inner"><p class="break-label">The interesting break</p><h3 class="break-title">[The task ran, but the handoff lost the failure context.]</h3><p class="break-copy">[Explain what broke, what remained safe, and what the next available action was. A bug is useful when it changes the system design, not when it gets polished into a victory story.]</p></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="newsletter-system-section">
+              <p class="eyebrow">04 / The system around the task</p>
+              <h2 class="section-title">The agent is only one part.</h2>
+              <p class="copy">Use this loop to show the operating system, not just the model call. If any stage is missing, leave it Open instead of pretending the workflow is finished.</p>
+              <table role="presentation" class="loop" width="100%">
+                <tr><td class="loop-label">Operating loop</td></tr>
+                <tr><td class="loop-flow">Context → Work → Checks → Handoffs → Recovery → Better context</td></tr>
+              </table>
+              <table role="presentation" class="fact-grid" width="100%">
+                <tr class="fact-row"><td class="fact-label">Context</td><td class="fact-copy"><h3>[Where does trusted input come from?]</h3><p>[Include ownership, freshness, and what happens when the input is incomplete.]</p></td></tr>
+                <tr class="fact-row"><td class="fact-label">Checks</td><td class="fact-copy"><h3>[How is the output inspected?]</h3><p>[Name the rule, evaluator, reviewer, or acceptance threshold without inventing a score.]</p></td></tr>
+                <tr class="fact-row"><td class="fact-label">Handoff</td><td class="fact-copy"><h3>[Who gets what next?]</h3><p>[Name the destination, what context travels with the result, and who owns the decision.]</p></td></tr>
+                <tr class="fact-row"><td class="fact-label">Recovery</td><td class="fact-copy"><h3>[What happens when it fails?]</h3><p>[State what remains safe, how the failure is surfaced, and the next available action.]</p></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="newsletter-change-section">
+              <p class="eyebrow">05 / What I changed</p>
+              <h2 class="section-title">[Name the design change.]</h2>
+              <table role="presentation" class="choice" width="100%">
+                <tr><td class="choice-inner"><p class="slot-label">System choice</p><h3 class="choice-title">[Agent, script, or process change?]</h3><p class="choice-copy">[Explain why this is now the smallest reliable intervention. Name the tradeoff you accepted and the part you deliberately did not automate.]</p></td></tr>
+              </table>
+              <p class="copy">[Describe the changed flow in two short paragraphs: first the mechanism, then how checks, handoffs, or recovery now behave differently.]</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="newsletter-evidence-section">
+              <p class="eyebrow">06 / Evidence boundary</p>
+              <h2 class="section-title">Keep facts, choices, and gaps separate.</h2>
+              <table role="presentation" class="status status-verified" width="100%"><tr><td class="status-cell"><strong>Verified</strong><p>[The named inspected source shows the exact behavior described here.]</p></td></tr></table>
+              <table role="presentation" class="status status-proposed" width="100%"><tr><td class="status-cell"><strong>Proposed</strong><p>[I’d use this next change because of this reason. The tradeoff is named here.]</p></td></tr></table>
+              <table role="presentation" class="status status-open" width="100%"><tr><td class="status-cell"><strong>Open</strong><p>Still needed: [owned run, screenshot, trace, or comparison] to decide [the specific blocked decision].</p></td></tr></table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="newsletter-next-question-section">
+              <p class="eyebrow">07 / Next rabbit hole</p>
+              <table role="presentation" class="rabbit-hole" width="100%"><tr><td class="rabbit-hole-inner"><p class="slot-label">Question for the next build</p><h3>[What new question did this failure create?]</h3><p>[Name the next experiment, the evidence it should produce, and the decision that evidence will unblock.]</p></td></tr></table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad" data-od-id="newsletter-reply-section">
+              <table role="presentation" class="reply-box" width="100%">
+                <tr><td class="reply-box-inner"><p class="slot-label">Your turn</p><h2 class="reply-title">Where does the work keep breaking?</h2><p class="reply-copy">Reply with one recurring workflow and where it currently breaks. I’m looking for the specific handoff, check, missing context, or recovery step that keeps routing the work back to you.</p><p class="reply-prompt">Workflow: ______<br />Current break: ______</p></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad signoff" data-od-id="newsletter-signoff">
+              <p>Ryan<br /><strong>Agent Systems Builder</strong></p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="footer" data-od-id="newsletter-footer">
+              <div class="footer-copy"><p><strong>Building systems so everything doesn’t need you.</strong><br />Reusable newsletter template / replace bracketed slots with owned build evidence before sending.</p></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

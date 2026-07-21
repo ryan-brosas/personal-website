@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Ryan Brosas Brand System",
+  "version": "1.9.0",
+  "designSystemId": "user:brand-design-system",
+  "canonicalTokenSource": "colors_and_type.css",
+  "runtimeManifest": "manifest.json",
+  "runtimeTokenEntry": "tokens.css",
+  "packagedTokenEntry": "system/variables.css",
+  "tokenEntryContract": {
+    "selfContained": true,
+    "allowsImportOnlyWrapper": false,
+    "declarationParityWithCanonical": true,
+    "runtimeTokenChannel": true
+  },
+  "showcase": {
+    "light": "system/kit.html",
+    "dark": "system/kit.dark.html",
+    "appliedLandingPage": "ryan-brosas-landing-page.html",
+    "indexedLandingPage": "showcase-landing-page.html",
+    "renderedLandingPage": "system/artifacts/landing.html",
+    "appliedLandingCapture": "assets/source-previews/ryan-brosas-landing-page-applied.png"
+  },
+  "sourcePigments": {
+    "paper": "#FEFEFE",
+    "charcoal": "#1A1A1A",
+    "coral": "#FF5555",
+    "signal": "#ECC90F"
+  },
+  "modes": {
+    "light": {
+      "canvas": "paper",
+      "surfaceSteps": ["paper", "4% charcoal into paper", "8% charcoal into paper"],
+      "text": ["charcoal", "68% charcoal", "62% charcoal"],
+      "stroke": ["16% charcoal", "28% charcoal", "42% charcoal"]
+    },
+    "dark": {
+      "canvas": "charcoal",
+      "surfaceSteps": ["5% paper into charcoal", "9% paper into charcoal", "14% paper into charcoal"],
+      "text": ["paper", "70% paper", "54% paper"],
+      "stroke": ["16% paper", "28% paper", "44% paper"]
+    }
+  },
+  "roleFamilies": {
+    "runtimeCore": ["--bg", "--surface", "--surface-warm", "--fg", "--fg-2", "--muted", "--meta", "--border", "--border-soft", "--accent", "--accent-on", "--accent-hover", "--accent-active", "--success", "--warn", "--danger", "--font-display", "--font-body", "--font-mono", "--text-xs", "--text-sm", "--text-base", "--text-lg", "--text-xl", "--text-2xl", "--text-3xl", "--text-4xl", "--leading-body", "--leading-tight", "--tracking-display", "--space-1", "--space-2", "--space-3", "--space-4", "--space-5", "--space-6", "--space-8", "--space-12", "--section-y-desktop", "--section-y-tablet", "--section-y-phone", "--radius-sm", "--radius-md", "--radius-lg", "--radius-pill", "--elev-flat", "--elev-ring", "--elev-raised", "--focus-ring", "--motion-fast", "--motion-base", "--ease-standard", "--container-max", "--container-gutter-desktop", "--container-gutter-tablet", "--container-gutter-phone"],
+    "source": ["--color-paper", "--color-charcoal", "--color-coral", "--color-signal"],
+    "surface": ["--canvas", "--surface-1", "--surface-2", "--surface-3", "--surface-inverse", "--workbench-canvas", "--presentation-canvas", "--surface-interactive", "--surface-interactive-hover", "--surface-interactive-active"],
+    "text": ["--text-1", "--text-2", "--text-3", "--text-inverse", "--accent-text", "--accent-decoration"],
+    "stroke": ["--stroke-subtle", "--stroke-default", "--stroke-strong"],
+    "feature": ["--feature-bg", "--feature-fg", "--feature-muted"],
+    "action": ["--action-primary-bg", "--action-primary-fg", "--action-primary-border", "--action-primary-hover", "--action-primary-pressed", "--action-secondary-bg", "--action-secondary-fg", "--action-secondary-border", "--action-secondary-hover", "--action-secondary-pressed", "--action-quiet-bg", "--action-quiet-fg", "--action-quiet-hover", "--action-quiet-pressed", "--action-disabled-bg", "--action-disabled-fg", "--action-disabled-border", "--action-loading-bg", "--action-loading-fg", "--action-loading-border", "--control-disabled-opacity"],
+    "control": ["--control-bg", "--control-fg", "--control-border", "--control-hover-bg", "--control-pressed-bg", "--control-selected-bg", "--control-selected-fg", "--control-selected-border"],
+    "icon": ["--icon-default", "--icon-muted", "--icon-inverse", "--icon-disabled"],
+    "state": ["--state-selected-bg", "--state-selected-fg", "--state-selected-border"],
+    "navigation": ["--nav-bg", "--nav-fg", "--nav-border", "--nav-hover-bg", "--nav-hover-fg", "--nav-current-fg", "--nav-current-rule"],
+    "panel": ["--panel-bg", "--panel-fg", "--panel-muted", "--panel-border", "--panel-raised-bg", "--panel-selected-bg", "--panel-selected-border"],
+    "field": ["--field-bg", "--field-fg", "--field-placeholder", "--field-hint-fg", "--field-border", "--field-focus-border", "--field-invalid-border", "--field-invalid-bg", "--field-error-fg", "--field-validating-bg", "--field-validating-fg", "--field-validating-border", "--field-valid-bg", "--field-valid-fg", "--field-valid-border", "--field-disabled-bg", "--field-disabled-fg", "--field-disabled-border", "--field-readonly-bg", "--field-readonly-fg", "--field-readonly-border"],
+    "status": ["--status-verified-bg", "--status-verified-fg", "--status-verified-border", "--status-verified-muted", "--status-proposed-bg", "--status-proposed-fg", "--status-proposed-border", "--status-proposed-muted", "--status-open-bg", "--status-open-fg", "--status-open-border", "--status-open-muted"],
+    "feedback": ["--feedback-bg", "--feedback-fg", "--feedback-border", "--feedback-neutral-bg", "--feedback-neutral-fg", "--feedback-neutral-border", "--feedback-error-bg", "--feedback-error-fg", "--feedback-error-border", "--feedback-notice-bg", "--feedback-notice-fg", "--feedback-notice-border", "--focus-color", "--focus-ring", "--overlay-scrim", "--selection-bg", "--selection-fg"],
+    "contentAndMedia": ["--link-fg", "--link-decoration", "--link-hover-fg", "--evidence-media-bg", "--evidence-media-border", "--evidence-caption-bg", "--evidence-caption-fg", "--evidence-open-bg", "--evidence-open-fg", "--evidence-loading-bg", "--evidence-loading-fg", "--evidence-empty-bg", "--evidence-empty-fg", "--evidence-error-bg", "--evidence-error-fg", "--evidence-error-border", "--evidence-recovery-bg", "--evidence-recovery-fg", "--evidence-recovery-border", "--logo-tile-bg", "--logo-tile-fg"],
+    "typography": ["--font-display", "--font-body", "--font-mono", "--weight-regular", "--weight-medium", "--weight-strong", "--weight-display", "--leading-display-xl", "--leading-display-lg", "--leading-display", "--leading-heading", "--leading-body", "--leading-label", "--tracking-display", "--tracking-label", "--text-xs", "--text-sm", "--text-base", "--text-lg", "--text-xl", "--text-2xl", "--text-3xl", "--text-4xl", "--text-display"],
+    "spacing": ["--space-1", "--space-2", "--space-3", "--space-4", "--space-5", "--space-6", "--space-8", "--space-10", "--space-12", "--space-16", "--space-20", "--space-24"],
+    "radius": ["--radius-editorial", "--radius-control", "--radius-panel", "--radius-pill"],
+    "layoutAndMotion": ["--target-min", "--content-max", "--measure-compact", "--measure-body", "--measure-wide", "--duration-fast", "--duration-panel", "--ease-standard", "--motion-press-distance", "--focus-width", "--focus-offset"],
+    "elevationAndRules": ["--shadow-raised", "--shadow-overlay", "--shadow-focus", "--rule", "--rule-default", "--rule-strong"]
+  },
+  "contrastPairs": [
+    {"foreground": "charcoal", "background": "paper", "ratio": 17.26, "textUse": "AAA body and display"},
+    {"foreground": "paper", "background": "charcoal", "ratio": 17.26, "textUse": "AAA body and display"},
+    {"foreground": "charcoal", "background": "coral", "ratio": 5.54, "textUse": "AA body; primary action"},
+    {"foreground": "charcoal", "background": "signal", "ratio": 10.71, "textUse": "AAA; Open state and logo tile"},
+    {"foreground": "paper", "background": "coral", "ratio": 3.12, "textUse": "Not ordinary text"},
+    {"foreground": "62% charcoal", "background": "paper", "ratio": 4.84, "textUse": "AA tertiary text in light mode"},
+    {"foreground": "54% paper", "background": "charcoal", "ratio": 5.81, "textUse": "AA tertiary text in dark mode"}
+  ],
+  "typography": {
+    "display": "Segoe UI Variable Display",
+    "body": "Segoe UI Variable Text",
+    "mono": "Cascadia Mono",
+    "normalWidthOnly": true,
+    "lineHeights": {"displayXL": 0.9, "displayLarge": 0.94, "heading": 1, "body": 1.6, "label": 1.2},
+    "bodyMeasure": "45-65ch preferred; 70ch maximum"
+  },
+  "layout": {
+    "baseline": 8,
+    "opticalHalfStep": 4,
+    "spacing": {"space-1": 4, "space-2": 8, "space-3": 12, "space-4": 16, "space-5": 20, "space-6": 24, "space-8": 32, "space-10": 40, "space-12": 48, "space-16": 64, "space-20": 80, "space-24": 96},
+    "contentMax": 1480,
+    "breakpoints": [600, 820, 1024],
+    "radii": {"editorial": 0, "control": 4, "panel": 8, "statusOnly": 999},
+    "minimumTarget": 44
+  },
+  "assets": {
+    "viewBox": "0 0 255 211",
+    "primaryLogo": "logos/Logo---Ryan-1.svg",
+    "alternates": ["logos/Logo---Ryan-2.svg", "logos/Logo---Ryan-3.svg", "logos/Logo---Ryan-4.svg"],
+    "centering": "Use grid or flex centering and inspect the visible glyph optically.",
+    "utilityIcons": {"file": "assets/icons.svg", "grid": 24, "strokeWidth": 1.75, "stroke": "currentColor", "capsAndJoins": "round", "approvedUses": ["navigation", "disclosure", "direction", "copy", "recovery", "written-status reinforcement"]}
+  },
+  "distribution": {
+    "sourceDirectory": "ui_kits/app/components/",
+    "distributionDirectory": "assets/components/",
+    "activeComponentFiles": ["Primitives.js", "LifecycleComponents.js", "Navigation.js", "StatusPanel.js", "SystemMap.js", "ProjectCard.js", "AppShell.js"],
+    "loadOrder": ["Primitives.js", "LifecycleComponents.js", "Navigation.js", "StatusPanel.js", "SystemMap.js", "ProjectCard.js", "AppShell.js"],
+    "appliedKit": "ui_kits/app/index.html",
+    "allowUnreferencedPrototypeFiles": false,
+    "forbiddenFilePatterns": ["*.jsx", "*prototype*", "*alternate*"],
+    "contentEscapingRequired": true,
+    "exactInventoryRequired": true
+  },
+  "acceptance": {
+    "tokens": "The packaged token entry is self-contained and declares the same token names as the canonical source.",
+    "modes": "Every component keeps anatomy across modes and changes only semantic roles; mode-dependent component aliases are rebound in the dark scope so nested kits cannot inherit light-resolved values, and the side-by-side proof shows the same lifecycle states in both modes.",
+    "stateLifecycle": "Default, read-only, disabled, loading, validating, valid, invalid, empty, error, recovery, and Verified states use named roles, preserve component geometry, and are visibly exercised by the applied kit and dual-mode proof.",
+    "voice": "Verified names a source; Proposed names a tradeoff; Open starts with Still needed and names the proof.",
+    "consumerEntry": "Generated artifacts load tokens.css once. The maintainer-facing applied kit loads colors_and_type.css for package auditing; maintainers regenerate both byte-identical mirrors.",
+    "showcase": "The registered surface displays all adopted SVGs, explicit foundation roles, light and dark proofs, real states, and the current version.",
+    "componentApplication": "Every distributed component has a byte-identical source and assets/components mirror, is loaded by the applied kit from the registered static boundary, and is documented by component-manifest.json; preview-only markup is not treated as implementation.",
+    "componentInventory": "The source and distribution directories contain exactly the seven activeComponentFiles and no additional code files.",
+    "contentSafety": "Every data-driven text or attribute value is escaped through BrandEscape before runtime HTML composition."
+  }
+}

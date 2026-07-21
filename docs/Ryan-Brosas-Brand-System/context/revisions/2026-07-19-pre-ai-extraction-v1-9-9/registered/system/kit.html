@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Ryan Brosas Brand System - Showcase</title>
+  <script>
+    (function () {
+      var query = new URLSearchParams(location.search).get("theme");
+      var saved = null;
+      try { saved = localStorage.getItem("ryan-brand-showcase-theme"); } catch (_) {}
+      document.documentElement.dataset.theme = query === "dark" || query === "light" ? query : (saved === "dark" ? "dark" : "light");
+    })();
+  </script>
+  <link rel="stylesheet" href="../tokens.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html { background: var(--canvas); color: var(--text-1); }
+    body { margin: 0; min-width: 0; background: var(--canvas); color: var(--text-1); font-family: var(--font-body); font-size: var(--text-base); line-height: var(--leading-body); transition: background var(--duration-fast), color var(--duration-fast); }
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    img { display: block; max-width: 100%; }
+    .shell { width: min(calc(100% - 48px), var(--content-max)); margin-inline: auto; }
+    .eyebrow { margin: 0; color: var(--text-2); font: var(--weight-strong) var(--text-xs)/var(--leading-label) var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
+    .eyebrow--coral { color: var(--accent-text); text-decoration: underline; text-decoration-color: var(--accent-decoration); text-underline-offset: .35em; }
+    .site-nav { position: sticky; top: 0; z-index: 20; background: color-mix(in oklch, var(--nav-bg) 92%, transparent); border-bottom: 1px solid var(--nav-border); backdrop-filter: blur(14px); }
+    .nav-row { min-height: 76px; display: flex; align-items: center; gap: var(--space-6); }
+    .brand-lockup { display: inline-flex; align-items: center; gap: var(--space-3); text-decoration: none; min-width: max-content; }
+    .brand-tile { width: 48px; height: 48px; display: grid; place-items: center; flex: 0 0 auto; background: var(--logo-tile-bg); border-radius: var(--radius-panel); }
+    .brand-tile img { width: 31px; height: auto; }
+    .brand-name { display: grid; line-height: 1.15; }
+    .brand-name strong { font-weight: var(--weight-strong); }
+    .brand-name span { color: var(--text-2); font: var(--weight-strong) var(--text-xs)/1.2 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; }
+    .nav-links { margin-left: auto; display: flex; align-items: center; gap: var(--space-5); }
+    .nav-links a { min-height: var(--target-min); display: grid; place-items: center; color: var(--nav-fg); font-weight: var(--weight-medium); text-decoration: none; border-bottom: 2px solid transparent; }
+    .nav-links a:hover { color: var(--nav-hover-fg); border-bottom-color: var(--nav-current-rule); }
+    .theme-control { display: flex; gap: var(--space-1); padding: var(--space-1); background: var(--control-bg); border: 1px solid var(--control-border); border-radius: var(--radius-panel); }
+    .theme-control button { min-width: 62px; min-height: var(--target-min); padding: 0 var(--space-3); color: var(--control-fg); background: transparent; border: 0; border-radius: var(--radius-control); cursor: pointer; font-weight: var(--weight-strong); }
+    .theme-control button:hover { background: var(--control-hover-bg); }
+    .theme-control button:active { background: var(--control-pressed-bg); }
+    .theme-control button[aria-pressed="true"] { background: var(--control-selected-bg); color: var(--control-selected-fg); box-shadow: inset 0 0 0 1px var(--control-selected-border); }
+    .hero { padding: var(--space-20) 0 var(--space-16); }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(340px, .75fr); gap: var(--space-12); align-items: stretch; }
+    .hero-copy { display: flex; flex-direction: column; justify-content: space-between; padding-block: var(--space-4); }
+    .hero h1 { max-width: 12ch; margin: var(--space-5) 0 var(--space-6); font: var(--type-hero-weight) var(--type-hero-size)/var(--type-hero-leading) var(--font-display); letter-spacing: var(--type-hero-tracking); }
+    .hero-lede { max-width: 56ch; margin: 0; color: var(--text-2); font-size: var(--text-lg); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-8); }
+    .button { min-height: var(--target-min); display: inline-grid; place-items: center; padding: 0 var(--space-4); border: 1px solid transparent; border-radius: var(--radius-control); cursor: pointer; font-weight: var(--weight-strong); text-decoration: none; transition: background var(--duration-fast), color var(--duration-fast), transform var(--duration-fast); }
+    .button--primary { background: var(--action-primary-bg); color: var(--action-primary-fg); border-color: var(--action-primary-border); box-shadow: var(--shadow-raised); }
+    .button--primary:hover { background: var(--action-primary-hover); transform: translateY(-2px); }
+    .button--primary:active { background: var(--action-primary-pressed); transform: none; }
+    .button--secondary { background: var(--action-secondary-bg); color: var(--action-secondary-fg); border-color: var(--action-secondary-border); }
+    .button--secondary:hover { background: var(--action-secondary-hover); }
+    .button--secondary:active { background: var(--action-secondary-pressed); }
+    .button--quiet { background: var(--action-quiet-bg); color: var(--action-quiet-fg); border-color: transparent; }
+    .button--quiet:hover { background: var(--action-quiet-hover); }
+    .button--quiet:active { background: var(--action-quiet-pressed); }
+    .button[aria-busy="true"] { background: var(--action-loading-bg); color: var(--action-loading-fg); border-color: var(--action-loading-border); cursor: progress; transform: none; }
+    .button[disabled] { background: var(--action-disabled-bg); color: var(--action-disabled-fg); border-color: var(--action-disabled-border); cursor: not-allowed; box-shadow: none; }
+    .identity-plate { min-height: 500px; display: grid; grid-template-rows: 1fr auto; background: var(--color-charcoal); color: var(--color-paper); border-radius: var(--radius-editorial); overflow: hidden; }
+    .identity-mark { display: grid; place-items: center; padding: var(--space-16); }
+    .identity-mark img { width: min(56%, 260px); height: auto; }
+    .identity-meta { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid color-mix(in oklch, var(--color-paper) 20%, transparent); }
+    .identity-meta div { min-width: 0; padding: var(--space-4); border-left: 1px solid color-mix(in oklch, var(--color-paper) 20%, transparent); }
+    .identity-meta div:first-child { border-left: 0; }
+    .identity-meta span { display: block; color: color-mix(in oklch, var(--color-paper) 68%, transparent); font: var(--weight-strong) var(--text-xs)/1.3 var(--font-mono); text-transform: uppercase; }
+    .identity-meta strong { display: block; margin-top: var(--space-1); font-size: var(--text-lg); }
+    .section { padding: var(--space-16) 0; border-top: 1px solid var(--stroke-subtle); }
+    .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .65fr); gap: var(--space-8); align-items: end; margin-bottom: var(--space-10); }
+    .section-head h2 { max-width: 16ch; margin: var(--space-3) 0 0; font: var(--type-section-weight) var(--type-section-size)/var(--type-section-leading) var(--font-display); letter-spacing: var(--type-section-tracking); }
+    .section--reference .section-head { align-items: start; margin-bottom: var(--space-8); }
+    .section--reference .section-head h2 { max-width: 16ch; font-size: var(--type-section-size); line-height: var(--type-section-leading); letter-spacing: var(--type-section-tracking); }
+    .section-head p { max-width: 56ch; margin: 0; color: var(--text-2); }
+    .palette { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--stroke-default); }
+    .swatch { min-height: 250px; display: flex; flex-direction: column; justify-content: space-between; padding: var(--space-5); border-left: 1px solid color-mix(in oklch, var(--color-charcoal) 22%, transparent); color: var(--color-charcoal); }
+    .swatch:first-child { border-left: 0; }
+    .swatch--paper { background: var(--color-paper); }
+    .swatch--charcoal { background: var(--color-charcoal); color: var(--color-paper); }
+    .swatch--coral { background: var(--color-coral); }
+    .swatch--signal { background: var(--color-signal); }
+    .swatch strong { font-size: var(--text-xl); }
+    .swatch code { font-family: var(--font-mono); font-size: var(--text-sm); }
+    .mode-proof { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-8); }
+    .mode-card { min-width: 0; overflow: hidden; background: var(--canvas); color: var(--text-1); border: 1px solid var(--stroke-default); border-radius: var(--radius-panel); }
+    .mode-card__head { min-height: 92px; display: flex; align-items: end; justify-content: space-between; gap: var(--space-4); padding: var(--space-4); background: var(--surface-1); border-bottom: 1px solid var(--stroke-subtle); }
+    .mode-card__head strong { font-size: var(--text-xl); }
+    .mode-card__head code { color: var(--text-2); font: var(--weight-strong) var(--text-xs)/1.3 var(--font-mono); }
+    .mode-surfaces { display: grid; grid-template-columns: repeat(3, 1fr); min-height: 170px; }
+    .mode-surface { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; padding: var(--space-4); border-left: 1px solid var(--stroke-subtle); }
+    .mode-surface:first-child { border-left: 0; }
+    .mode-surface:nth-child(1) { background: var(--surface-1); }
+    .mode-surface:nth-child(2) { background: var(--surface-2); }
+    .mode-surface:nth-child(3) { background: var(--surface-3); }
+    .mode-surface span { color: var(--text-2); font-size: var(--text-sm); }
+    .mode-surface code { overflow-wrap: anywhere; font: var(--weight-strong) var(--text-xs)/1.35 var(--font-mono); }
+    .mode-card__foot { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); padding: var(--space-4); background: var(--surface-1); border-top: 1px solid var(--stroke-subtle); color: var(--text-2); font-size: var(--text-sm); }
+    .mode-components { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); padding: var(--space-4); background: var(--surface-1); border-top: 1px solid var(--stroke-subtle); }
+    .mode-components .mini-action, .mode-components .mini-disabled { min-height: var(--target-min); display: grid; place-items: center; padding: 0 var(--space-3); border: 1px solid var(--action-primary-border); border-radius: var(--radius-control); background: var(--action-primary-bg); color: var(--action-primary-fg); font-weight: var(--weight-strong); }
+    .mode-components .mini-field { min-width: 0; min-height: var(--target-min); padding: 0 var(--space-3); border: 1px solid var(--field-readonly-border); border-radius: var(--radius-control); background: var(--field-readonly-bg); color: var(--field-readonly-fg); }
+    .mode-components .mini-field--invalid { border-color: var(--field-invalid-border); background: var(--field-invalid-bg); color: var(--field-error-fg); }
+    .mode-components .mini-field--validating { border-color: var(--field-validating-border); background: var(--field-validating-bg); color: var(--field-validating-fg); }
+    .mode-components .mini-disabled { border-color: var(--action-disabled-border); background: var(--action-disabled-bg); color: var(--action-disabled-fg); }
+    .foundation-ledger { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: var(--space-3); border-top: 1px solid var(--stroke-default); border-left: 1px solid var(--stroke-default); }
+    .foundation-card { min-width: 0; min-height: 210px; padding: var(--space-5); background: var(--surface-1); border-right: 1px solid var(--stroke-default); border-bottom: 1px solid var(--stroke-default); }
+    .foundation-card h3 { margin: var(--space-8) 0 var(--space-2); font: var(--weight-strong) var(--text-xl)/1.15 var(--font-display); }
+    .foundation-card p { margin: 0; color: var(--text-2); }
+    .foundation-card code { overflow-wrap: anywhere; font-family: var(--font-mono); font-size: var(--text-sm); }
+    .icon-ledger { display: grid; grid-template-columns: minmax(240px, .8fr) repeat(5, minmax(0, 1fr)); margin-top: var(--space-3); border: 1px solid var(--stroke-default); }
+    .icon-ledger__intro, .icon-specimen { min-height: 160px; padding: var(--space-4); border-left: 1px solid var(--stroke-default); }
+    .icon-ledger__intro { border-left: 0; background: var(--surface-2); }
+    .icon-ledger__intro h3 { margin: var(--space-2) 0; font: var(--weight-strong) var(--text-xl)/1.1 var(--font-display); }
+    .icon-ledger__intro p { margin: 0; color: var(--text-2); font-size: var(--text-sm); }
+    .icon-specimen { display: grid; align-content: space-between; gap: var(--space-3); background: var(--surface-1); }
+    .icon-specimen__pair { display: flex; gap: var(--space-2); align-items: center; }
+    .icon-glyph { width: 48px; height: 48px; display: grid; place-items: center; border: 1px solid var(--stroke-default); }
+    .icon-glyph--light { background: var(--color-paper); color: var(--color-charcoal); }
+    .icon-glyph--dark { background: var(--color-charcoal); color: var(--color-paper); border-color: var(--color-charcoal); }
+    .icon-glyph svg { width: 24px; height: 24px; display: block; color: inherit; }
+    .icon-specimen code { color: var(--text-2); font: var(--weight-strong) var(--text-xs)/1.3 var(--font-mono); overflow-wrap: anywhere; }
+    .workbench { display: grid; grid-template-columns: minmax(0, .42fr) minmax(0, 1fr); min-height: 650px; background: var(--surface-1); border: 1px solid var(--stroke-default); border-radius: var(--radius-panel); overflow: hidden; box-shadow: var(--shadow-raised); }
+    .workbench-nav { padding: var(--space-6); background: var(--panel-raised-bg); border-right: 1px solid var(--panel-border); }
+    .workbench-nav h3 { margin: var(--space-3) 0 var(--space-6); font-size: var(--text-xl); }
+    .track-control { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-1); padding: var(--space-1); background: var(--control-bg); border: 1px solid var(--control-border); border-radius: var(--radius-panel); }
+    .track-control button { min-height: var(--target-min); padding: var(--space-2); background: transparent; color: var(--control-fg); border: 0; border-radius: var(--radius-control); cursor: pointer; font-weight: var(--weight-strong); }
+    .track-control button:hover { background: var(--control-hover-bg); }
+    .track-control button:active { background: var(--control-pressed-bg); }
+    .track-control button[aria-pressed="true"] { background: var(--control-selected-bg); color: var(--control-selected-fg); box-shadow: inset 0 0 0 1px var(--control-selected-border); }
+    .page-list { display: grid; gap: var(--space-1); margin-top: var(--space-6); }
+    .page-list a { min-height: var(--target-min); display: flex; align-items: center; padding: 0 var(--space-3); color: var(--text-2); text-decoration: none; border-radius: var(--radius-control); }
+    .page-list a:hover { background: var(--nav-hover-bg); color: var(--text-1); }
+    .page-list a[aria-current="page"] { color: var(--nav-current-fg); background: var(--surface-1); box-shadow: inset 0 -2px 0 var(--nav-current-rule); }
+    .workbench-main { min-width: 0; padding: var(--space-8); }
+    .workbench-head { display: flex; justify-content: space-between; gap: var(--space-4); align-items: start; }
+    .workbench-head h3 { max-width: 16ch; margin: var(--space-2) 0 0; font-size: var(--type-section-size); line-height: var(--type-section-leading); letter-spacing: var(--type-section-tracking); }
+    .version { min-width: max-content; color: var(--text-2); font: var(--weight-strong) var(--text-xs)/1.2 var(--font-mono); }
+    .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-top: var(--space-8); }
+    .status { min-height: 185px; padding: var(--space-4); border: 1px solid var(--stroke-subtle); border-radius: var(--radius-panel); }
+    .status .eyebrow { color: inherit; }
+    .status h4 { margin: var(--space-6) 0 var(--space-2); font-size: var(--text-lg); }
+    .status p { margin: 0; color: var(--text-2); font-size: var(--text-sm); }
+    .status--verified { background: var(--status-verified-bg); color: var(--status-verified-fg); border-color: var(--status-verified-border); }
+    .status--verified p { color: var(--status-verified-muted); }
+    .status--proposed { background: var(--status-proposed-bg); color: var(--status-proposed-fg); border-color: var(--status-proposed-border); }
+    .status--open { background: var(--status-open-bg); color: var(--status-open-fg); border-color: var(--status-open-border); }
+    .status--open p { color: var(--status-open-muted); }
+    .field-panel { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3); align-items: end; margin-top: var(--space-4); padding: var(--space-4); background: var(--surface-2); border: 1px solid var(--stroke-subtle); border-radius: var(--radius-panel); }
+    .field-wrap { display: grid; gap: var(--space-2); font-weight: var(--weight-strong); }
+    .field-wrap input { width: 100%; min-height: var(--target-min); padding: 0 var(--space-3); background: var(--field-bg); color: var(--field-fg); border: 1px solid var(--field-border); border-radius: var(--radius-control); }
+    .field-wrap input:focus { border-color: var(--field-focus-border); }
+    .field-wrap input[aria-invalid="true"] { background: var(--field-invalid-bg); border-color: var(--field-invalid-border); }
+    .field-wrap input[readonly] { background: var(--field-readonly-bg); color: var(--field-readonly-fg); border-color: var(--field-readonly-border); }
+    .field-wrap input:disabled { background: var(--field-disabled-bg); color: var(--field-disabled-fg); border-color: var(--field-disabled-border); cursor: not-allowed; }
+    .field-wrap input[data-state="validating"] { background: var(--field-validating-bg); color: var(--field-validating-fg); border-color: var(--field-validating-border); }
+    .field-wrap input[data-state="valid"] { background: var(--field-valid-bg); color: var(--field-valid-fg); border-color: var(--field-valid-border); }
+    .field-message { min-height: 1.4em; color: var(--text-2); font-size: var(--text-sm); font-weight: var(--weight-regular); }
+    .field-message[data-state="error"] { color: var(--field-error-fg); font-weight: var(--weight-strong); }
+    .component-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+    .implementation-map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+    .implementation-map code { min-width: 0; padding: var(--space-3); background: var(--surface-2); border: 1px solid var(--stroke-subtle); color: var(--text-2); font: var(--weight-strong) var(--text-xs)/1.45 var(--font-mono); overflow-wrap: anywhere; }
+    .feedback-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+    .feedback-message { min-height: 210px; display: flex; flex-direction: column; padding: var(--space-5); border: 1px solid var(--feedback-neutral-border); border-radius: var(--radius-panel); background: var(--feedback-neutral-bg); color: var(--feedback-neutral-fg); }
+    .feedback-message--error { background: var(--feedback-error-bg); color: var(--feedback-error-fg); border-color: var(--feedback-error-border); }
+    .feedback-message--notice { background: var(--feedback-notice-bg); color: var(--feedback-notice-fg); border-color: var(--feedback-notice-border); }
+    .feedback-message h3 { margin: var(--space-8) 0 var(--space-2); font-size: var(--text-xl); }
+    .feedback-message p { margin: 0; color: inherit; opacity: .76; }
+    .state-proof { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-3); padding: var(--space-5); background: var(--surface-2); border: 1px solid var(--stroke-subtle); border-radius: var(--radius-panel); }
+    .logo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+    .logo-card { border: 1px solid var(--stroke-default); background: var(--surface-1); }
+    .logo-stage { min-height: 250px; display: grid; place-items: center; }
+    .logo-stage img { width: min(56%, 150px); height: auto; }
+    .logo-stage--paper { background: var(--color-paper); }
+    .logo-stage--charcoal { background: var(--color-charcoal); }
+    .logo-stage--coral { background: var(--color-coral); }
+    .logo-caption { display: grid; gap: var(--space-1); padding: var(--space-4); border-top: 1px solid var(--stroke-subtle); }
+    .logo-caption strong { font-size: var(--text-sm); }
+    .logo-caption code { overflow-wrap: anywhere; color: var(--text-2); font: var(--weight-regular) var(--text-xs)/1.4 var(--font-mono); }
+    .hero-illustration { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr); margin-bottom: var(--space-8); border: 1px solid var(--stroke-default); background: var(--surface-1); }
+    .hero-illustration .illustration-stage { min-height: 540px; }
+    .hero-illustration .illustration-stage img { width: min(100%, 560px); height: 460px; }
+    .hero-illustration .illustration-copy { align-content: center; border-top: 0; border-left: 1px solid var(--stroke-default); }
+    .illustration-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .illustration-card { min-width: 0; border: 1px solid var(--stroke-default); background: var(--surface-1); }
+    .illustration-stage { min-height: 430px; display: grid; place-items: center; overflow: hidden; padding: var(--space-8); background: var(--surface-2); }
+    .illustration-stage--dark { background: var(--color-charcoal); }
+    .illustration-stage img { display: block; width: min(100%, 430px); height: 350px; object-fit: contain; }
+    .illustration-copy { display: grid; gap: var(--space-2); padding: var(--space-5); border-top: 1px solid var(--stroke-default); }
+    .illustration-copy h3, .illustration-copy p { margin: 0; }
+    .illustration-copy p { color: var(--text-2); }
+    .illustration-copy code { overflow-wrap: anywhere; color: var(--text-2); font: var(--text-xs)/1.5 var(--font-mono); }
+    .system-map { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); margin: 0; padding: 0; border: 1px solid var(--stroke-default); }
+    .system-step { position: relative; min-height: 230px; padding: var(--space-5); background: var(--panel-bg); border-left: 1px solid var(--panel-border); }
+    .system-step:first-child { border-left: 0; }
+    .system-step:not(:last-child)::after { content: "→"; position: absolute; top: 50%; right: calc(-1 * var(--space-3)); z-index: 2; width: var(--space-6); height: var(--space-6); display: grid; place-items: center; transform: translateY(-50%); background: var(--canvas); color: var(--accent-text); font: var(--weight-strong) var(--text-sm)/1 var(--font-mono); }
+    .system-step span { color: var(--accent-text); font: var(--weight-strong) var(--text-xs)/1.2 var(--font-mono); text-decoration: underline; text-decoration-color: var(--accent-decoration); text-underline-offset: .35em; }
+    .system-step h3 { margin: var(--space-10) 0 var(--space-2); font-size: var(--text-xl); }
+    .system-step p { margin: 0; color: var(--text-2); font-size: var(--text-sm); }
+    .system-loop { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-3) 0 0 auto; width: fit-content; max-width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--stroke-subtle); background: var(--surface-2); color: var(--text-2); font-size: var(--text-sm); }
+    .system-loop svg { width: 20px; height: 20px; flex: 0 0 auto; color: var(--accent-text); }
+    .evidence-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+    .landing-proof { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr); border: 1px solid var(--stroke-default); background: var(--surface-1); }
+    .landing-proof__capture { display: block; min-width: 0; padding: var(--space-4); background: var(--surface-2); border-right: 1px solid var(--stroke-default); }
+    .landing-proof__capture img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border: 1px solid var(--stroke-subtle); background: var(--evidence-media-bg); }
+    .landing-proof__copy { display: flex; flex-direction: column; padding: var(--space-6); }
+    .landing-proof__copy h3 { margin: var(--space-4) 0 var(--space-3); font: var(--weight-strong) var(--text-2xl)/1 var(--font-display); }
+    .landing-proof__copy > p { margin: 0 0 var(--space-5); color: var(--text-2); line-height: var(--leading-body); }
+    .asset-use-list { margin: 0 0 var(--space-6); padding: 0; list-style: none; border-top: 1px solid var(--stroke-subtle); }
+    .asset-use-list li { display: grid; grid-template-columns: 92px 1fr; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--stroke-subtle); }
+    .asset-use-list strong { font: var(--weight-strong) var(--text-xs)/var(--leading-label) var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
+    .landing-proof__copy .button { margin-top: auto; width: fit-content; }
+    .evidence-card { min-width: 0; background: var(--evidence-caption-bg); border: 1px solid var(--evidence-media-border); }
+    .evidence-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: top; background: var(--evidence-media-bg); }
+    .evidence-copy { padding: var(--space-4); color: var(--evidence-caption-fg); }
+    .evidence-copy h3 { margin: var(--space-2) 0; font-size: var(--text-lg); }
+    .evidence-copy p { margin: 0; color: var(--text-2); font-size: var(--text-sm); }
+    .voice-board { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .voice-panel { min-height: 320px; padding: var(--space-8); border: 1px solid var(--stroke-default); background: var(--surface-1); }
+    .voice-panel--dark { background: var(--feature-bg); color: var(--feature-fg); }
+    .voice-panel h3 { max-width: 12ch; margin: var(--space-8) 0 var(--space-4); font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1; letter-spacing: -.035em; }
+    .voice-panel p { max-width: 48ch; margin: 0; color: var(--text-2); }
+    .voice-panel--dark p { color: var(--feature-muted); }
+    .voice-checks { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: var(--space-3); border-top: 1px solid var(--stroke-default); border-left: 1px solid var(--stroke-default); }
+    .voice-check { min-height: 150px; padding: var(--space-4); background: var(--surface-1); border-right: 1px solid var(--stroke-default); border-bottom: 1px solid var(--stroke-default); }
+    .voice-check strong { display: block; margin-top: var(--space-8); }
+    .showcase-footer { padding: var(--space-8) 0 var(--space-12); border-top: 1px solid var(--stroke-subtle); }
+    .footer-row { display: flex; justify-content: space-between; gap: var(--space-4); color: var(--text-2); font-size: var(--text-sm); }
+    .visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+    @media (max-width: 1024px) {
+      .hero-grid, .section-head { grid-template-columns: 1fr; }
+      .identity-plate { min-height: 420px; }
+      .workbench { grid-template-columns: 1fr; }
+      .workbench-nav { border-right: 0; border-bottom: 1px solid var(--stroke-subtle); }
+      .page-list { grid-template-columns: repeat(3, 1fr); }
+      .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .system-map { grid-template-columns: repeat(2, 1fr); }
+      .system-step { border-top: 1px solid var(--panel-border); }
+      .system-step:nth-child(odd) { border-left: 0; }
+      .system-step:first-child, .system-step:nth-child(2) { border-top: 0; }
+      .system-step:not(:last-child)::after { display: none; }
+    }
+    @media (max-width: 820px) {
+      .nav-links { display: none; }
+      .theme-control { margin-left: auto; }
+      .palette, .logo-grid { grid-template-columns: repeat(2, 1fr); }
+      .swatch:nth-child(odd) { border-left: 0; }
+      .swatch:nth-child(n+3) { border-top: 1px solid color-mix(in oklch, var(--color-charcoal) 22%, transparent); }
+      .foundation-ledger, .evidence-grid, .feedback-grid, .hero-illustration, .illustration-grid, .landing-proof { grid-template-columns: 1fr; }
+      .landing-proof__capture { border-right: 0; border-bottom: 1px solid var(--stroke-default); }
+      .hero-illustration .illustration-copy { border-top: 1px solid var(--stroke-default); border-left: 0; }
+      .icon-ledger { grid-template-columns: repeat(3, 1fr); }
+      .icon-ledger__intro { grid-column: 1 / -1; }
+      .voice-board { grid-template-columns: 1fr; }
+      .voice-checks { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .shell { width: min(calc(100% - 40px), var(--content-max)); }
+      .brand-name { display: none; }
+      .theme-control button { min-width: 54px; }
+      .hero { padding-top: var(--space-12); }
+      .hero-grid { gap: var(--space-8); }
+      .hero h1 { font-size: min(var(--type-hero-size), 4.25rem); }
+      .identity-meta { grid-template-columns: 1fr; }
+      .identity-meta div { border-left: 0; border-top: 1px solid color-mix(in oklch, var(--color-paper) 20%, transparent); }
+      .identity-meta div:first-child { border-top: 0; }
+      .palette, .logo-grid, .page-list, .system-map, .mode-proof { grid-template-columns: 1fr; }
+      .icon-ledger { grid-template-columns: 1fr 1fr; }
+      .swatch { border-left: 0; border-top: 1px solid color-mix(in oklch, var(--color-charcoal) 22%, transparent); }
+      .swatch:first-child { border-top: 0; }
+      .workbench-main { padding: var(--space-5); }
+      .workbench-head, .footer-row { display: grid; }
+      .field-panel { grid-template-columns: 1fr; }
+      .mode-components { grid-template-columns: 1fr; }
+      .status-grid { grid-template-columns: 1fr; }
+      .state-proof { grid-template-columns: 1fr; }
+      .implementation-map { grid-template-columns: 1fr; }
+      .voice-checks { grid-template-columns: 1fr; }
+      .system-step { border-left: 0; border-top: 1px solid var(--panel-border); }
+      .system-step:nth-child(2) { border-top: 1px solid var(--panel-border); }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-nav" data-od-id="showcase-navigation">
+    <div class="shell nav-row">
+      <a class="brand-lockup" href="#top" aria-label="Ryan Brosas Brand System" data-od-id="showcase-brand-home">
+        <span class="brand-tile"><img src="../assets/Logo---Ryan-1.svg" alt="" /></span>
+        <span class="brand-name"><strong>Ryan Brosas</strong><span>Agent Systems Builder</span></span>
+      </a>
+      <nav class="nav-links" aria-label="Showcase sections">
+        <a href="#foundations">Foundations</a><a href="#components">Components</a><a href="#illustrations">Assets</a><a href="#applied-landing">Landing</a><a href="#voice">Voice</a>
+      </nav>
+      <div class="theme-control" aria-label="Theme preference" data-od-id="showcase-theme-control">
+        <button type="button" data-theme-choice="light" aria-pressed="true">Light</button>
+        <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" data-od-id="design-system-showcase">
+    <section class="hero" data-od-id="showcase-hero">
+      <div class="shell hero-grid">
+        <div class="hero-copy">
+<div><p class="eyebrow eyebrow--coral">Ryan Brosas Brand System / v1.9.8</p><h1>Systems before spectacle.</h1><p class="hero-lede">A practical, failure-aware system for showing how context, checks, handoffs, and recovery remove recurring work from overworked founders.</p></div>
+          <div class="hero-actions"><a class="button button--primary" href="#components" data-od-id="hero-primary-action">Inspect components</a><a class="button button--secondary" href="#logos" data-od-id="hero-secondary-action">Use the real logo</a></div>
+        </div>
+        <aside class="identity-plate" aria-label="Brand identity plate" data-od-id="showcase-identity-plate">
+          <div class="identity-mark"><img src="../assets/Logo---Ryan-3.svg" alt="Ryan Brosas R lightning mark" /></div>
+          <div class="identity-meta"><div><span>Source pigments</span><strong>4</strong></div><div><span>Primary pages</span><strong>3</strong></div><div><span>System checks</span><strong>5</strong></div></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="foundations" data-od-id="showcase-foundations">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">01 / Foundations</p><h2>Four pigments. Fixed jobs.</h2></div><p>Mode surfaces, text, strokes, actions, statuses, and feedback derive from these verified source colors. Supporting roles use alpha or <code>color-mix()</code>; decorative hues do not enter the system.</p></header>
+        <div class="palette" aria-label="Canonical palette">
+          <article class="swatch swatch--paper" data-od-id="swatch-paper"><strong>Near-white paper</strong><code>#FEFEFE / canvas</code></article>
+          <article class="swatch swatch--charcoal" data-od-id="swatch-charcoal"><strong>Charcoal</strong><code>#1A1A1A / structure</code></article>
+          <article class="swatch swatch--coral" data-od-id="swatch-coral"><strong>Coral</strong><code>#FF5555 / action</code></article>
+          <article class="swatch swatch--signal" data-od-id="swatch-signal"><strong>Signal yellow</strong><code>#ECC90F / Open</code></article>
+        </div>
+        <div class="mode-proof" aria-label="Light and dark semantic role proof" data-od-id="showcase-mode-proof">
+          <article class="mode-card" data-theme="light" data-od-id="mode-proof-light"><header class="mode-card__head"><strong>Light workbench</strong><code>data-theme="light"</code></header><div class="mode-surfaces"><div class="mode-surface"><span>Surface 1</span><code>paper</code></div><div class="mode-surface"><span>Surface 2</span><code>4% charcoal</code></div><div class="mode-surface"><span>Surface 3</span><code>8% charcoal</code></div></div><div class="mode-components" aria-label="Light component role proof"><span class="mini-action">Action</span><input class="mini-field" value="Read-only" readonly /><span class="mini-field mini-field--invalid">Invalid</span><span class="mini-field mini-field--validating">Validating</span></div><footer class="mode-card__foot"><span>Tertiary / 4.84:1</span><span>Same state anatomy</span></footer></article>
+          <article class="mode-card" data-theme="dark" data-od-id="mode-proof-dark"><header class="mode-card__head"><strong>Dark workbench</strong><code>data-theme="dark"</code></header><div class="mode-surfaces"><div class="mode-surface"><span>Surface 1</span><code>5% paper</code></div><div class="mode-surface"><span>Surface 2</span><code>9% paper</code></div><div class="mode-surface"><span>Surface 3</span><code>14% paper</code></div></div><div class="mode-components" aria-label="Dark component role proof"><span class="mini-action">Action</span><input class="mini-field" value="Read-only" readonly /><span class="mini-field mini-field--invalid">Invalid</span><span class="mini-field mini-field--validating">Validating</span></div><footer class="mode-card__foot"><span>Tertiary / 5.81:1</span><span>Same state anatomy</span></footer></article>
+        </div>
+        <div class="foundation-ledger" aria-label="Typography spacing and radius contracts" data-od-id="showcase-foundation-ledger">
+          <article class="foundation-card" data-od-id="foundation-typography"><p class="eyebrow">Typography</p><h3>Normal-width, role-led type.</h3><p><code>750 / .94</code> presentation, <code>700 / 1</code> section, <code>400 / 1.6</code> body, and mono only for evidence metadata.</p></article>
+          <article class="foundation-card" data-od-id="foundation-spacing"><p class="eyebrow">Spacing</p><h3>8px rhythm, 4px optics.</h3><p><code>4 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 48 · 64 · 80 · 96</code></p></article>
+          <article class="foundation-card" data-od-id="foundation-radius"><p class="eyebrow">Radius</p><h3>Flat before floating.</h3><p><code>0px</code> editorial, <code>4px</code> controls, <code>8px</code> panels, and <code>999px</code> for written statuses only.</p></article>
+          <article class="foundation-card" data-od-id="foundation-presentation"><p class="eyebrow">Presentation</p><h3>Fixed plates, safe pacing.</h3><p><code>1920 × 1080</code>, <code>24px</code> body minimum, <code>200px</code> footer-safe band, and one operating idea per slide.</p></article>
+        </div>
+        <div class="icon-ledger" aria-label="Utility icon contract with charcoal and near-white variants" data-od-id="showcase-icon-contract"><div class="icon-ledger__intro"><p class="eyebrow">Utility icons</p><h3>Meaningful, never ornamental.</h3><p>24px grid, 1.75px round outline, <code>currentColor</code>. Every specimen is shown charcoal on near-white and near-white on charcoal. Pair action icons with visible labels unless an accessible name already supplies the meaning.</p></div><div class="icon-specimen" data-od-id="showcase-icon-menu"><div class="icon-specimen__pair"><span class="icon-glyph icon-glyph--light"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span class="icon-glyph icon-glyph--dark"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></div><code>menu / disclosure</code></div><div class="icon-specimen" data-od-id="showcase-icon-arrow-right"><div class="icon-specimen__pair"><span class="icon-glyph icon-glyph--light"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></span><span class="icon-glyph icon-glyph--dark"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></span></div><code>arrow-right / destination</code></div><div class="icon-specimen" data-od-id="showcase-icon-copy"><div class="icon-specimen__pair"><span class="icon-glyph icon-glyph--light"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="10" height="11" rx="1"/><path d="M15 8V6a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2"/></svg></span><span class="icon-glyph icon-glyph--dark"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="10" height="11" rx="1"/><path d="M15 8V6a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2"/></svg></span></div><code>copy / utility</code></div><div class="icon-specimen" data-od-id="showcase-icon-refresh"><div class="icon-specimen__pair"><span class="icon-glyph icon-glyph--light"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 8V4m0 0h-4m4 0-3 3a7 7 0 1 0 1.4 7.7"/></svg></span><span class="icon-glyph icon-glyph--dark"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 8V4m0 0h-4m4 0-3 3a7 7 0 1 0 1.4 7.7"/></svg></span></div><code>refresh / recovery</code></div><div class="icon-specimen" data-od-id="showcase-icon-alert"><div class="icon-specimen__pair"><span class="icon-glyph icon-glyph--light"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.8 18.2A1.2 1.2 0 0 0 4.8 20h14.4a1.2 1.2 0 0 0 1-1.8L12 4Z"/><path d="M12 9v4m0 3h.01"/></svg></span><span class="icon-glyph icon-glyph--dark"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.8 18.2A1.2 1.2 0 0 0 4.8 20h14.4a1.2 1.2 0 0 0 1-1.8L12 4Z"/><path d="M12 9v4m0 3h.01"/></svg></span></div><code>alert / written error</code></div></div>
+      </div>
+    </section>
+
+    <section class="section" id="components" data-od-id="showcase-components">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">02 / Component contract</p><h2>A workbench, not a card field.</h2></div><p>Every reusable component declares anatomy, semantic tokens, states, responsive behavior, accessibility, and content integrity. Switch theme above: the roles change while the component structure stays put.</p></header>
+        <div class="workbench" data-od-id="showcase-workbench">
+          <aside class="workbench-nav"><p class="eyebrow">Secondary track</p><h3 id="track-title">Personal Branding</h3><div class="track-control" aria-label="Branding track"><button type="button" data-track="Personal Branding" aria-pressed="true">Personal</button><button type="button" data-track="Client Branding" aria-pressed="false">Client</button></div><nav class="page-list" aria-label="Primary workbook pages"><a href="#components" aria-current="page">Brand Strategy</a><a href="#components">Brand Presentation</a><a href="#components">Brand Guidelines</a></nav></aside>
+<div class="workbench-main"><header class="workbench-head"><div><p class="eyebrow eyebrow--coral">Evidence integrity</p><h3>Make uncertainty inspectable.</h3></div><span class="version">COMPONENTS / 1.9.8</span></header>
+            <div class="status-grid" aria-label="Evidence states"><article class="status status--verified"><p class="eyebrow">Verified</p><h4>Source backed</h4><p>The source files show the exact palette, logo geometry, and page structure.</p></article><article class="status status--proposed"><p class="eyebrow">Proposed</p><h4>Reasoned choice</h4><p>I’d use the semantic role because it keeps light and dark behavior in one contract.</p></article><article class="status status--open"><p class="eyebrow">Open</p><h4>Proof still needed</h4><p>Still needed: owned project media that shows the real system operating.</p></article></div>
+            <form class="field-panel" id="evidence-form" novalidate><label class="field-wrap" for="evidence-source">Evidence source<input id="evidence-source" name="evidence" placeholder="Example: owned workflow capture" aria-describedby="evidence-message" /><span class="field-message" id="evidence-message">Name the owned proof, not a polished substitute.</span></label><button class="button button--primary" type="submit" id="validate-evidence">Validate evidence</button></form>
+            <div class="component-actions" aria-label="Button states"><button class="button button--primary" type="button">Primary</button><button class="button button--secondary" type="button">Secondary</button><button class="button button--quiet" type="button">Quiet</button><button class="button button--primary" type="button" aria-busy="true">Checking source…</button><button class="button" type="button" disabled>Disabled</button></div>
+            <div class="implementation-map" aria-label="Applied component implementation sources" data-od-id="showcase-component-implementations"><code>Primitives.js<br />BrandEscape · buttons · icons · logos · theme</code><code>LifecycleComponents.js<br />fields · feedback · evidence</code><code>AppShell.js<br />escaped data · visible applied composition</code></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--reference" data-od-id="showcase-feedback-recovery">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">03 / Interaction contract</p><h2>Recovery is part of the component.</h2></div><p>Evidence confidence, operational lifecycle, and interaction state have separate owners. Feedback copy names what happened, what remains safe, and the next available action.</p></header>
+        <div class="feedback-grid" aria-label="Feedback states"><article class="feedback-message" role="status" data-od-id="feedback-neutral"><p class="eyebrow">Neutral</p><h3>Draft saved locally.</h3><p>The evidence request remains Open. Review the source before publishing.</p></article><article class="feedback-message feedback-message--error" role="alert" data-od-id="feedback-error"><p class="eyebrow">Error</p><h3>Validation stopped.</h3><p>No owned file was attached. The draft is safe; add the source and retry.</p></article><article class="feedback-message feedback-message--notice" role="status" data-od-id="feedback-notice"><p class="eyebrow">Notice / Open</p><h3>Proof still needed.</h3><p>Still needed: an owned workflow capture that shows the recovery path.</p></article></div>
+        <div class="state-proof" aria-label="Read-only, disabled, validating, and valid field distinction"><label class="field-wrap" for="readonly-id">Read-only<input id="readonly-id" value="user:brand-design-system" readonly /></label><label class="field-wrap" for="disabled-publish">Disabled<input id="disabled-publish" value="Unavailable" disabled /></label><label class="field-wrap" for="validating-source">Validating<input id="validating-source" value="Checking source..." data-state="validating" readonly /></label><label class="field-wrap" for="valid-source">Valid<input id="valid-source" value="Named for review" data-state="valid" readonly /></label></div>
+      </div>
+    </section>
+
+    <section class="section section--reference" id="logos" data-od-id="showcase-logos">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">04 / Adopted assets</p><h2>The real mark, every time.</h2></div><p>These are the four byte-identical production SVGs. Preserve the 255 &times; 211 geometry, select by background contrast, and center the visible glyph optically inside its tile.</p></header>
+        <div class="logo-grid">
+          <article class="logo-card" data-od-id="logo-card-charcoal"><div class="logo-stage logo-stage--paper"><img src="../assets/Logo---Ryan-1.svg" alt="Charcoal R lightning mark" /></div><div class="logo-caption"><strong>Charcoal on light</strong><code>logos/Logo---Ryan-1.svg</code></div></article>
+          <article class="logo-card" data-od-id="logo-card-coral"><div class="logo-stage logo-stage--charcoal"><img src="../assets/Logo---Ryan-2.svg" alt="Coral R lightning mark" /></div><div class="logo-caption"><strong>Coral on controlled surfaces</strong><code>logos/Logo---Ryan-2.svg</code></div></article>
+          <article class="logo-card" data-od-id="logo-card-signal"><div class="logo-stage logo-stage--charcoal"><img src="../assets/Logo---Ryan-3.svg" alt="Signal-yellow R lightning mark" /></div><div class="logo-caption"><strong>Signal on charcoal</strong><code>logos/Logo---Ryan-3.svg</code></div></article>
+          <article class="logo-card" data-od-id="logo-card-white"><div class="logo-stage logo-stage--coral"><img src="../assets/Logo---Ryan-4.svg" alt="White R lightning mark" /></div><div class="logo-caption"><strong>White on dark or coral</strong><code>logos/Logo---Ryan-4.svg</code></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--reference" id="illustrations" data-od-id="showcase-illustrations">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">04B / Hero and editorial illustrations</p><h2>Systems work, made visible.</h2></div><p>System Conductor is the primary expressive hero. The eleven operational scenes form the supporting narrative library. None of these assets are operating evidence, functional icons, or product screenshots.</p></header>
+        <article class="hero-illustration" data-od-id="illustration-hero-system-conductor"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-hero-system-conductor-clean-print.png" alt="Agent operator in a dynamic full-body conductor pose routing a sweeping coral cable through connected system modules" /></div><div class="illustration-copy"><p class="eyebrow">Approved hero / Light placement</p><h3>System conductor</h3><p>Primary expressive asset for website heroes, presentation covers, campaign openers, and major section introductions. Preserve the full cable sweep and every connected module. On charcoal, use a protected light plate.</p><code>assets/illustrations/agent-operator-hero-system-conductor-clean-print.png</code></div></article>
+        <div class="illustration-grid">
+          <article class="illustration-card" data-od-id="illustration-context-assembly"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-context-assembly-clean-print.png" alt="Agent operator assembling physical context cards into a connected work board" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Context assembly</h3><p>Use for stories about gathering inputs before work begins. Keep the full silhouette and its placement margin intact.</p><code>assets/illustrations/agent-operator-context-assembly-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-recovery-loop"><div class="illustration-stage illustration-stage--dark"><img src="../assets/illustrations/agent-operator-recovery-loop-clean-print.png" alt="Agent operator reconnecting a failed module to its context through a coral recovery cable" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Dark placement</p><h3>Recovery loop</h3><p>Use for failure, repair, and learning-loop stories. Yellow remains a single recovery signal, never a second primary accent.</p><code>assets/illustrations/agent-operator-recovery-loop-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-guardrail-check"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-guardrail-check-clean-print.png" alt="Agent operator checking a guarded work path before it continues" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Guardrail check</h3><p>Use for stories about boundaries and pre-flight checks. It supports the explanation; it does not prove a control ran.</p><code>assets/illustrations/agent-operator-guardrail-check-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-evidence-review"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-evidence-review-clean-print.png" alt="Agent operator examining evidence at a focused review station" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Evidence review</h3><p>Use for narratives about inspecting outputs and deciding what is supported. Pair it with real evidence when making a claim.</p><code>assets/illustrations/agent-operator-evidence-review-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-memory-update"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-memory-update-clean-print.png" alt="Agent operator placing a verified context card into a structured memory module" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Memory update</h3><p>Use for stories about writing verified context back into a system. The illustration explains the act; it does not prove the memory was updated.</p><code>assets/illustrations/agent-operator-memory-update-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-budget-boundary"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-budget-boundary-clean-print.png" alt="Agent operator setting a hard physical limit on a resource track" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Budget boundary</h3><p>Use for narratives about explicit limits, caps, and safe operating boundaries. Pair it with real cost or usage evidence when making a claim.</p><code>assets/illustrations/agent-operator-budget-boundary-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-scheduled-run"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-scheduled-run-clean-print.png" alt="Agent operator setting a mechanical timing wheel beside a waiting work module" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Scheduled run</h3><p>Use for stories about time-triggered work and deliberate waiting states. It does not substitute for a real schedule or execution log.</p><code>assets/illustrations/agent-operator-scheduled-run-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-failure-triage"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-failure-triage-clean-print.png" alt="Agent operator inspecting a broken work module at a branching recovery path" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Failure triage</h3><p>Use for stories about isolating a failure and selecting the next recovery path. It does not replace an incident record.</p><code>assets/illustrations/agent-operator-failure-triage-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-checked-handoff"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-checked-handoff-clean-print.png" alt="Agent operator checking a work case before passing it to another pair of hands" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Checked handoff</h3><p>Use for reviewed transfers between people or systems. Pair it with real handoff evidence when making a claim.</p><code>assets/illustrations/agent-operator-checked-handoff-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-work-execution"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-work-execution-clean-print.png" alt="Agent operator moving work pieces through a controlled execution machine" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>Work execution</h3><p>Use for the action that changes operating state. The illustration does not prove the work completed successfully.</p><code>assets/illustrations/agent-operator-work-execution-clean-print.png</code></div></article>
+          <article class="illustration-card" data-od-id="illustration-system-choice"><div class="illustration-stage"><img src="../assets/illustrations/agent-operator-system-choice-clean-print.png" alt="Agent operator choosing among automation, script, and process control modules" /></div><div class="illustration-copy"><p class="eyebrow">Approved / Light placement</p><h3>System choice</h3><p>Use for choosing honestly between an agent, a script, and a process change before work begins.</p><code>assets/illustrations/agent-operator-system-choice-clean-print.png</code></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--reference" id="applied-landing" data-od-id="showcase-applied-landing">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">04C / Living applied proof</p><h2>The assets are working on a real page.</h2></div><p>The landing page is the continuous application surface for this brand system. Improve this same page as the identity, narrative library, interface language, and owned evidence mature.</p></header>
+        <article class="landing-proof"><a class="landing-proof__capture" href="../ryan-brosas-landing-page.html" data-od-id="landing-proof-capture"><img src="../assets/source-previews/ryan-brosas-landing-page-applied.png" alt="Ryan Brosas landing page using the approved identity mark, System Conductor hero, editorial illustrations, and utility icons" /></a><div class="landing-proof__copy"><p class="eyebrow eyebrow--coral">Applied / continuously refined</p><h3>Ryan Brosas landing page</h3><p>This is not another asset catalogue. It proves how the four asset layers behave together without confusing narrative art with operating evidence.</p><ul class="asset-use-list"><li><strong>Identity</strong><span>R/lightning marks anchor navigation and the closing stamp.</span></li><li><strong>Hero</strong><span>System Conductor carries the primary narrative moment.</span></li><li><strong>Editorial</strong><span>System Choice, Checked Handoff, and Recovery Loop explain operating ideas.</span></li><li><strong>Interface</strong><span>Menu, destination, recovery, and copy icons reinforce labelled actions.</span></li></ul><a class="button button--primary" href="../ryan-brosas-landing-page.html" data-od-id="open-applied-landing">Open the living page</a></div></article>
+      </div>
+    </section>
+
+    <section class="section section--reference" data-od-id="showcase-system-map">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">05 / Agent system map</p><h2>Inspect the whole workflow.</h2></div><p>This sequence is a decision component, not a progress meter. Keep all five steps and use a concrete operating question for each one.</p></header>
+        <ol class="system-map" aria-label="Context through recovery decision sequence"><li class="system-step"><span>01</span><h3>Context</h3><p>What must the system know before work begins?</p></li><li class="system-step"><span>02</span><h3>Work</h3><p>What action actually changes the operating state?</p></li><li class="system-step"><span>03</span><h3>Checks</h3><p>How do we know the output is safe to use?</p></li><li class="system-step"><span>04</span><h3>Handoffs</h3><p>What context must survive between people and tools?</p></li><li class="system-step"><span>05</span><h3>Recovery</h3><p>Who owns the failure path when automation stops?</p></li></ol><p class="system-loop"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 8V4m0 0h-4m4 0-3 3a7 7 0 1 0 1.4 7.7"/></svg>Recovery records the failure context, then improves the next Context.</p>
+      </div>
+    </section>
+
+    <section class="section section--reference" data-od-id="showcase-source-evidence">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">06 / Source evidence</p><h2>Measured from real artifacts.</h2></div><p>These owned project captures are review evidence, not outcome proof. They establish the calm workbench grid, concentrated presentation posture, and inspectable guideline construction used by this package; operating-media evidence remains Open.</p></header>
+        <div class="evidence-grid"><article class="evidence-card"><img src="../assets/source-previews/brand-strategy-polished-preview.png" alt="Brand Strategy source preview" /><div class="evidence-copy"><p class="eyebrow">Verified</p><h3>Brand Strategy</h3><p>Calm operational grid and five-part system chain.</p></div></article><article class="evidence-card"><img src="../assets/source-previews/brand-presentation-centering-check.png" alt="Brand Presentation source preview" /><div class="evidence-copy"><p class="eyebrow">Verified</p><h3>Brand Presentation</h3><p>One concentrated visual hit, protected marks, and decisive scale.</p></div></article><article class="evidence-card"><img src="../assets/source-previews/brand-guidelines-centering-check.png" alt="Brand Guidelines source preview" /><div class="evidence-copy"><p class="eyebrow">Verified</p><h3>Brand Guidelines</h3><p>Inspectable tokens, logo contexts, states, and AI handoff rules.</p></div></article></div>
+      </div>
+    </section>
+
+    <section class="section section--reference" id="voice" data-od-id="showcase-voice">
+      <div class="shell"><header class="section-head"><div><p class="eyebrow">07 / Voice</p><h2>Specific enough to be useful.</h2></div><p>Ryan sounds like a builder thinking through a real system in public: casual, nerdy, exploratory, honest, and clear about the evidence boundary.</p></header>
+        <div class="voice-board"><article class="voice-panel voice-panel--dark"><p class="eyebrow">Personal build log</p><h3>It worked. The handoff didn’t.</h3><p>The first agent completed the task, but the failure context disappeared before review. Next rabbit hole: make recovery part of the handoff instead of a separate cleanup step.</p></article><article class="voice-panel"><p class="eyebrow eyebrow--coral">Client explainer</p><h3>A script is enough here.</h3><p>The task is deterministic, the input shape is stable, and the failure path is obvious. An agent would add cost and ambiguity without improving the operating result.</p></article></div>
+        <div class="voice-checks" aria-label="Voice acceptance checks"><article class="voice-check"><p class="eyebrow">Verified</p><strong>Name the source.</strong></article><article class="voice-check"><p class="eyebrow">Proposed</p><strong>Name the tradeoff.</strong></article><article class="voice-check"><p class="eyebrow">Open</p><strong>Start with “Still needed:”.</strong></article><article class="voice-check"><p class="eyebrow">Recovery</p><strong>Name the next action.</strong></article><article class="voice-check" data-od-id="showcase-utf8-check"><p class="eyebrow">UTF-8</p><strong>Preserve readable text.</strong></article></div>
+      </div>
+    </section>
+  </main>
+
+<footer class="showcase-footer" data-od-id="showcase-footer"><div class="shell footer-row"><span>Ryan Brosas Brand System · user:brand-design-system</span><span>Showcase source: system/kit.html · v1.9.8</span></div></footer>
+  <div id="live-status" class="visually-hidden" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var themeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-theme-choice]"));
+      var trackButtons = Array.prototype.slice.call(document.querySelectorAll("[data-track]"));
+      var trackTitle = document.getElementById("track-title");
+      var form = document.getElementById("evidence-form");
+      var input = document.getElementById("evidence-source");
+      var message = document.getElementById("evidence-message");
+      var submit = document.getElementById("validate-evidence");
+      var live = document.getElementById("live-status");
+
+      function paintTheme(theme) {
+        root.dataset.theme = theme;
+        themeButtons.forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.themeChoice === theme)); });
+        try { localStorage.setItem("ryan-brand-showcase-theme", theme); } catch (_) {}
+      }
+      themeButtons.forEach(function (button) { button.addEventListener("click", function () { paintTheme(button.dataset.themeChoice); }); });
+      paintTheme(root.dataset.theme === "dark" ? "dark" : "light");
+
+      trackButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          trackButtons.forEach(function (item) { item.setAttribute("aria-pressed", String(item === button)); });
+          trackTitle.textContent = button.dataset.track;
+          live.textContent = button.dataset.track + " selected.";
+        });
+      });
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var value = input.value.trim();
+        if (!value) {
+          input.setAttribute("aria-invalid", "true");
+          message.dataset.state = "error";
+          message.textContent = "Still needed: name the owned evidence source.";
+          live.textContent = message.textContent;
+          input.focus();
+          return;
+        }
+        input.removeAttribute("aria-invalid");
+        message.dataset.state = "ready";
+        submit.setAttribute("aria-busy", "true");
+        submit.textContent = "Checking source…";
+        window.setTimeout(function () {
+          submit.removeAttribute("aria-busy");
+          submit.textContent = "Validate evidence";
+          message.textContent = "Verified input captured for review; the proof itself is still inspected separately.";
+          live.textContent = message.textContent;
+        }, 420);
+      });
+    })();
+  </script>
+</body>
+</html>

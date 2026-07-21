@@ -1,0 +1,15 @@
+{
+  "title": "Ryan Brosas Brand System",
+  "category": "Brands",
+  "surface": "web",
+  "status": "published",
+  "artifactMode": "agent-managed",
+  "createdAt": "2026-07-15T23:47:55.154Z",
+  "updatedAt": "2026-07-19T15:30:00.000Z",
+  "provenance": {
+    "companyBlurb": "Ryan Brosas builds practical agent systems that stop repetitive work from routing back through overworked founders.",
+    "notes": "Version 1.8.6 synchronized in place under the existing user:brand-design-system identity without creating a duplicate.",
+    "sourceNotes": "Used the user-supplied broken-render capture as evidence, then rebased the nested Assets renderer mirror to load tokens, logos, and illustrations from the package root while preserving the canonical landing page and Library mirror."
+  },
+  "projectId": "4c103428-67e3-485d-9213-4bcf97c890eb"
+}

@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Ryan Brosas brand strategy: audience, positioning, principles, and voice." />
+  <title>Brand Strategy - Ryan Brosas</title>
+  <link rel="stylesheet" href="brand-workbook.css" />
+  <link rel="stylesheet" href="brand-workbook-pages.css" />
+  <style>
+    /* Strategy-only polish: preserve the shared workbook system and sibling pages. */
+    .strategy-page .brand-home .brand-tile {
+      display: grid;
+      place-items: center;
+    }
+
+    .strategy-page .site-header {
+      position: relative;
+    }
+
+    .strategy-page .page-hero {
+      min-height: 460px;
+    }
+
+    .strategy-page .page-hero > div,
+    .strategy-page .hero-aside {
+      align-self: end;
+    }
+
+    .strategy-page .strategy-callout,
+    .strategy-page .strategy-compare {
+      margin-top: 16px;
+    }
+
+    .strategy-page .strategy-callout p {
+      margin: 4px 0 0;
+    }
+
+    .strategy-page .audience-primary-card {
+      padding: 36px;
+      display: grid;
+      grid-template-columns: minmax(230px, 0.9fr) minmax(0, 1.1fr);
+      grid-template-areas:
+        "label label"
+        "title body";
+      gap: 16px 28px;
+      align-content: center;
+    }
+
+    .strategy-page .audience-primary-card .mini-label {
+      grid-area: label;
+      margin: 0;
+      color: var(--accent);
+    }
+
+    .strategy-page .audience-primary-card h3 {
+      grid-area: title;
+      margin: 0;
+      font-size: clamp(24px, 1.7vw, 28px);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+    }
+
+    .strategy-page .audience-primary-card p:not(.mini-label) {
+      grid-area: body;
+      max-width: 52ch;
+      margin: 0;
+      color: color-mix(in oklch, var(--bg) 88%, transparent);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .strategy-page .system-chain {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .strategy-page .voice-sample blockquote {
+      max-width: 48ch;
+    }
+
+    .strategy-page .banned-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .strategy-page .banned-list li {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-decoration: line-through;
+    }
+
+    .strategy-page .reality-list {
+      padding: 28px 28px 28px 60px;
+      list-style: decimal-leading-zero;
+    }
+
+    .strategy-page .reality-list li {
+      padding-left: 6px;
+    }
+
+    .strategy-page .reality-list li::marker {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .strategy-page :is(.copy-button, .track-button, .menu-button) {
+      transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease, transform 80ms ease;
+    }
+
+    .strategy-page :is(.copy-button, .track-button, .menu-button):active {
+      transform: translateY(1px);
+    }
+
+    .strategy-page .menu-button[aria-expanded="true"] {
+      border-color: var(--fg);
+      background: var(--fg);
+      color: var(--bg);
+    }
+
+    .strategy-page .site-footer a {
+      min-height: 44px;
+      margin-inline: -4px;
+      padding-inline: 4px;
+      display: inline-flex;
+      align-items: center;
+      text-underline-offset: 4px;
+      transition: color 120ms ease;
+    }
+
+    .strategy-page .site-footer a:hover {
+      color: var(--fg);
+    }
+
+    @media (max-width: 1180px) {
+      .strategy-page .audience-primary-card {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "label"
+          "title"
+          "body";
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .strategy-page .page-hero {
+        min-height: 0;
+      }
+
+      .strategy-page .hero-aside {
+        max-width: 560px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .strategy-page .page-hero {
+        gap: 32px;
+        padding-block: 56px;
+      }
+
+      .strategy-page .hero-aside {
+        max-width: none;
+      }
+
+      .strategy-page .section-heading {
+        margin-bottom: 28px;
+      }
+
+      .strategy-page .voice-sample {
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .strategy-page .page-hero {
+        padding-block: 48px;
+      }
+
+      .strategy-page .audience-primary-card {
+        padding: 28px;
+      }
+
+      .strategy-page .reality-list {
+        padding: 22px 20px 22px 52px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .strategy-page .track-switch {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .strategy-page .track-button {
+        width: 100%;
+      }
+    }
+
+    @media print {
+      .strategy-page .site-header {
+        position: static;
+        backdrop-filter: none;
+      }
+
+      .strategy-page .menu-button,
+      .strategy-page .toast {
+        display: none !important;
+      }
+
+      .strategy-page [data-track-panel][hidden] {
+        display: block !important;
+        margin-top: 16px;
+      }
+    }
+
+  </style>
+</head>
+<body class="strategy-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" data-open="false" data-od-id="strategy-header">
+    <div class="header-inner">
+      <a class="brand-home" href="index.html" data-od-id="strategy-brand-home">
+        <span class="brand-tile"><img src="Logo---Ryan-1.svg" alt="" /></span>
+        <span><strong>Ryan Brosas</strong><span>Brand system / v1.2</span></span>
+      </a>
+      <button class="menu-button" type="button" data-menu-button data-od-id="strategy-menu-button" aria-expanded="false" aria-controls="primary-navigation">Menu</button>
+      <nav class="primary-nav" id="primary-navigation" aria-label="Primary navigation" data-od-id="strategy-navigation">
+        <ul class="nav-list">
+          <li><a href="brand-strategy.html" aria-current="page">Brand Strategy</a></li>
+          <li><a href="brand-presentation.html">Brand Presentation</a></li>
+          <li><a href="brand-guidelines.html">Brand Guidelines</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="page-hero page-shell" data-od-id="strategy-hero">
+      <div>
+        <p class="eyebrow">01 / Brand Strategy</p>
+        <h1 data-od-id="strategy-title">Build the system behind the task.</h1>
+        <p class="lead">For founders whose business is running, but still needs them for repetitive work, checking, research, and moving information around.</p>
+      </div>
+      <aside class="hero-aside" data-od-id="strategy-track-control">
+        <p class="mini-label" id="strategy-track-label">Secondary track</p>
+        <div class="track-switch" role="group" aria-labelledby="strategy-track-label" aria-describedby="strategy-track-note">
+          <button class="track-button" id="strategy-personal-track-button" type="button" data-track-choice="personal" data-od-id="strategy-track-personal" aria-pressed="true" aria-controls="strategy-personal-track">Personal Branding</button>
+          <button class="track-button" id="strategy-client-track-button" type="button" data-track-choice="client" data-od-id="strategy-track-client" aria-pressed="false" aria-controls="strategy-client-track">Client Branding</button>
+        </div>
+        <p class="source-note" id="strategy-track-note">Preference persists across pages.</p>
+      </aside>
+    </section>
+
+    <section class="section-block page-shell" data-od-id="strategy-premise">
+      <div class="section-heading">
+        <span class="section-index">01 / Premise</span>
+        <h2 data-od-id="strategy-premise-title">A practical reason to exist.</h2>
+        <span class="status verified">Language locked</span>
+      </div>
+      <div class="grid-2">
+        <article class="panel dark-panel">
+          <div class="meta-row"><span class="status verified">Verified intent</span><span class="mini-label">Purpose</span></div>
+          <h3>Reduce recurring dependence on the founder.</h3>
+          <p>Build agent systems and practical automation around repetitive work, checking, research, context, handoffs, oversight, and recovery.</p>
+        </article>
+        <article class="panel">
+          <div class="meta-row"><span class="status verified">Verified</span><span class="mini-label">Primary statement</span></div>
+          <div class="copy-row">
+            <p id="primary-statement"><strong>I build agent systems so repetitive work stops coming back to you.</strong></p>
+            <button class="copy-button" type="button" data-copy-target="primary-statement" data-od-id="strategy-copy-statement" aria-label="Copy the primary brand statement">Copy</button>
+          </div>
+          <p class="source-note">Optional supporting line: For CEOs and founders whose business is running, but still needs them for everything.</p>
+        </article>
+      </div>
+      <div class="open-callout strategy-callout" data-od-id="strategy-campaign-line">
+        <span class="status verified">Verified</span>
+        <div><strong>Building systems so everything doesn't need you.</strong><p>Approved campaign and presentation line. Keep it separate from the permanent logo lockup.</p></div>
+      </div>
+    </section>
+
+    <section class="section-block page-shell" data-od-id="strategy-audience">
+      <div class="section-heading">
+        <span class="section-index">02 / Audience</span>
+        <h2 data-od-id="strategy-audience-title">Tired founders first. Builders second.</h2>
+        <span class="status verified">Verified</span>
+      </div>
+      <div id="strategy-personal-track" data-track-panel="personal" role="region" aria-labelledby="strategy-personal-track-button">
+        <div class="grid-2">
+          <article class="panel dark-panel audience-primary-card" data-od-id="strategy-audience-founder">
+            <p class="mini-label">Primary / Personal track</p>
+            <h3>Overworked CEOs and founders</h3>
+            <p>The business works, but recurring work and decisions still route back through them. They know automation might help; they do not know what to automate first or how deep to go into AI.</p>
+          </article>
+          <article class="panel" data-od-id="strategy-audience-builder">
+            <p class="mini-label">Secondary / Personal track</p>
+            <h3>Operators and advanced builders</h3>
+            <p>Agency owners, developers, and systems nerds who already moved beyond ordinary prompting and want to exchange ideas about context, evaluation, handoffs, and reliability.</p>
+          </article>
+        </div>
+      </div>
+      <div id="strategy-client-track" data-track-panel="client" role="region" aria-labelledby="strategy-client-track-button" hidden>
+        <div class="grid-2">
+          <article class="panel accent-panel" data-od-id="strategy-client-job">
+            <p class="mini-label">Primary / Client track</p>
+            <h3>Find the right first automation</h3>
+            <p>Map recurring founder dependencies, identify whether the bottleneck is AI, scripting, or process design, and choose the smallest reliable intervention.</p>
+          </article>
+          <article class="panel" data-od-id="strategy-client-proof">
+            <p class="mini-label">Proof needed</p>
+            <h3>Show the operating system</h3>
+            <p>Use workflows, checks, failure states, costs, terminal evidence, and handoff logic. Do not use hype, invented outcomes, or vague transformation claims.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block page-shell" data-od-id="strategy-positioning">
+      <div class="section-heading">
+        <span class="section-index">03 / Positioning</span>
+        <h2 data-od-id="strategy-positioning-title">The agent is only one part.</h2>
+        <span class="status verified">Verified</span>
+      </div>
+      <ol class="system-chain" aria-label="Agent system operating chain">
+        <li class="chain-step" data-od-id="strategy-chain-context"><strong>01 Context</strong><span>Where does the information come from, and can it be trusted?</span></li>
+        <li class="chain-step" data-od-id="strategy-chain-work"><strong>02 Work</strong><span>Should this be an agent, a script, or a process change?</span></li>
+        <li class="chain-step" data-od-id="strategy-chain-checks"><strong>03 Checks</strong><span>Who or what verifies that the result is actually useful?</span></li>
+        <li class="chain-step" data-od-id="strategy-chain-handoffs"><strong>04 Handoffs</strong><span>How do people and other agents know what happened?</span></li>
+        <li class="chain-step" data-od-id="strategy-chain-recovery"><strong>05 Recovery</strong><span>What happens when it fails at 3AM?</span></li>
+      </ol>
+    </section>
+
+    <section class="section-block page-shell" data-od-id="strategy-principles">
+      <div class="section-heading">
+        <span class="section-index">04 / Principles</span>
+        <h2 data-od-id="strategy-principles-title">Useful beats impressive.</h2>
+        <span class="status verified">Verified synthesis</span>
+      </div>
+      <div class="grid-3 principle-list">
+        <article class="principle" data-od-id="strategy-principle-systems"><h3>Systems before spectacle.</h3><p>Show context, checks, handoffs, and recovery—not only the successful task.</p></article>
+        <article class="principle" data-od-id="strategy-principle-useful"><h3>Useful before impressive.</h3><p>Choose the smallest reliable intervention that reduces recurring dependence.</p></article>
+        <article class="principle" data-od-id="strategy-principle-failure"><h3>Honest about failure.</h3><p>Document what broke, what remains uncertain, and where a human still matters.</p></article>
+        <article class="principle" data-od-id="strategy-principle-workflow"><h3>Explore the whole workflow.</h3><p>Follow the problem past the first prompt and into the operating system around it.</p></article>
+        <article class="principle" data-od-id="strategy-principle-ai"><h3>AI only when it helps.</h3><p>A script or a process fix may be the better solution. Say so plainly.</p></article>
+        <article class="principle" data-od-id="strategy-principle-sharing"><h3>Share the process.</h3><p>Build in public with real evidence, tradeoffs, bugs, and useful rabbit holes.</p></article>
+      </div>
+    </section>
+
+    <section class="section-block page-shell" data-od-id="strategy-voice">
+      <div class="section-heading">
+        <span class="section-index">05 / Voice</span>
+        <h2 data-od-id="strategy-voice-title">Casual. Nerdy. Specific.</h2>
+        <span class="status verified">Verified</span>
+      </div>
+      <div class="grid-2">
+        <article class="panel voice-sample" data-od-id="strategy-voice-personal">
+          <div class="meta-row"><span class="mini-label">Personal / build log</span><span class="status verified">Voice mode</span></div>
+          <blockquote>“I thought the agent part was the hard bit. Turns out the annoying part is making sure the next agent knows what happened when the first one quietly fails lol.”</blockquote>
+          <p class="source-note">Proposed example built from verified voice rules; not a historical quote.</p>
+        </article>
+        <article class="panel voice-sample" data-od-id="strategy-voice-client">
+          <div class="meta-row"><span class="mini-label">Client / explainer</span><span class="status verified">Voice mode</span></div>
+          <blockquote>“Before adding an agent, map the recurring decision. If the context is stable and the checks are simple, a script may be the more reliable system.”</blockquote>
+          <p class="source-note">Sequence: problem, system choice, tradeoff, next step.</p>
+        </article>
+      </div>
+      <div class="grid-2 strategy-compare">
+        <article class="panel" data-od-id="strategy-before-example">
+          <p class="mini-label">Before / AI slop</p>
+          <p><s>Unlock the power of AI with a cutting-edge digital workforce that will revolutionize your business.</s></p>
+        </article>
+        <article class="panel dark-panel" data-od-id="strategy-after-example">
+          <p class="mini-label">After / Ryan</p>
+          <p>I mapped the work that kept returning to the founder, then separated what needed judgment from what only needed a reliable script.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-block page-shell" data-od-id="strategy-banned-language">
+      <div class="section-heading">
+        <span class="section-index">06 / Avoid</span>
+        <h2 data-od-id="strategy-banned-title">If it sounds like AI slop, delete it.</h2>
+        <span class="status verified">Verbatim list</span>
+      </div>
+      <ul class="banned-list" aria-label="Banned phrases">
+        <li>unlock the power of AI</li><li>revolutionize</li><li>10x productivity</li><li>digital workforce</li><li>seamless</li><li>cutting-edge</li><li>transform your business</li><li>AI-powered solution</li>
+      </ul>
+    </section>
+
+    <section class="section-block page-shell" data-od-id="strategy-decision-filter">
+      <div class="section-heading">
+        <span class="section-index">07 / Filter</span>
+        <h2 data-od-id="strategy-filter-title">A six-question reality check.</h2>
+        <span class="status verified">Use before shipping</span>
+      </div>
+      <div class="grid-2">
+        <ol class="panel list-clean reality-list">
+          <li>Is it recognizably Ryan without the logo?</li>
+          <li>Is it easy to scan, reuse, and hand off?</li>
+          <li>Is the expressive gesture concentrated?</li>
+        </ol>
+        <ol class="panel list-clean reality-list" start="4">
+          <li>Can an AI follow the rule without guessing?</li>
+          <li>Does it explain tradeoffs and failure paths?</li>
+          <li>Would a script or process fix be more honest?</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" data-od-id="strategy-footer">
+    <span>01 / Brand Strategy</span>
+    <a href="brand-presentation.html" data-od-id="strategy-next-link">Next: Brand Presentation →</a>
+  </footer>
+  <div class="toast" data-toast role="status" aria-live="polite" aria-atomic="true" hidden></div>
+  <script src="brand-workbook.js"></script>
+</body>
+</html>

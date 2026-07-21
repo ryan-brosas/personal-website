@@ -1,0 +1,15 @@
+{
+  "title": "Ryan Brosas Brand System",
+  "category": "Brands",
+  "surface": "web",
+  "status": "published",
+  "artifactMode": "agent-managed",
+  "createdAt": "2026-07-15T23:47:55.154Z",
+  "updatedAt": "2026-07-19T01:44:48.6975565Z",
+  "provenance": {
+    "companyBlurb": "Ryan Brosas builds practical agent systems that stop repetitive work from routing back through overworked founders.",
+    "notes": "Version 1.9.2 synchronized in place under the existing user:brand-design-system identity without creating a duplicate.",
+    "sourceNotes": "Re-measured the preserved workbook and the 18-slide client pitch deck; added fixed presentation surface, typography-body, canvas, and safe-area roles; tightened client-pitch voice and component boundaries; refreshed typography, light/dark, applied-surface, and Showcase proofs; restored the exact seven-file runtime inventory; preserved the canonical landing page and both Assets mirrors."
+  },
+  "projectId": "4c103428-67e3-485d-9213-4bcf97c890eb"
+}

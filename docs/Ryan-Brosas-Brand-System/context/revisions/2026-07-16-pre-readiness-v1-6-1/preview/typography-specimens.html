@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Typography Specimens — Ryan Brosas Brand System</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body)}main{width:min(calc(100% - 40px),1200px);margin:auto;padding:var(--space-12) 0 var(--space-16)}header{display:grid;grid-template-columns:1fr .7fr;gap:var(--space-8);align-items:end;padding-bottom:var(--space-8);border-bottom:var(--rule)}.label{font:700 var(--text-xs)/1.2 var(--font-mono);letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}h1{font:750 clamp(2.75rem,7vw,5.5rem)/.93 var(--font-display);max-width:11ch;margin:var(--space-3) 0 0}.intro{color:var(--muted);line-height:1.65;max-width:52ch}.specimens{margin-top:var(--space-10);border-top:var(--rule)}.specimen{display:grid;grid-template-columns:180px 1fr;gap:var(--space-8);padding:var(--space-8) 0;border-bottom:var(--rule)}.meta{font:700 var(--text-xs)/1.55 var(--font-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.display-xl{font:750 clamp(3.5rem,8vw,7.5rem)/.88 var(--font-display);letter-spacing:-.055em;max-width:10ch}.heading{font:720 clamp(2.25rem,5vw,4.5rem)/.95 var(--font-display);letter-spacing:-.04em;max-width:12ch}.body{font:400 var(--text-lg)/1.62 var(--font-body);max-width:62ch}.mono{font:700 var(--text-sm)/1.7 var(--font-mono);text-transform:uppercase;letter-spacing:.11em}.behavior{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-top:var(--space-10)}.rule{padding:var(--space-5);border:var(--rule);border-radius:var(--radius-panel)}.rule h2{font:700 var(--text-lg)/1.2 var(--font-display);margin:0 0 var(--space-3)}.rule p{margin:0;color:var(--muted);line-height:1.55}.avoid{background:var(--fg);color:var(--on-dark)}.avoid p{color:color-mix(in oklch,var(--on-dark) 68%,transparent)}@media(max-width:760px){header,.specimen{grid-template-columns:1fr}.behavior{grid-template-columns:1fr}.display-xl{font-size:clamp(3.25rem,18vw,5.5rem)}}
+  </style>
+</head>
+<body>
+  <main data-od-id="typography-preview">
+    <header><div><span class="label">02 / Typography</span><h1>Energy without condensed type.</h1></div><p class="intro">Verified system-safe stacks. Normal-width letterforms carry the work; scale, crop, alignment, and repetition provide the editorial edge.</p></header>
+    <section class="specimens" aria-label="Typography scale">
+      <article class="specimen" data-od-id="type-display-xl"><div class="meta">Display XL<br />Segoe UI Variable Display<br />750 / 0.88</div><div class="display-xl">Systems before spectacle.</div></article>
+      <article class="specimen" data-od-id="type-heading"><div class="meta">Heading<br />Display stack<br />720 / 0.95</div><div class="heading">Build the system behind the task.</div></article>
+      <article class="specimen" data-od-id="type-body"><div class="meta">Body<br />Text stack<br />400 / 1.62</div><div class="body">The useful part is usually behind the demo. Where does the context come from? What checks the result? How does the next system learn what happened? That is the part that decides whether the work keeps coming back.</div></article>
+      <article class="specimen" data-od-id="type-mono"><div class="meta">Label / metadata<br />Cascadia Mono<br />700 / 0.11em</div><div class="mono">03 / Checks · Verified source · Recovery path</div></article>
+    </section>
+    <section class="behavior" aria-label="Typography rules">
+      <article class="rule"><h2>Readable measure</h2><p>Keep body copy at 45–65 characters when possible and 70 at most.</p></article>
+      <article class="rule"><h2>Moderate weight</h2><p>Use scale and spacing before defaulting to maximum boldness.</p></article>
+      <article class="rule avoid"><h2>No narrow faces</h2><p>Do not use condensed or compressed typography to manufacture intensity.</p></article>
+    </section>
+  </main>
+</body>
+</html>
+

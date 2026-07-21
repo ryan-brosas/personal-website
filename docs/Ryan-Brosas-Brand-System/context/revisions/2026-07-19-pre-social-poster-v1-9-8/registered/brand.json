@@ -1,0 +1,864 @@
+{
+  "name": "Ryan Brosas Brand System",
+  "tagline": "Agent Systems Builder",
+  "description": "A practical, failure-aware brand system for explaining and presenting agent systems that remove recurring work from overworked founders.",
+  "sourceUrl": "https://www.figma.com/design/YTkPOs36rYgY74slmCFn2N/ALL-TEMPLATES---Ryan?node-id=8439-28792",
+  "logo": {
+    "primary": "logos/Logo---Ryan-1.svg",
+    "alternates": [
+      "logos/Logo---Ryan-2.svg",
+      "logos/Logo---Ryan-3.svg",
+      "logos/Logo---Ryan-4.svg"
+    ],
+    "notes": "Use the charcoal mark on light surfaces, coral as a controlled accent, signal yellow on charcoal, and white on charcoal or coral. Preserve the 255 × 211 geometry and optically center the visible glyph."
+  },
+  "colors": [
+    {
+      "role": "background",
+      "hex": "#FEFEFE",
+      "oklch": "oklch(0.9970 0 89.88)",
+      "name": "Near-white paper",
+      "usage": "Primary reading canvas and light surface."
+    },
+    {
+      "role": "surface",
+      "hex": "#FEFEFE",
+      "oklch": "oklch(0.9970 0 89.88)",
+      "name": "Paper surface",
+      "usage": "Base panel surface; raised steps are derived with color-mix()."
+    },
+    {
+      "role": "foreground",
+      "hex": "#1A1A1A",
+      "oklch": "oklch(0.2178 0 89.88)",
+      "name": "Charcoal",
+      "usage": "Primary text, structural rules, and preferred dark canvas."
+    },
+    {
+      "role": "muted",
+      "hex": "#1A1A1A",
+      "oklch": "oklch(0.2178 0 89.88 / 0.68)",
+      "name": "Muted charcoal",
+      "usage": "Apply charcoal at 68% opacity for supporting text."
+    },
+    {
+      "role": "border",
+      "hex": "#1A1A1A",
+      "oklch": "oklch(0.2178 0 89.88 / 0.16)",
+      "name": "Structural rule",
+      "usage": "Apply charcoal at 16% opacity for fine borders."
+    },
+    {
+      "role": "accent",
+      "hex": "#FF5555",
+      "oklch": "oklch(0.6822 0.2063 24.43)",
+      "name": "Coral",
+      "usage": "Primary actions, selected states, expressive rules, and accent mark."
+    },
+    {
+      "role": "accent-secondary",
+      "hex": "#ECC90F",
+      "oklch": "oklch(0.8409 0.1711 96.14)",
+      "name": "Signal yellow",
+      "usage": "Scarce focus cue, Open state, and protected logo tile."
+    }
+  ],
+  "typography": {
+    "display": {
+      "family": "Segoe UI Variable Display",
+      "fallbacks": [
+        "Segoe UI",
+        "Inter",
+        "Helvetica",
+        "Arial",
+        "sans-serif"
+      ],
+      "weights": [
+        600,
+        700,
+        750
+      ],
+      "notes": "Normal-width display face; create energy through scale and alignment, not condensed geometry."
+    },
+    "body": {
+      "family": "Segoe UI Variable Text",
+      "fallbacks": [
+        "Segoe UI",
+        "Inter",
+        "Helvetica",
+        "Arial",
+        "sans-serif"
+      ],
+      "weights": [
+        400,
+        600,
+        700
+      ],
+      "notes": "Comfortable long-viewing body text with 1.55–1.65 line height."
+    },
+    "mono": {
+      "family": "Cascadia Mono",
+      "fallbacks": [
+        "SFMono-Regular",
+        "Consolas",
+        "monospace"
+      ],
+      "weights": [
+        400,
+        700
+      ],
+      "notes": "Use only for indices, labels, status, specifications, and technical evidence."
+    },
+    "weights": {
+      "regular": 400,
+      "medium": 600,
+      "strong": 700,
+      "display": 750
+    },
+    "lineHeights": {
+      "displayXL": 0.94,
+      "displayLarge": 0.96,
+      "heading": 1,
+      "body": 1.6,
+      "label": 1.2
+    },
+    "compositionRoles": {
+      "pageHero": {"size": "clamp(2.9rem, 5.3vw, 5.25rem)", "weight": 700, "lineHeight": 0.96, "tracking": "-0.035em", "measure": "11-13ch"},
+      "workbenchSection": {"size": "clamp(2rem, 3.4vw, 3.6rem)", "weight": 700, "lineHeight": 1, "tracking": "-0.03em", "measure": "14-16ch"},
+      "campaignStatement": {"size": "clamp(2.75rem, 5.2vw, 5.2rem)", "weight": 700, "lineHeight": 0.96, "tracking": "-0.035em", "measure": "11-13ch"},
+      "presentationStatement": {"size": "clamp(3.25rem, 6.2vw, 5.75rem)", "weight": 750, "lineHeight": 0.94, "tracking": "-0.035em", "measure": "8-12ch", "constraint": "Use only for 2-8 word presentation statements."},
+      "presentationBody": {"size": "1.5rem", "weight": 400, "lineHeight": 1.45, "minimumFixedCanvasSize": "24px"},
+      "presentationMeta": {"size": "0.75rem", "weight": 700, "lineHeight": 1.2, "tracking": "0.12em"}
+    },
+    "bodyMeasure": {
+      "preferred": "45–65ch",
+      "maximum": "70ch"
+    },
+    "rules": [
+      "Use normal-width letterforms.",
+      "Create editorial energy through scale, alignment, repetition, and crop.",
+      "Reserve mono for indices, status, specifications, tokens, and technical evidence.",
+      "Use named composition roles before writing a component-specific clamp.",
+      "Do not combine maximum size, maximum weight, tight tracking, and a narrow measure on ordinary workbench headings."
+    ]
+  },
+  "presentationContract": {
+    "appliedProof": "founder-dependence-client-pitch-deck.html",
+    "appliedCapture": "assets/source-previews/founder-dependence-client-pitch-deck-applied.png",
+    "canvas": {"width": 1920, "height": 1080},
+    "measuredSlides": 18,
+    "measuredBytes": 54138,
+    "inspectableHooks": 95,
+    "approvedIllustrationReferences": 7,
+    "writtenOpenLabels": 6,
+    "safeArea": {"inline": 80, "top": 64, "footerBand": 200},
+    "headline": {"maximumWords": 8, "maximumLines": 3, "maximumFixedCanvasPx": 140, "fixedCanvasFloors": {"heroPx": 118, "sectionPx": 72, "campaignPx": 104, "statementPx": 112}},
+    "sequence": ["operating consequence", "recurring workflow", "system choice", "checks and recovery", "evidence boundary", "specific next action"],
+    "contentBoundary": "Missing screenshots, results, case studies, owned runs, and booking destinations remain Open. Approved illustrations explain the narrative and never prove an operating result.",
+    "componentBoundary": "Reuse semantic roles, status language, logos, approved assets, and the five-part system sequence; do not turn runtime component-card markup into slide decoration."
+  },
+  "voice": {
+    "adjectives": [
+      "casual",
+      "nerdy",
+      "exploratory",
+      "specific",
+      "honest",
+      "non-corporate"
+    ],
+    "tone": "A practical builder thinking through real systems in public, reporting failures plainly and avoiding hype.",
+    "messagingPillars": [
+      "Systems before spectacle.",
+      "Use the smallest reliable intervention.",
+      "Show context, checks, handoffs, and recovery.",
+      "Share what worked, what broke, and what remains Open."
+    ],
+    "vocabulary": {
+      "use": [
+        "agent systems",
+        "context",
+        "checks",
+        "handoffs",
+        "recovery",
+        "Verified",
+        "Proposed",
+        "Open"
+      ],
+      "avoid": [
+        "unlock the power of AI",
+        "revolutionize",
+        "10x productivity",
+        "digital workforce",
+        "seamless",
+        "cutting-edge",
+        "transform your business",
+        "AI-powered solution"
+      ]
+    },
+    "personalSequence": [
+      "exploration",
+      "expectation",
+      "what happened",
+      "what broke",
+      "next rabbit hole"
+    ],
+    "clientSequence": [
+      "problem",
+      "system choice",
+      "tradeoff",
+      "evidence",
+      "next step"
+    ],
+    "marketingSequence": [
+      "operating consequence",
+      "workflow tension",
+      "system mechanism",
+      "evidence boundary",
+      "specific next action"
+    ],
+    "deliveryRules": [
+      "Lead with the operating consequence, then explain the mechanism.",
+      "Name the evidence source when a claim is Verified.",
+      "State the tradeoff when a recommendation is Proposed.",
+      "Use 'Still needed:' when proof remains Open.",
+      "Prefer one concrete sentence over a stack of abstract benefits.",
+      "Write error and recovery copy as what happened, what remains safe, and what the person can do next.",
+      "Use specific action verbs such as inspect, validate, retry, copy, compare, and document."
+    ],
+    "surfacePatterns": {
+      "buildLog": [
+        "expectation",
+        "observed result",
+        "failure consequence",
+        "next rabbit hole"
+      ],
+      "clientExplainer": [
+        "operating problem",
+        "smallest reliable intervention",
+        "tradeoff",
+        "evidence",
+        "next step"
+      ],
+      "marketing": [
+        "operating consequence",
+        "workflow tension",
+        "system mechanism",
+        "evidence boundary",
+        "specific next action"
+      ],
+      "interface": [
+        "action",
+        "object",
+        "state when needed"
+      ],
+      "errorRecovery": [
+        "what happened",
+        "what remains safe",
+        "next available action"
+      ]
+    },
+    "proofBoundaryPatterns": {
+      "Verified": "The source files show [specific evidence], so [safe use].",
+      "Proposed": "I'd use [choice] because [operating benefit]; the tradeoff is [cost or constraint].",
+      "Open": "Still needed: [owned proof] before [decision or publication].",
+      "Error": "[What happened]. [What remains safe]. [Next available action]."
+    },
+    "claimScope": {
+      "Verified": "Name the inspected source and limit the sentence to what it shows; file presence alone is not verification.",
+      "Proposed": "Use recommendation language and name the tradeoff.",
+      "Open": "Start with Still needed, name the owned proof, and name the decision or publication it blocks.",
+      "verbBoundary": "Avoid proves, guarantees, or solves unless the inspected source directly supports that exact claim."
+    },
+    "surfaceRules": [
+      "A headline names the operating consequence before the mechanism.",
+      "A control label uses a concrete verb and object.",
+      "A status sentence names its source, tradeoff, or missing proof.",
+      "Do not stack abstract benefit nouns when one observable action will do.",
+      "Landing-page sections use one claim, one mechanism, and one evidence boundary rather than a pile of benefits.",
+      "When testimonials, outcomes, or client metrics are unavailable, replace social-proof theatre with a written proof request or an owned build artifact.",
+      "Component guidance uses imperative verbs and names the implementation file when reuse is expected."
+    ],
+    "microcopyContracts": {
+      "action": "Use a concrete verb plus object, usually two to four words; name the destination when navigation is the result.",
+      "disclosure": "Name the content that opens or closes; do not use a bare icon when a visible label fits.",
+      "loading": "Describe the work in progress and preserve the control width, for example Checking source.",
+      "errorRecovery": "State what happened, what remains safe, and the next available action.",
+      "evidence": "Name the owned source when Verified, the tradeoff when Proposed, and the exact proof still needed when Open."
+    },
+    "acceptanceTest": {
+      "passesWhen": "The copy names the work, the system choice, the evidence boundary, and the next step without hype.",
+      "failsWhen": "The copy could belong to any AI consultancy after replacing the name.",
+      "checks": [
+        "A Verified claim names its source.",
+        "A Proposed claim names its tradeoff.",
+        "An Open claim starts with 'Still needed:' and names the proof.",
+        "An error message names a recovery action."
+      ]
+    }
+  },
+  "imagery": {
+    "style": "Owned operational evidence first, supported by one approved clean-print hero and approved operational illustrations for narrative moments.",
+    "subjects": [
+      "product screenshots",
+      "terminal captures",
+      "workflow diagrams",
+      "context maps",
+      "checks",
+      "failure states",
+      "recovery paths",
+      "system conductor hero illustration",
+      "context assembly illustration",
+      "recovery loop illustration",
+      "guardrail check illustration",
+      "evidence review illustration",
+      "memory update illustration",
+      "budget boundary illustration",
+      "scheduled run illustration",
+      "failure triage illustration",
+      "checked handoff illustration",
+      "work execution illustration",
+      "system choice illustration"
+    ],
+    "treatment": "Contain screenshots inside clear evidence plates. Use the approved System Conductor as the primary campaign and cover hero. Place every approved transparent illustration with its full silhouette and clear margin intact; use illustration as narrative support, never operating proof.",
+    "hero": {
+      "file": "assets/illustrations/agent-operator-hero-system-conductor-clean-print.png",
+      "kind": "approved-primary-hero-illustration",
+      "source": "tmp/hero-system-conductor-source-extracted.png",
+      "validation": [
+        "context/validation/hero-system-conductor-source-extraction-on-paper.png",
+        "context/validation/hero-system-conductor-clean-on-paper.png"
+      ],
+      "placement": "Primary hero for website openings, presentation covers, campaign openers, and major section introductions. Use on a light semantic surface or a protected light plate over charcoal."
+    },
+    "avoid": [
+      "generic AI robots",
+      "glowing brains",
+      "floating chat bubbles",
+      "neon AI stock imagery",
+      "fabricated product results",
+      "third-party reference-board material"
+    ],
+    "samples": [
+      {
+        "file": "assets/source-previews/brand-strategy-polished-preview.png",
+        "kind": "source-preview",
+        "caption": "Calm operational grid and system chain."
+      },
+      {
+        "file": "assets/source-previews/brand-presentation-centering-check.png",
+        "kind": "source-preview",
+        "caption": "Concentrated editorial presentation posture."
+      },
+      {
+        "file": "assets/source-previews/brand-guidelines-centering-check.png",
+        "kind": "source-preview",
+        "caption": "Inspectable brand rules and logo contexts."
+      },
+      {
+        "file": "assets/illustrations/agent-operator-memory-update-clean-print.png",
+        "kind": "approved-editorial-illustration",
+        "caption": "Memory update narrative asset; transparent, fully in frame, approved for light placement."
+      },
+      {
+        "file": "assets/illustrations/agent-operator-budget-boundary-clean-print.png",
+        "kind": "approved-editorial-illustration",
+        "caption": "Budget boundary narrative asset; transparent, fully in frame, approved for light placement."
+      },
+      {
+        "file": "assets/illustrations/agent-operator-scheduled-run-clean-print.png",
+        "kind": "approved-editorial-illustration",
+        "caption": "Scheduled run narrative asset; transparent, fully in frame, approved for light placement."
+      },
+      {
+        "file": "assets/illustrations/agent-operator-failure-triage-clean-print.png",
+        "kind": "approved-editorial-illustration",
+        "caption": "Failure triage narrative asset; transparent, fully in frame, approved for light placement."
+      },
+      {
+        "file": "assets/illustrations/agent-operator-checked-handoff-clean-print.png",
+        "kind": "approved-editorial-illustration",
+        "caption": "Checked handoff narrative asset; transparent, fully in frame, approved for light placement."
+      },
+      {
+        "file": "assets/illustrations/agent-operator-work-execution-clean-print.png",
+        "kind": "approved-editorial-illustration",
+        "caption": "Work execution narrative asset; transparent, fully in frame, approved for light placement."
+      },
+      {
+        "file": "assets/illustrations/agent-operator-system-choice-clean-print.png",
+        "kind": "approved-editorial-illustration",
+        "caption": "System choice narrative asset; transparent, fully in frame, approved for light placement."
+      }
+    ]
+  },
+  "layout": {
+    "radius": "0px editorial plates, 4px controls, 8px maximum panels",
+    "borderWeight": "1px structural rules",
+    "spacing": "8px baseline with a 4px optical half-step",
+    "postureRules": [
+      "Keep workbench surfaces calm, flat, modular, and readable.",
+      "Reserve collage, large crops, and abrupt scale shifts for presentation moments.",
+      "Use one decisive visual flourish per screen.",
+      "Repeat coral and ration signal yellow.",
+      "Center the visible logo glyph optically inside every tile."
+    ],
+    "baseline": 8,
+    "opticalHalfStep": 4,
+    "contentMax": 1480,
+    "breakpoints": [
+      600,
+      820,
+      1024
+    ],
+    "radii": {
+      "editorial": 0,
+      "control": 4,
+      "panel": 8,
+      "statusPill": 999
+    },
+    "minimumTarget": 44
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.9.7",
+  "designSystemId": "user:brand-design-system",
+  "projectId": "4c103428-67e3-485d-9213-4bcf97c890eb",
+  "sourceProject": {
+    "id": "826ae961-1707-4719-8146-6b6aa312b6f8",
+    "name": "Brand Design System",
+    "context": "context/source-context.md",
+    "provenance": "context/provenance.md"
+  },
+  "measuredSource": {
+    "measuredAt": "2026-07-19",
+    "sourceFilesMeasured": [
+      "brand-strategy.html",
+      "brand-presentation.html",
+      "brand-guidelines.html",
+      "source_examples/brand-workbook/brand-workbook.css",
+      "source_examples/brand-workbook/brand-workbook-pages.css"
+    ],
+    "sourceHtmlBytes": 51590,
+    "sourceCssBytes": 25238,
+    "preservedSourceArchiveBytes": 89283,
+    "workbenchMaxWidth": 1480,
+    "baseline": 8,
+    "opticalHalfStep": 4,
+    "radii": [
+      0,
+      4,
+      8,
+      999
+    ],
+    "breakpoints": [
+      600,
+      820,
+      1024
+    ],
+    "logoViewBox": "0 0 255 211",
+    "sourcePreviewWidths": 1800,
+    "approvedIllustrationCanvas": "1254 x 1254 ARGB",
+    "sourceClassInventory": {
+      "panels": 38,
+      "statuses": 35,
+      "miniLabels": 38,
+      "copyButtons": 11,
+      "tokenRows": 9,
+      "projectCards": 6,
+      "systemSteps": 5,
+      "logoPlates": 4
+    },
+    "linkedFigmaStatus": "The Figma node 8439:28792 remains the structural reference. Direct retrieval was unavailable in this pass, so no value was inferred from it. The re-measured local HTML, CSS, SVGs, palette assets, component previews, owned renders, and applied pitch deck remain authoritative.",
+    "externalReferenceStatus": "Live retrieval of the previously observed copywriting reference was unavailable in this pass. The earlier structural observation remains provenance only; no external font, color, spacing, claim, metric, or new value was copied or re-inferred."
+  },
+  "identity": {
+    "name": "Ryan Brosas",
+    "descriptor": "Agent Systems Builder",
+    "primaryStatement": "I build agent systems so repetitive work stops coming back to you.",
+    "campaignLine": "Building systems so everything doesn’t need you.",
+    "campaignLineIsLogoGeometry": false
+  },
+  "audience": {
+    "primary": "Overworked founders whose recurring work and decisions still route back through them.",
+    "secondary": "Operators, agency owners, developers, and advanced builders working on context, evaluation, handoffs, and reliability."
+  },
+  "tokenRoles": {
+    "source": [
+      "--color-paper",
+      "--color-charcoal",
+      "--color-coral",
+      "--color-signal"
+    ],
+    "mode": [
+      "--canvas",
+      "--surface-1",
+      "--surface-2",
+      "--surface-3",
+      "--surface-inverse",
+      "--workbench-canvas",
+      "--presentation-canvas",
+      "--surface-interactive",
+      "--surface-interactive-hover",
+      "--surface-interactive-active",
+      "--text-1",
+      "--text-2",
+      "--text-3",
+      "--text-inverse",
+      "--accent-text",
+      "--accent-decoration",
+      "--stroke-subtle",
+      "--stroke-default",
+      "--stroke-strong"
+    ],
+    "feature": [
+      "--feature-bg",
+      "--feature-fg",
+      "--feature-muted"
+    ],
+    "presentation": [
+      "--presentation-plate-bg",
+      "--presentation-plate-fg",
+      "--presentation-plate-muted",
+      "--presentation-plate-rule",
+      "--presentation-light-bg",
+      "--presentation-light-fg",
+      "--presentation-light-muted",
+      "--presentation-light-rule",
+      "--presentation-open-bg",
+      "--presentation-open-fg",
+      "--presentation-canvas-width",
+      "--presentation-canvas-height",
+      "--presentation-safe-inline",
+      "--presentation-safe-top",
+      "--presentation-footer-safe-zone"
+    ],
+    "action": [
+      "--action-primary-bg",
+      "--action-primary-fg",
+      "--action-primary-border",
+      "--action-primary-hover",
+      "--action-primary-pressed",
+      "--action-secondary-bg",
+      "--action-secondary-fg",
+      "--action-secondary-border",
+      "--action-secondary-hover",
+      "--action-secondary-pressed",
+      "--action-quiet-bg",
+      "--action-quiet-fg",
+      "--action-quiet-hover",
+      "--action-quiet-pressed",
+      "--action-disabled-bg",
+      "--action-disabled-fg",
+      "--action-disabled-border",
+      "--action-loading-bg",
+      "--action-loading-fg",
+      "--action-loading-border",
+      "--control-disabled-opacity"
+    ],
+    "control": [
+      "--control-bg",
+      "--control-fg",
+      "--control-border",
+      "--control-hover-bg",
+      "--control-pressed-bg",
+      "--control-selected-bg",
+      "--control-selected-fg",
+      "--control-selected-border"
+    ],
+    "icon": [
+      "--icon-default",
+      "--icon-muted",
+      "--icon-inverse",
+      "--icon-disabled"
+    ],
+    "state": [
+      "--state-selected-bg",
+      "--state-selected-fg",
+      "--state-selected-border"
+    ],
+    "navigation": [
+      "--nav-bg",
+      "--nav-fg",
+      "--nav-border",
+      "--nav-hover-bg",
+      "--nav-hover-fg",
+      "--nav-current-fg",
+      "--nav-current-rule"
+    ],
+    "panel": [
+      "--panel-bg",
+      "--panel-fg",
+      "--panel-muted",
+      "--panel-border",
+      "--panel-raised-bg",
+      "--panel-selected-bg",
+      "--panel-selected-border"
+    ],
+    "field": [
+      "--field-bg",
+      "--field-fg",
+      "--field-placeholder",
+      "--field-hint-fg",
+      "--field-border",
+      "--field-focus-border",
+      "--field-invalid-border",
+      "--field-invalid-bg",
+      "--field-error-fg",
+      "--field-validating-bg",
+      "--field-validating-fg",
+      "--field-validating-border",
+      "--field-valid-bg",
+      "--field-valid-fg",
+      "--field-valid-border",
+      "--field-disabled-bg",
+      "--field-disabled-fg",
+      "--field-disabled-border",
+      "--field-readonly-bg",
+      "--field-readonly-fg",
+      "--field-readonly-border"
+    ],
+    "status": [
+      "--status-verified-bg",
+      "--status-verified-fg",
+      "--status-verified-border",
+      "--status-verified-muted",
+      "--status-proposed-bg",
+      "--status-proposed-fg",
+      "--status-proposed-border",
+      "--status-proposed-muted",
+      "--status-open-bg",
+      "--status-open-fg",
+      "--status-open-border",
+      "--status-open-muted"
+    ],
+    "feedback": [
+      "--feedback-bg",
+      "--feedback-fg",
+      "--feedback-border",
+      "--feedback-neutral-bg",
+      "--feedback-neutral-fg",
+      "--feedback-neutral-border",
+      "--feedback-error-bg",
+      "--feedback-error-fg",
+      "--feedback-error-border",
+      "--feedback-notice-bg",
+      "--feedback-notice-fg",
+      "--feedback-notice-border",
+      "--focus-color",
+      "--focus-ring",
+      "--overlay-scrim",
+      "--selection-bg",
+      "--selection-fg",
+      "--logo-tile-bg",
+      "--logo-tile-fg"
+    ],
+    "contentAndMedia": [
+      "--link-fg",
+      "--link-decoration",
+      "--link-hover-fg",
+      "--evidence-media-bg",
+      "--evidence-media-border",
+      "--evidence-caption-bg",
+      "--evidence-caption-fg",
+      "--evidence-open-bg",
+      "--evidence-open-fg",
+      "--evidence-open-muted",
+      "--evidence-loading-bg",
+      "--evidence-loading-fg",
+      "--evidence-empty-bg",
+      "--evidence-empty-fg",
+      "--evidence-error-bg",
+      "--evidence-error-fg",
+      "--evidence-error-border",
+      "--evidence-recovery-bg",
+      "--evidence-recovery-fg",
+      "--evidence-recovery-border",
+      "--evidence-verified-bg",
+      "--evidence-verified-fg",
+      "--evidence-verified-border",
+      "--evidence-verified-muted"
+    ],
+    "typography": [
+      "--type-hero-size",
+      "--type-hero-leading",
+      "--type-hero-weight",
+      "--type-hero-tracking",
+      "--type-section-size",
+      "--type-section-leading",
+      "--type-section-weight",
+      "--type-section-tracking",
+      "--type-campaign-size",
+      "--type-campaign-leading",
+      "--type-campaign-weight",
+      "--type-campaign-tracking",
+      "--type-presentation-size",
+      "--type-presentation-leading",
+      "--type-presentation-weight",
+      "--type-presentation-tracking",
+      "--type-presentation-body-size",
+      "--type-presentation-body-leading",
+      "--type-presentation-meta-size"
+    ]
+  },
+  "components": {
+    "manifest": "component-manifest.json",
+    "stateOwnership": {
+      "evidenceConfidence": ["Verified", "Proposed", "Open"],
+      "operationalLifecycle": ["default", "loading or validating", "content or empty", "error", "recovery"],
+      "interaction": ["hover", "pressed", "selected", "focus-visible", "disabled"],
+      "rule": "Never use evidence-confidence styling as a substitute for operational or interaction state."
+    },
+    "runtime": {
+      "sourceDirectory": "ui_kits/app/components/",
+      "distributionDirectory": "assets/components/",
+      "primitives": "assets/components/Primitives.js",
+      "lifecycle": "assets/components/LifecycleComponents.js",
+      "loadOrder": ["Primitives.js", "LifecycleComponents.js", "Navigation.js", "StatusPanel.js", "SystemMap.js", "ProjectCard.js", "AppShell.js"],
+      "allowedFileNames": ["Primitives.js", "LifecycleComponents.js", "Navigation.js", "StatusPanel.js", "SystemMap.js", "ProjectCard.js", "AppShell.js"],
+      "forbiddenFilePatterns": ["*.jsx", "*prototype*", "*alternate*"],
+      "contentSafety": "All data-driven text and attribute values pass through BrandEscape before HTML composition.",
+      "textEncoding": "Every active source and distribution file remains valid UTF-8. Reject replacement characters and common double-encoded punctuation signatures before registration.",
+      "applicationProof": "ui_kits/app/index.html",
+      "rule": "Preview HTML documents component states; reusable implementation comes from the runtime component files and is rendered by the applied kit. Declared lifecycle states must be visibly exercised by the applied kit, data-driven values must be escaped, and the source and distribution directories contain exactly the seven allowed files. Unrelated prototypes stay in revision evidence."
+    },
+    "navigation": "Three primary workbook pages plus secondary Personal and Client track controls.",
+    "button": "Primary, secondary, quiet, selected, loading, disabled, and focus-visible states with dedicated border and loading roles.",
+    "panel": "Low-radius evidence module using semantic surface, text, stroke, and status roles.",
+    "form": "Visible label, 44px input, focus, read-only, disabled, validating, valid, and invalid contracts with plain-language messages.",
+    "status": "Verified, Proposed, and Open are written labels and must not rely on color alone.",
+    "themeControl": "A labelled light/dark preference that writes data-theme on the owned root and persists locally.",
+    "systemMap": [
+      "Context",
+      "Work",
+      "Checks",
+      "Handoffs",
+      "Recovery"
+    ],
+    "projectEvidence": "A request for owned proof; never a polished fake screenshot.",
+    "feedback": "Neutral, error, and notice surfaces name the event and the next action; color never carries the message alone.",
+    "evidenceMedia": "Owned captures use a fixed media plate, source label, caption, and complete Open, loading, empty, error, recovery, and Verified role families without reaching down to generic surfaces or status aliases.",
+    "lifecycle": "Reusable components preserve geometry through default, loading or validating, content or empty, error, and recovery states."
+  },
+  "assets": {
+    "charcoalMark": "logos/Logo---Ryan-1.svg",
+    "coralMark": "logos/Logo---Ryan-2.svg",
+    "signalMark": "logos/Logo---Ryan-3.svg",
+    "whiteMark": "logos/Logo---Ryan-4.svg",
+    "preservedSourceMarks": [
+      "assets/Logo---Ryan-1.svg",
+      "assets/Logo---Ryan-2.svg",
+      "assets/Logo---Ryan-3.svg",
+      "assets/Logo---Ryan-4.svg"
+    ],
+    "paletteStrip": "assets/Group-1.png",
+    "utilityIcons": "assets/icons.svg",
+    "utilityIconContract": "24px grid, 1.75px currentColor outline with round caps and joins. Bind currentColor through --icon-default, --icon-muted, --icon-inverse, or --icon-disabled. The same geometry must render charcoal on near-white and near-white on charcoal; static Showcase proofs inline canonical geometry so icons remain visible in captures. Use only for navigation, disclosure, direction, copy, recovery, and written-state reinforcement; visible labels remain the default.",
+    "livingAppliedPage": "ryan-brosas-landing-page.html",
+    "livingAppliedAssetPreview": "showcase-landing-page.html",
+    "livingAppliedCapture": "assets/source-previews/ryan-brosas-landing-page-applied.png",
+    "livingAppliedRule": "Continuously improve the canonical landing page, regenerate showcase-landing-page.html for Library indexing, and regenerate system/artifacts/landing.html with asset URLs rebased two levels to the package root for the Assets renderer. Refresh its capture after accepted revisions. Keep identity, hero, editorial, and interface asset roles distinct.",
+    "referenceBoard": "assets/reference/Untitled.png",
+    "referenceBoardUsage": "Contained inspiration only; do not copy third-party material."
+  },
+  "implementation": {
+    "manifest": "manifest.json",
+    "tokens": "tokens.css",
+    "tokenAuthoringSource": "colors_and_type.css",
+    "showcase": "system/kit.html",
+    "darkShowcase": "system/kit.dark.html",
+    "systemVariables": "system/variables.css",
+    "systemVariablesContract": "tokens.css and system/variables.css are self-contained generated mirrors of colors_and_type.css; all three files must remain byte-identical and must not rely on @import.",
+    "consumerTokenContract": "Generated artifacts load tokens.css once. The maintainer-facing applied kit loads colors_and_type.css for package auditing. Package maintainers edit colors_and_type.css, then regenerate tokens.css and system/variables.css; downstream consumers do not load multiple mirrors.",
+    "contentSafetyContract": "Registered runtime components escape data-driven text and attributes through BrandEscape; static trusted SVG geometry may remain literal.",
+    "textEncodingContract": "Canonical and registered active text files must remain valid UTF-8 and free of replacement characters or common double-encoded punctuation. The renderer mirror may change asset paths only; it must preserve content text bytes.",
+    "stateParityProof": "preview/light-dark-kits.html",
+    "systemTheme": "system/theme.json",
+    "canonicalRules": "DESIGN.md",
+    "previewDirectory": "preview/index.html",
+    "appliedKit": "ui_kits/app/index.html",
+    "appliedLandingPage": "ryan-brosas-landing-page.html",
+    "indexedDesignSystemAsset": "showcase-landing-page.html",
+    "renderedDesignSystemAsset": "system/artifacts/landing.html",
+    "renderedDesignSystemAssetBase": "../../",
+    "appliedLandingCapture": "assets/source-previews/ryan-brosas-landing-page-applied.png",
+    "indexedPresentationAsset": "founder-dependence-client-pitch-deck.html",
+    "indexedPresentationAssetManifest": "founder-dependence-client-pitch-deck.html.artifact.json",
+    "renderedPresentationAsset": "system/artifacts/deck.html",
+    "renderedPresentationAssetBase": "../../",
+    "appliedPresentationCapture": "assets/source-previews/founder-dependence-client-pitch-deck-applied.png",
+    "sourceExamples": "source_examples/brand-workbook/",
+    "componentManifest": "component-manifest.json",
+    "componentSources": "ui_kits/app/components/",
+    "componentDistribution": "assets/components/",
+    "componentPrimitives": "assets/components/Primitives.js",
+    "componentLifecycle": "assets/components/LifecycleComponents.js",
+    "componentApplicationContract": "Load tokens.css once, load primitives before composed components, render only components listed in component-manifest.json, and rebind mode-dependent component aliases inside nested dark scopes.",
+    "presentationApplicationContract": "Use the fixed deck framework, presentation surface roles, named typography roles, written evidence boundaries, and fixed-canvas safety values from presentationContract. Presentation composition is not a runtime component inventory.",
+    "themeAttribute": "data-theme",
+    "supportedThemes": [
+      "light",
+      "dark"
+    ]
+  },
+  "contrastPairs": [
+    {
+      "foreground": "#1A1A1A",
+      "background": "#FEFEFE",
+      "ratio": 17.26,
+      "use": "AAA body and display text"
+    },
+    {
+      "foreground": "#FEFEFE",
+      "background": "#1A1A1A",
+      "ratio": 17.26,
+      "use": "AAA body and display text"
+    },
+    {
+      "foreground": "#1A1A1A",
+      "background": "#FF5555",
+      "ratio": 5.54,
+      "use": "AA primary action text"
+    },
+    {
+      "foreground": "#1A1A1A",
+      "background": "#ECC90F",
+      "ratio": 10.71,
+      "use": "AAA Open state and logo tile text"
+    },
+    {
+      "foreground": "#FEFEFE",
+      "background": "#FF5555",
+      "ratio": 3.12,
+      "use": "Decorative large-scale use only; not ordinary text"
+    },
+    {
+      "foreground": "62% charcoal",
+      "background": "#FEFEFE",
+      "ratio": 4.84,
+      "use": "AA tertiary text in light mode"
+    },
+    {
+      "foreground": "54% paper",
+      "background": "#1A1A1A",
+      "ratio": 5.81,
+      "use": "AA tertiary text in dark mode"
+    }
+  ],
+  "evidenceStatus": {
+    "locked": [
+      "identity",
+      "audience",
+      "voice",
+      "palette",
+      "logos",
+      "component posture"
+    ],
+    "open": [
+      "owned project screenshots",
+      "workflows",
+      "terminal captures",
+      "documented failures",
+      "licensed font files",
+      "runtime icons"
+    ]
+  }
+}

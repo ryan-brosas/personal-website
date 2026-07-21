@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
+  <title>What keeps coming back to you? — Ryan Brosas</title>
+  <link rel="stylesheet" href="../../tokens.css" />
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; }
+    body {
+      background: var(--surface-2);
+      color: var(--text-1);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    table { border-collapse: collapse; border-spacing: 0; }
+    img { border: 0; display: block; height: auto; line-height: 100%; }
+    p, h1, h2 { margin: 0; }
+    .preheader {
+      display: none !important;
+      max-height: 0;
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      mso-hide: all;
+    }
+    .page-shell { width: 100%; background: var(--surface-2); }
+    .email-shell {
+      width: 100%;
+      max-width: 640px;
+      background: var(--campaign-canvas-bg);
+      color: var(--campaign-canvas-fg);
+      border: 1px solid var(--stroke-subtle);
+    }
+    .pad { padding-left: 48px; padding-right: 48px; }
+    .topbar { padding-top: 32px; padding-bottom: 28px; border-bottom: 1px solid var(--campaign-rule); }
+    .brand-name {
+      font: var(--weight-strong) 14px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .brand-role {
+      padding-top: 7px;
+      color: var(--campaign-meta);
+      font: var(--weight-regular) 11px/1.3 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .logo-tile { width: 56px; height: 56px; background: var(--logo-tile-bg); }
+    .logo-tile img { width: 31px; margin: 0 auto; }
+    .hero { padding-top: 48px; }
+    .eyebrow {
+      color: var(--accent-text);
+      font: var(--weight-strong) 11px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .title {
+      padding-top: 18px;
+      max-width: 9ch;
+      font-family: var(--font-display);
+      font-size: 58px;
+      font-weight: var(--weight-strong);
+      letter-spacing: var(--tracking-display);
+      line-height: var(--leading-display-lg);
+    }
+    .title-rule { width: 128px; height: 8px; margin-top: 24px; background: var(--accent-decoration); }
+    .lead {
+      padding-top: 28px;
+      max-width: var(--measure-compact);
+      font-size: 20px;
+      font-weight: var(--weight-medium);
+      line-height: 1.45;
+    }
+    .copy {
+      padding-top: 24px;
+      max-width: var(--measure-body);
+      color: var(--text-2);
+      font-size: 17px;
+      line-height: 1.68;
+    }
+    .copy strong { color: var(--text-1); }
+    .hero-art { padding-top: 28px; }
+    .hero-plate { width: 100%; background: var(--surface-1); border: 1px solid var(--stroke-subtle); }
+    .hero-plate img { width: 350px; max-width: 78%; margin: 12px auto 0; }
+    .image-caption {
+      padding: 14px 18px 16px;
+      border-top: 1px solid var(--stroke-subtle);
+      color: var(--text-2);
+      font: var(--weight-regular) 11px/1.5 var(--font-mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .section { padding-top: 48px; }
+    .section-title {
+      max-width: 15ch;
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: var(--weight-strong);
+      letter-spacing: -0.025em;
+      line-height: 1.04;
+    }
+    .consequence {
+      margin-top: 28px;
+      background: var(--feature-bg);
+      color: var(--feature-fg);
+    }
+    .consequence-copy {
+      padding: 30px;
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: var(--weight-strong);
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+    }
+    .steps { margin-top: 28px; border-top: 1px solid var(--stroke-default); }
+    .step { border-bottom: 1px solid var(--stroke-default); }
+    .step-index {
+      width: 54px;
+      padding: 22px 0;
+      vertical-align: top;
+      color: var(--accent-text);
+      font: var(--weight-strong) 11px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+    }
+    .step-copy { padding: 20px 0 21px 18px; vertical-align: top; }
+    .step-copy h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: var(--weight-strong);
+      line-height: 1.2;
+    }
+    .step-copy p { padding-top: 7px; color: var(--text-2); font-size: 15px; line-height: 1.55; }
+    .loop { margin-top: 28px; background: var(--surface-2); border: 1px solid var(--stroke-subtle); }
+    .loop-label {
+      padding: 18px 20px 0;
+      color: var(--text-2);
+      font: var(--weight-strong) 10px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .loop-flow {
+      padding: 12px 20px 20px;
+      font: var(--weight-strong) 12px/1.7 var(--font-mono);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .open-note { margin-top: 28px; background: var(--status-open-bg); color: var(--status-open-fg); }
+    .open-note-copy { padding: 24px; font-size: 15px; line-height: 1.58; }
+    .open-note-copy strong { font-family: var(--font-mono); font-size: 12px; letter-spacing: var(--tracking-label); text-transform: uppercase; }
+    .reply-box { margin-top: 30px; background: var(--campaign-accent-bg); color: var(--campaign-accent-fg); }
+    .reply-box-inner { padding: 30px; }
+    .reply-label {
+      font: var(--weight-strong) 11px/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .reply-title {
+      padding-top: 12px;
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: var(--weight-strong);
+      letter-spacing: -0.025em;
+      line-height: 1.08;
+    }
+    .reply-copy { padding-top: 14px; font-size: 16px; line-height: 1.58; }
+    .prompt-list { padding-top: 16px; font: var(--weight-medium) 14px/1.65 var(--font-mono); }
+    .signoff { padding-top: 36px; padding-bottom: 48px; }
+    .signoff p { font-size: 16px; line-height: 1.65; }
+    .signoff strong { font-weight: var(--weight-strong); }
+    .footer { background: var(--campaign-footer-bg); color: var(--campaign-footer-fg); }
+    .footer-copy { padding: 22px 48px; }
+    .footer-copy p {
+      color: var(--campaign-footer-muted);
+      font: var(--weight-regular) 10px/1.6 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .footer-copy strong { color: var(--campaign-footer-fg); }
+    @media screen and (max-width: 680px) {
+      .page-cell { padding: 0 !important; }
+      .email-shell { border-left: 0; border-right: 0; }
+      .pad { padding-left: 24px !important; padding-right: 24px !important; }
+      .topbar { padding-top: 24px !important; padding-bottom: 22px !important; }
+      .title { font-size: 46px !important; }
+      .lead { font-size: 18px !important; }
+      .hero-plate img { max-width: 90% !important; }
+      .consequence-copy { padding: 24px !important; font-size: 24px !important; }
+      .reply-box-inner { padding: 24px !important; }
+      .footer-copy { padding-left: 24px !important; padding-right: 24px !important; }
+    }
+  </style>
+</head>
+<body data-od-id="service-introduction-email">
+  <div class="preheader">I map the recurring work, choose the smallest reliable system, and design the checks, handoffs, and recovery before anything runs.</div>
+  <table role="presentation" class="page-shell" width="100%">
+    <tr>
+      <td class="page-cell" align="center" style="padding:32px 16px;">
+        <table role="presentation" class="email-shell" width="640" data-od-id="email-canvas">
+          <tr>
+            <td class="pad topbar" data-od-id="email-brand-header">
+              <table role="presentation" width="100%">
+                <tr>
+                  <td valign="middle">
+                    <p class="brand-name">Ryan Brosas</p>
+                    <p class="brand-role">Agent Systems Builder</p>
+                  </td>
+                  <td align="right" valign="middle" width="56">
+                    <table role="presentation" class="logo-tile" width="56" height="56">
+                      <tr><td align="center" valign="middle"><img src="../../logos/Logo---Ryan-1.svg" width="31" alt="Ryan Brosas R lightning symbol" /></td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad hero" data-od-id="email-hero">
+              <p class="eyebrow">Service note / practical agent systems</p>
+              <h1 class="title" data-od-id="email-title">What keeps coming back to you?</h1>
+              <div class="title-rule"></div>
+              <p class="lead">Most founders don’t need more AI. They need fewer recurring decisions, checks, and handoffs routing back through them.</p>
+              <p class="copy">That’s the work I’m interested in: finding one repetitive workflow, mapping the whole operating loop around it, and deciding whether the smallest reliable fix is an <strong>agent, a script, or a process change.</strong></p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad hero-art" data-od-id="email-hero-art">
+              <table role="presentation" class="hero-plate" width="100%">
+                <tr><td><img src="../../assets/illustrations/agent-operator-hero-system-conductor-clean-print.png" width="350" alt="Illustrated system conductor coordinating connected modules" /></td></tr>
+                <tr><td class="image-caption">Narrative illustration — System Conductor. Explanation, not operating proof.</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="email-problem-section">
+              <h2 class="section-title">Delegated work shouldn’t keep finding its way back.</h2>
+              <p class="copy">A task can look automated and still depend on you for the context, the weird exception, the final check, and the cleanup when something breaks. That isn’t really delegated. It’s just waiting for you in a different place.</p>
+              <table role="presentation" class="consequence" width="100%">
+                <tr><td class="consequence-copy">If it still needs you every week, the system isn’t finished.</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="email-breakdown-section">
+              <p class="eyebrow">The build breakdown</p>
+              <h2 class="section-title" style="padding-top:14px;">How I examine the workflow.</h2>
+              <table role="presentation" class="steps" width="100%">
+                <tr class="step" data-od-id="email-step-map">
+                  <td class="step-index">01</td>
+                  <td class="step-copy"><h2>Map what keeps returning.</h2><p>Where does the work begin? What context does it need? Which decisions still route back to the founder?</p></td>
+                </tr>
+                <tr class="step" data-od-id="email-step-choose">
+                  <td class="step-index">02</td>
+                  <td class="step-copy"><h2>Choose the smallest reliable system.</h2><p>An agent when judgment is genuinely useful. A script when the rules are stable. A process change when the handoff is the real problem.</p></td>
+                </tr>
+                <tr class="step" data-od-id="email-step-recover">
+                  <td class="step-index">03</td>
+                  <td class="step-copy"><h2>Design the failure path.</h2><p>Name the checks, the human handoff, what remains safe when the run fails, and how recovery improves the next input.</p></td>
+                </tr>
+              </table>
+              <table role="presentation" class="loop" width="100%" data-od-id="email-system-loop">
+                <tr><td class="loop-label">The operating loop / 05</td></tr>
+                <tr><td class="loop-flow">Context → Work → Checks → Handoffs → Recovery</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="email-evidence-section">
+              <h2 class="section-title">No result gets claimed before the workflow is inspected.</h2>
+              <p class="copy">I can explain the system shape now. I can’t honestly tell you what should be automated—or what it will change—without seeing the real task, the inputs, and one example of what goes wrong.</p>
+              <table role="presentation" class="open-note" width="100%">
+                <tr><td class="open-note-copy"><strong>Open</strong><br />Still needed: one owned workflow example and its failure case. That evidence determines whether the right intervention is an agent, a script, or a process change.</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad section" data-od-id="email-reply-section">
+              <table role="presentation" class="reply-box" width="100%">
+                <tr>
+                  <td class="reply-box-inner">
+                    <p class="reply-label">Next step</p>
+                    <h2 class="reply-title" data-od-id="email-reply-cta">Reply with the workflow.</h2>
+                    <p class="reply-copy">Hit reply and tell me about one piece of work that keeps finding its way back to you. Rough notes are enough.</p>
+                    <p class="prompt-list">01 / What keeps coming back?<br />02 / Who handles it now?<br />03 / What happens when it goes wrong?</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pad signoff" data-od-id="email-signoff">
+              <p>I’ll look at the whole loop and tell you plainly what I’d automate, what I wouldn’t, and where the tradeoff is.</p>
+              <p style="padding-top:18px;"><strong>Ryan Brosas</strong><br />Agent Systems Builder</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="footer" data-od-id="email-footer">
+              <div class="footer-copy"><p><strong>Systems before spectacle.</strong><br />Practical agent systems for work that keeps coming back.</p></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "title": "Ryan Brosas Brand System",
+  "category": "Brands",
+  "surface": "web",
+  "status": "published",
+  "artifactMode": "agent-managed",
+  "createdAt": "2026-07-15T23:47:55.154Z",
+  "updatedAt": "2026-07-18T22:03:57.600Z",
+  "provenance": {
+    "companyBlurb": "Ryan Brosas builds practical agent systems that stop repetitive work from routing back through overworked founders.",
+    "notes": "Version 1.8.0 AI-extracted and synchronized in place from the Brand Design System source project without creating a duplicate.",
+    "sourceNotes": "Re-measured local HTML and CSS; strengthened semantic lifecycle roles; applied seven runtime component files; preserved the four-pigment palette, approved assets, evidence boundaries, and light/dark mode contract."
+  },
+  "projectId": "4c103428-67e3-485d-9213-4bcf97c890eb"
+}

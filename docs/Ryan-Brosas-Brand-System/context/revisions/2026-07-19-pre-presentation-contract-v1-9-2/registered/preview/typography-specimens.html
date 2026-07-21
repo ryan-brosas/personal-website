@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Typography Specimens — Ryan Brosas Brand System</title>
+  <link rel="stylesheet" href="../tokens.css" />
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body)}main{width:min(calc(100% - 40px),1200px);margin:auto;padding:var(--space-12) 0 var(--space-16)}header{display:grid;grid-template-columns:1fr .7fr;gap:var(--space-8);align-items:end;padding-bottom:var(--space-8);border-bottom:var(--rule)}.label{font:var(--weight-strong) var(--text-xs)/var(--leading-label) var(--font-mono);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--accent-text);text-decoration:underline;text-decoration-color:var(--accent-decoration);text-underline-offset:.35em}h1{max-width:13ch;margin:var(--space-3) 0 0;font:var(--type-section-weight) var(--type-section-size)/var(--type-section-leading) var(--font-display);letter-spacing:var(--type-section-tracking)}.intro{color:var(--muted);line-height:var(--leading-body);max-width:52ch}.specimens{margin-top:var(--space-10);border-top:var(--rule)}.specimen{display:grid;grid-template-columns:210px 1fr;gap:var(--space-8);padding:var(--space-8) 0;border-bottom:var(--rule)}.meta{font:var(--weight-strong) var(--text-xs)/1.55 var(--font-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.presentation{max-width:12ch;font:var(--type-presentation-weight) var(--type-presentation-size)/var(--type-presentation-leading) var(--font-display);letter-spacing:var(--type-presentation-tracking)}.hero{max-width:13ch;font:var(--type-hero-weight) var(--type-hero-size)/var(--type-hero-leading) var(--font-display);letter-spacing:var(--type-hero-tracking)}.section-title{max-width:16ch;font:var(--type-section-weight) var(--type-section-size)/var(--type-section-leading) var(--font-display);letter-spacing:var(--type-section-tracking)}.body{font:var(--weight-regular) var(--text-lg)/var(--leading-body) var(--font-body);max-width:62ch}.mono{font:var(--weight-strong) var(--text-sm)/1.7 var(--font-mono);text-transform:uppercase;letter-spacing:var(--tracking-label)}.behavior{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-top:var(--space-10)}.rule{padding:var(--space-5);border:var(--rule);border-radius:var(--radius-panel)}.rule h2{font:var(--weight-strong) var(--text-lg)/1.2 var(--font-display);margin:0 0 var(--space-3)}.rule p{margin:0;color:var(--muted);line-height:1.55}.avoid{background:var(--fg);color:var(--on-dark)}.avoid p{color:color-mix(in oklch,var(--on-dark) 68%,transparent)}@media(max-width:760px){header,.specimen{grid-template-columns:1fr}.behavior{grid-template-columns:1fr}.presentation{font-size:min(var(--type-presentation-size),4.5rem)}.hero{font-size:min(var(--type-hero-size),4.25rem)}}
+  </style>
+</head>
+<body>
+  <main data-od-id="typography-preview">
+    <header><div><span class="label">02 / Typography</span><h1>Energy without condensed type.</h1></div><p class="intro">Verified system-safe stacks. Normal-width letterforms carry the work; scale, crop, alignment, and repetition provide the editorial edge.</p></header>
+    <section class="specimens" aria-label="Typography scale">
+      <article class="specimen" data-od-id="type-presentation"><div class="meta">Presentation statement<br />3.25–5.75rem<br />750 / 0.94</div><div class="presentation">Systems before spectacle.</div></article>
+      <article class="specimen" data-od-id="type-hero"><div class="meta">Page hero<br />2.9–5.25rem<br />700 / 0.96</div><div class="hero">Build the system behind the task.</div></article>
+      <article class="specimen" data-od-id="type-section"><div class="meta">Workbench section<br />2–3.6rem<br />700 / 1.00</div><div class="section-title">Facts stay separate from guesses.</div></article>
+      <article class="specimen" data-od-id="type-body"><div class="meta">Body<br />Text stack<br />400 / 1.60</div><div class="body">The useful part is usually behind the demo. Where does the context come from? What checks the result? How does the next system learn what happened? That is the part that decides whether the work keeps coming back.</div></article>
+      <article class="specimen" data-od-id="type-mono"><div class="meta">Label / metadata<br />Cascadia Mono<br />700 / 0.12em</div><div class="mono">03 / Checks · Verified source · Recovery path</div></article>
+    </section>
+    <section class="behavior" aria-label="Typography rules">
+      <article class="rule"><h2>Readable measure</h2><p>Keep body copy at 45–65 characters when possible and 70 at most.</p></article>
+      <article class="rule"><h2>Role before size</h2><p>Use the named hero, section, campaign, or presentation role instead of inventing a clamp in component CSS.</p></article>
+      <article class="rule avoid"><h2>No poster blocks</h2><p>Do not combine maximum size, maximum weight, tight tracking, and a narrow measure on ordinary workbench headings.</p></article>
+    </section>
+  </main>
+</body>
+</html>

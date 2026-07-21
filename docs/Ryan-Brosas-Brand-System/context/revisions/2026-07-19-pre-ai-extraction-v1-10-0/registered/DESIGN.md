@@ -1,0 +1,591 @@
+# Ryan Brosas Brand System
+
+> Category: personal brand and operational workbench design system  
+> Surface: responsive web, presentations, documents, and AI-authored artifacts  
+> Source project: `Brand Design System` (`826ae961-1707-4719-8146-6b6aa312b6f8`)  
+> Design system id: `user:brand-design-system`  
+> Package version: `1.9.15` — the responsive workflow service inquiry now includes its fixed form-renderer mirror  
+> Evidence status: V1 identity, audience, voice, palette, logos, and interaction posture are verified; owned project media remains open.
+
+## Product Context
+
+Ryan Brosas is an Agent Systems Builder who builds practical systems that stop repetitive work from routing back through founders. The system serves overworked founders first, then operators and advanced builders who care about context, evaluation, handoffs, reliability, and recovery.
+
+The source product is an operational brand workbook, not a marketing-site theme. Its three primary pages are exactly **Brand Strategy**, **Brand Presentation**, and **Brand Guidelines**. Personal Branding and Client Branding are secondary tracks within those pages. The design system must work in two modes without becoming two brands:
+
+1. **Workbench mode** — calm, modular, evidence-led, and comfortable for long reading sessions.
+2. **Presentation mode** — concentrated editorial energy through scale, cropping, repetition, and one deliberate visual hit.
+
+Every artifact should make facts, proposals, and missing inputs distinguishable. Use the labels **Verified**, **Proposed**, and **Open**. Never turn an open input into invented proof.
+
+## Visual Foundations
+
+The core atmosphere is an instruction board for systems work: near-white paper, charcoal structure, fine rules, readable normal-width sans typography, compact mono metadata, and sharp coral interventions. Signal yellow is a scarce focus cue and the protected logo-tile color.
+
+Five source-backed posture rules govern the system:
+
+1. Keep product and workbench surfaces calm, flat, modular, and readable.
+2. Reserve collage, large crops, and abrupt scale shifts for presentation moments.
+3. Use the R/lightning mark as a confident stamp with generous clear space.
+4. Prefer grids, fine rules, compact labels, and whitespace over decorative cards.
+5. Repeat coral as the brand accent; keep yellow scarce.
+
+The decisive flourish is scale contrast: one oversized statement, selected plate, or cropped evidence surface per screen. A screen with three competing flourishes has no hierarchy.
+
+### Measured source evidence
+
+The local source set was re-measured on 2026-07-19: the two workbook stylesheets contain `25,238` filesystem bytes, the three canonical HTML pages contain `51,590` filesystem bytes, and the complete preserved source-example archive contains `89,283` filesystem bytes. The responsive sequence remains `1024px`, `820px`, and `600px`. The current pages contain 38 panel instances, 35 written status instances, 38 compact labels, 11 copy controls, nine token rows, six project cards, five system steps, and four logo plates. The system still uses a `1480px` maximum workbench width, an 8px baseline with 4px optical adjustments, `0px`/`4px`/`8px` radii plus status-only pills, and `1800px` review renders. Every adopted SVG preserves a `0 0 255 211` viewBox and is byte-identical to its copy under `assets/`.
+
+All twelve approved clean-print files were re-checked at `1254 × 1254` with ARGB transparency. The System Conductor's visible alpha bounds run from `116,48` to `1161,1216` inside its source canvas; the refined campaign placement keeps those visible bounds above the footer rail. The client pitch deck remains `54,138` bytes with 18 labelled slides, 95 inspectable `data-od-id` hooks, seven distinct approved illustration references, one active slide, and six written Open labels. The refined social poster is `8,186` bytes on a fixed `1080 × 1350` canvas. The linked Figma node remains structural provenance: direct page retrieval and indexed search were blocked in this pass, so no external value was guessed or promoted. The re-measured local HTML, CSS, SVGs, palette asset, component previews, owned renders, deck, and poster remain authoritative.
+
+## Color
+
+The palette was sampled from `Group-1.png` and confirmed by the SVG fills. Use the canonical values from `colors_and_type.css`.
+
+| Token | Hex | Role |
+|---|---:|---|
+| `--color-paper` / `--bg` | `#FEFEFE` | Primary reading canvas and light surface |
+| `--color-charcoal` / `--fg` | `#1A1A1A` | Main text, structure, and preferred dark canvas |
+| `--color-coral` / `--accent` | `#FF5555` | Repeated action, selection, expressive rule, and accent mark |
+| `--color-signal` / `--signal` | `#ECC90F` | Scarce focal signal, warning, and protected logo tile |
+
+Supporting muted text, borders, hover plates, and shadows are alpha or `color-mix()` derivations of the four canonical colors. Do not introduce decorative hues. When a domain needs a semantic success or error state, pair a written label and shape with the closest canonical color before adding another color.
+
+Body-size accent labels use `--accent-text`: charcoal in light mode and coral in dark mode. Use `--accent-decoration` for coral underlines, rules, and boundaries. Coral on near-white is `3.12:1`, so do not use raw coral for small ordinary text on light surfaces.
+
+### Token architecture
+
+Do not bind components directly to source pigments unless the role must remain constant in both modes. Use this three-layer model:
+
+1. **Source pigments** — `--color-paper`, `--color-charcoal`, `--color-coral`, and `--color-signal`. These are evidence and never change by theme.
+2. **Mode roles** — `--canvas`, `--surface-1`, `--surface-2`, `--surface-3`, `--surface-inverse`, `--workbench-canvas`, `--presentation-canvas`, `--surface-interactive-*`, `--text-1`, `--text-2`, `--text-3`, and `--stroke-*`. These change under `[data-theme="dark"]`. Tertiary text remains contrast-safe: approximately `4.84:1` on the light canvas and `5.81:1` on the dark canvas.
+3. **Component roles** — `--action-*`, `--control-*`, `--nav-*`, `--panel-*`, `--field-*`, `--status-*`, `--feedback-*`, `--link-*`, `--evidence-*`, `--state-selected-*`, `--feature-*`, and `--focus-*`. Components consume these names rather than reconstructing colors. `--action-*` owns task buttons; `--control-*` owns segmented preferences, filters, and persistent selections. Loading, validating, empty, error, and recovery states use explicit roles instead of borrowing hover or disabled colors.
+
+State names have three separate owners. **Evidence confidence** uses only Verified, Proposed, and Open. **Operational lifecycle** uses default, loading or validating, content or empty, error, and recovery. **Interaction state** uses hover, pressed, selected, focus-visible, and disabled. Do not style an operational error with an Open token, do not use Verified as a success color for an uninspected result, and do not use hover styling to represent a persistent selection.
+
+Presentation plates use a parallel fixed-surface family: `--presentation-plate-*`, `--presentation-light-*`, and `--presentation-open-*`. These roles do not change with a surrounding document theme because a dark or light slide is an intentional composition, not a mode inversion. Use them for slide canvases, rules, captions, and Open proof plates; do not reuse product hover or panel aliases to construct a deck.
+
+Campaign compositions use the fixed `--campaign-*` family for the paper canvas, charcoal text, coral field, rule, metadata, protected footer rail, 1080 × 1350 canvas, safe area, accent width, title geometry, and narrative-art scale. These roles remain stable when a campaign proof is shown inside either semantic mode. The canonical poster consumes them directly; downstream campaign layouts should adapt this family before adding local values. Narrative art must clear durable footer language rather than overlap export metadata.
+
+The legacy aliases `--bg`, `--surface`, `--fg`, `--muted`, `--border`, `--accent`, `--signal`, and `--on-dark` remain for preserved source compatibility. New components should prefer the semantic roles.
+
+When a component role depends on a mode role, declare it again in the dark block. This includes component backgrounds, foregrounds, strokes, selected states, disabled states, and evidence lifecycle roles. The rebinding keeps a nested `[data-theme="dark"]` kit correct even when its parent document remains light; inherited light-resolved aliases must never leak into the contained dark surface.
+
+### Light and dark mode contract
+
+| Role | Light mode | Dark mode |
+|---|---|---|
+| Canvas | Near-white | Charcoal |
+| Surface 1 | Near-white | 5% paper mixed into charcoal |
+| Surface 2 | 4% charcoal mixed into paper | 9% paper mixed into charcoal |
+| Surface 3 | 8% charcoal mixed into paper | 14% paper mixed into charcoal |
+| Primary text | Charcoal | Near-white |
+| Secondary text | 68% charcoal | 70% near-white |
+| Feature plate | Near-white on charcoal | Near-white on raised charcoal |
+| Primary action | Charcoal on coral | Charcoal on coral |
+| Open state | Charcoal on signal yellow | Charcoal on signal yellow |
+
+Dark mode is not a black inversion. It uses three measured surface steps, preserves coral and signal yellow, and keeps presentation plates visibly separate from the canvas. Apply the mode to an owned root with `data-theme="light"` or `data-theme="dark"`; do not swap individual component colors ad hoc.
+
+### Color pairing
+
+- Near-white on charcoal: primary dark hero and evidence plates.
+- Charcoal on near-white: default reading and workbench surface.
+- Charcoal on coral: primary action and selected state.
+- Charcoal on signal yellow: logo tile, open-state notice, or one focal annotation.
+- White mark on charcoal or coral: reversed logo use.
+- Yellow mark on charcoal: high-signal brand stamp.
+
+### Color restraint
+
+- Coral may repeat across a screen, but never as a full background wash behind all content.
+- Yellow appears at most once as a large plate or twice as a small signal per viewport.
+- Never place the yellow mark on a yellow field.
+- Never use purple, neon AI color, or decorative gradients.
+
+### Verified contrast pairings
+
+The following WCAG contrast ratios are calculated from the four canonical sRGB values. They are implementation constraints, not new colors.
+
+| Foreground on background | Ratio | Text use |
+|---|---:|---|
+| Charcoal on near-white | `17.26:1` | AAA for body and display text |
+| Near-white on charcoal | `17.26:1` | AAA for body and display text |
+| Charcoal on coral | `5.54:1` | AA for body text; approved primary action pairing |
+| Charcoal on signal yellow | `10.71:1` | AAA; approved Open-state and logo-tile pairing |
+| Near-white on coral | `3.12:1` | Do not use for ordinary text |
+
+Use charcoal text on coral controls. A white-on-coral treatment may be decorative at large scale but is not the default text pairing.
+
+## Typography
+
+No licensed font files were supplied. Use production-safe normal-width system stacks:
+
+```css
+--font-display: "Segoe UI Variable Display", "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+--font-body: "Segoe UI Variable Text", "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+--font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+```
+
+Display and body may share the same family because this is a utilitarian system, but they behave differently. Display text uses tighter tracking, larger scale, shorter measure, and moderate-to-bold weight. Body text stays regular or semibold with comfortable leading.
+
+| Style | Size | Line height | Weight | Use |
+|---|---:|---:|---:|---|
+| Presentation | `clamp(3.25rem, 6.2vw, 5.75rem)` | `0.94` | `750` | Presentation-only statement, 2–8 words |
+| Page hero | `clamp(2.9rem, 5.3vw, 5.25rem)` | `0.96` | `700` | Landing and applied-workbench hero |
+| Workbench section | `clamp(2rem, 3.4vw, 3.6rem)` | `1.00` | `700` | Major section heading and component thesis |
+| Campaign statement | `clamp(2.75rem, 5.2vw, 5.2rem)` | `0.96` | `700` | Short closing or campaign line |
+| Heading S | `1.25rem–1.5rem` | `1.15` | `700` | Panel and component title |
+| Body | `1rem–1.125rem` | `1.60` | `400` | Explanations, maximum 70 characters |
+| Label | `0.6875rem–0.8125rem` | `1.2` | `700` | Uppercase mono metadata |
+
+Use mono only for indices, labels, specifications, token values, and technical evidence. Do not use condensed or narrow faces. Editorial energy comes from scale, alignment, repetition, and crop—not from squeezing letterforms.
+
+### Typography roles
+
+- `--weight-regular: 400` for explanations and longer reading.
+- `--weight-medium: 600` for controls and supporting emphasis.
+- `--weight-strong: 700` for component titles, navigation, and labels.
+- `--weight-display: 750` is reserved for 2–8 word presentation statements. Page heroes, campaign lines, and section headings use `--weight-strong: 700`.
+- `--leading-display-xl: 0.94`, `--leading-display-lg: 0.96`, `--leading-heading: 1`, and `--leading-body: 1.6` keep each role explicit. `--leading-display` remains a compatibility alias for the page-hero role.
+- `--tracking-display: -0.035em` is reserved for large display type; `--tracking-label: 0.12em` is reserved for short uppercase mono labels.
+- Choose `--type-hero-*`, `--type-section-*`, `--type-campaign-*`, or `--type-presentation-*` before writing a component-specific clamp. These roles bind size, line-height, weight, and tracking together.
+- Do not combine the largest size, maximum weight, tightest tracking, and a narrow measure on ordinary workbench headings. That creates the bulky poster-block failure this version corrects.
+
+Do not copy the tight display tracking onto body text. In dark mode, keep the same type scale and weight; change semantic text roles, not font geometry.
+
+### Presentation composition contract
+
+The measured `founder-dependence-client-pitch-deck.html` is the current applied proof for decks. It is evidence of the system working across 18 client-pitch slides; it is not a runtime component library.
+
+- Use the fixed `1920 × 1080` framework and preserve its navigation, print, and localStorage behavior.
+- Keep cover statements to eight words or fewer, three lines at most, and approximately 140px or less on the fixed canvas.
+- Use `--type-presentation-*` only for a 2–8 word statement. Use `--type-section-*` for ordinary slide titles and `--type-presentation-body-*` for readable deck copy.
+- In the fixed deck, wrap those named role sizes in `max()` floors so host viewport scaling cannot reduce the hierarchy: `118px` hero, `72px` ordinary slide title, `104px` campaign title, and `112px` presentation statement. These are canvas safeguards, not replacement typography roles.
+- Keep deck body copy at 24px or larger and reserve a 200px footer-safe band whenever a footer is absolutely positioned.
+- Use one operating idea per slide. Move the mechanism, evidence boundary, or next action to a following slide instead of shrinking the type.
+- A client pitch follows consequence → recurring workflow → system choice → checks and recovery → evidence boundary → specific next action.
+- Use **Open** in words for missing screenshots, results, case studies, booking destinations, or owned operating proof. A polished placeholder never becomes Verified evidence.
+- Reuse approved illustrations as narrative explanation only. They do not prove the system ran or produced an outcome.
+
+## Spacing and Layout
+
+Use an 8px baseline with a 4px half-step for compact optical adjustments.
+
+| Token | Value | Use |
+|---|---:|---|
+| `--space-1` | `4px` | Optical nudge, inline separation |
+| `--space-2` | `8px` | Compact control spacing |
+| `--space-3` | `12px` | Label-to-value gap |
+| `--space-4` | `16px` | Component padding |
+| `--space-6` | `24px` | Panel padding and grid gap |
+| `--space-8` | `32px` | Component group separation |
+| `--space-12` | `48px` | Section interior rhythm |
+| `--space-16` | `64px` | Desktop section separation |
+| `--space-24` | `96px` | Hero and narrative break |
+
+### Grid
+
+- Maximum reading/workbench width: `1480px`.
+- Desktop page shell: 12-column grid with a visible central rule only where it clarifies the composition.
+- Content sections: typically two columns at `minmax(0, 1fr)`; three columns only for short parallel facts.
+- Body copy: 45–65 characters preferred, 70 maximum.
+- At `1024px`, reduce generous section spacing and collapse complex multi-column arrangements.
+- At `820px`, navigation becomes a menu, split heroes stack, and fixed comparison rows become vertical.
+- At `600px`, use 20–24px page gutters and full-width primary actions.
+- Important controls must remain at least 44×44 CSS pixels.
+
+### Radius, borders, and elevation
+
+- `0px`: editorial plates, color fields, large evidence blocks.
+- `4px`: compact controls, badges, and small inputs.
+- `8px`: maximum standard panel radius.
+- `999px`: status labels only; do not apply pill geometry to ordinary controls.
+- `1px` borders are structural and derive from charcoal.
+- Elevation is rare. Use the single soft shadow token only for sticky navigation, transient menus, or overlays that must separate from content.
+
+## Components
+
+### Shared component contract
+
+Every reusable component documents five things: **anatomy**, **semantic tokens**, **states**, **responsive behavior**, and **content integrity**. A visually polished default without a loading, empty, invalid, or Open state is incomplete when that state can occur.
+
+State coverage is judged from the implementation, not the documentation page. The applied kit must visibly render default, read-only, disabled, invalid, validating, and valid fields; default, loading, and disabled actions; and Open, loading, empty, error, recovery, and Verified evidence media in both semantic modes.
+
+Consumers use semantic component roles from root `tokens.css`; maintainers define those roles in `colors_and_type.css`. Components may use source pigments directly only for the production logo, coral primary action, signal-yellow Open state, and protected presentation plates.
+
+`component-manifest.json` is the machine-readable registry for anatomy, token dependencies, states, accessibility behavior, responsive changes, and content integrity. Treat it as the implementation contract; this document explains the design reasoning behind it.
+
+Component code should consume the dedicated families before reconstructing roles from lower layers:
+
+- Navigation: `--nav-*`.
+- Panels: `--panel-*`.
+- Form fields: `--field-*`.
+- Status: `--status-*`.
+- Feedback and transient UI: `--feedback-*`.
+- Links and owned evidence: `--link-*`, `--evidence-media-*`, and `--evidence-caption-*`.
+- Evidence lifecycle and confidence: `--evidence-open-*`, `--evidence-loading-*`, `--evidence-empty-*`, `--evidence-error-*`, `--evidence-recovery-*`, and `--evidence-verified-*`. An evidence component never reaches down to `--surface-*`, `--text-*`, or `--status-*` for its final rendered state.
+- Shared controls: `--action-*`, `--control-*`, and `--focus-*`.
+
+### Component application contract
+
+Components are part of the distributed system only when four surfaces agree: `component-manifest.json` names the implementation, `ui_kits/app/components/` owns the editable source, `assets/components/` contains a byte-identical registered mirror, and `ui_kits/app/index.html` loads that mirror and visibly renders it. Preview HTML is review evidence; it is never the implementation source.
+
+The source and distribution inventories are allowlists, not convenient folders. They contain exactly the seven JavaScript filenames named by `component-manifest.json`. JSX experiments, alternate palettes, chat prototypes, and unregistered layouts belong in dated revision evidence even when they render successfully.
+
+All data-driven text and attribute values pass through `BrandEscape` before runtime HTML composition. Trusted static SVG geometry may stay literal. A component is not implementation-complete merely because its preview looks correct: every state declared by the manifest must also have active component CSS and a visible exercise in the applied kit.
+
+Presentation composition is outside this runtime registry. A deck may reuse semantic tokens, the five-part decision sequence, written status taxonomy, logos, and approved illustrations, but it must not copy interactive component-card markup merely to decorate a slide. Product components preserve lifecycle geometry; slides preserve narrative pacing and fixed-canvas safety.
+
+Load the runtime in this order:
+
+1. `colors_and_type.css` for the maintainer-facing applied kit; `tokens.css` is the single downstream consumer entry. They remain byte-identical.
+2. `ui_kits/app/components/Primitives.js` — buttons, utility-icon wrapper, status label, logo tile, and theme control.
+3. `ui_kits/app/components/LifecycleComponents.js` — form field, feedback message, and evidence media.
+4. `Navigation.js`, `StatusPanel.js`, `SystemMap.js`, and `ProjectCard.js` — composed patterns.
+5. `AppShell.js` — applied workbench composition.
+
+The active source and distribution directories each contain only those seven runtime files. `assets/components/` is inside the registered static boundary, so downstream artifacts can consume the implementations instead of receiving preview-only documentation. Off-brand JSX prototypes are archival evidence, not distributable components. When adapting a component, use the implementation named by `component-manifest.json` and the smallest relevant CSS range from `ui_kits/app/app.css`; do not re-create the anatomy from the preview card.
+
+### Component lifecycle
+
+State is part of component anatomy, not follow-up polish. Model the sequence **default → loading or validating → content or empty → error when needed → recovery action**. Preserve the component footprint while labels and semantic roles change so validation, loading, and recovery never shift adjacent controls.
+
+- Loading actions use `--action-loading-*`; they keep their width, set `aria-busy="true"`, and expose a real progress phrase.
+- Validating and valid fields use `--field-validating-*` and `--field-valid-*`; invalid feedback uses `--field-invalid-*` plus `--field-error-fg`.
+- Evidence surfaces use the complete `--evidence-open-*`, `--evidence-loading-*`, `--evidence-empty-*`, `--evidence-error-*`, `--evidence-recovery-*`, and `--evidence-verified-*` families. Every lifecycle family owns its background, foreground, border when needed, and muted caption role; do not make loading, empty, error, or recovery captions inherit `--evidence-verified-muted`. An empty or failed media plate names what is missing and the next available action; a Verified plate names the inspected source and keeps the claim scoped to it.
+- Persistent readiness controls use `--control-selected-*` or `--state-selected-*`. They never borrow `--status-open-*`, because selection is an interaction state and Open is missing evidence.
+- Empty, error, and recovery states are written in words. Color is supporting evidence, never the only signal.
+- Side-by-side light/dark proofs use identical component anatomy for read-only, disabled, invalid, validating, valid, empty, error, and recovery states. A preview-only state is an implementation gap.
+
+### Navigation
+
+The primary navigation exposes exactly Brand Strategy, Brand Presentation, and Brand Guidelines. Active state uses a coral underline or `--state-selected-*`. Personal Branding and Client Branding appear only as secondary segmented controls. A light/dark preference may sit beside those controls but must not compete with page hierarchy.
+
+- Anatomy: brand home, three primary destinations, secondary track control, optional theme preference.
+- States: default, hover, current page, focus-visible, expanded mobile menu.
+- Mobile: replace the full page list with a labelled button using `aria-expanded`; keep track and theme preferences reachable without horizontal page scroll.
+- Applied reference: `ui_kits/app/components/Navigation.js` implements the disclosure at 820px and keeps all three page destinations in the same labelled navigation landmark.
+- Update the mobile disclosure label through its dedicated text node. Never replace the whole button’s `textContent`, which removes the menu and chevron geometry.
+- Theme preference: write `data-theme` on the document root and persist only as a device-local preference.
+- Track, theme, and filter groups use `--control-*`; do not rebuild their selected or pressed states from generic surfaces.
+
+### Buttons
+
+- Primary: `--action-primary-bg`, `--action-primary-fg`, `--action-primary-border`, and 4px radius.
+- Secondary: `--action-secondary-bg`, `--action-secondary-fg`, `--action-secondary-border`, `--action-secondary-hover`, and `--action-secondary-pressed`.
+- Quiet: transparent surface using `--action-quiet-hover` and `--action-quiet-pressed` when interaction becomes visible.
+- Minimum target: 44px high.
+- Hover: `--action-primary-hover` or a maximum 2px translate, never a glow.
+- Pressed: `--action-primary-pressed`; remove the translate on release and never use hover as the pressed state.
+- Pressed/selected: `aria-pressed="true"` plus `--state-selected-*`; do not fake selection with hover styling.
+- Focus-visible: 2px `--focus-color` outline with 2px offset. `--focus-ring` is the normalized shadow-form token for consumers that use box-shadow focus treatment.
+- Disabled: reduced opacity plus `not-allowed`; label remains legible.
+- Loading: preserve width, use `--action-loading-*`, set `aria-busy="true"`, and change the visible label to a real progress phrase.
+
+### Utility icons
+
+Use `assets/icons.svg` before adding a new icon dependency. The collection is a 24px `currentColor` outline system with a 1.75px stroke and round caps/joins: menu, close, arrow-right, chevron-down, copy, check, refresh, alert, info, and file-plus. `currentColor` is the flexibility contract: use charcoal on near-white and near-white on charcoal without editing SVG geometry. The registered Showcase must visibly prove both pairings with inline canonical geometry so static captures never lose external sprite references. Use icons only for navigation, disclosure, direction, copy, recovery, evidence request, or reinforcement of a written state.
+
+Bind icon color through `--icon-default`, `--icon-muted`, `--icon-inverse`, or `--icon-disabled`; do not bind reusable icon geometry directly to a fixed pigment. The source and distribution component directories must contain exactly the seven files named by `component-manifest.json`. Alternate prototypes and experiments belong in revision evidence, never beside active runtime files.
+
+Keep action labels visible by default. An adjacent icon uses `aria-hidden="true"`; a legitimate compact icon-only control needs an explicit `aria-label`, focus-visible treatment, and a 44px target. Icons never replace the written Verified/Proposed/Open taxonomy, validation copy, or recovery instruction. Do not place an icon beside every heading, mix stroke weights, use filled icon families, or turn the collection into illustration.
+
+### Panels and cards
+
+Panels are bounded modules, not a sea of floating cards. Use `--surface-1` or `--surface-2`, `--text-*`, square or low-radius corners, 1px semantic strokes, clear labels, and deliberate content density. A selected panel uses the selected-state roles; an open-input panel uses `--status-open-*`. Never add a decorative left color border.
+
+Panel anatomy is label/status → title → evidence or explanation → optional action. Do not add an action merely to fill the lower edge. On dark canvases, raise panels through surface steps and borders before adding shadow.
+
+### Status labels
+
+Use the exact taxonomy:
+
+- **Verified** — supported by source and safe to apply. Use `--status-verified-*`.
+- **Proposed** — reasoned recommendation, not historical fact. Use `--status-proposed-*` plus a coral boundary.
+- **Open** — missing evidence; must not be fabricated. Use `--status-open-*`.
+
+Every label is written, not communicated by color alone. The supporting sentence must name what was verified, proposed, or still needed; a badge without evidence context is decorative.
+
+### Forms
+
+Use visible labels above inputs. Inputs use `--field-bg`, `--field-fg`, `--field-border`, 4px radius, and 44px minimum height. Focus uses `--field-focus-border`. Invalid state adds `--field-invalid-*`, `aria-invalid="true"`, and a plain-language message tied with `aria-describedby`. Checkboxes may use signal yellow for checked state only when the adjacent label remains visible.
+
+Placeholder text is an example format, never the only label. Read-only fields use `--field-readonly-*` when the value should remain selectable and inspectable. Disabled fields use `--field-disabled-*` only when interaction is unavailable. Validating and valid states use their dedicated field roles without introducing a decorative success hue. Loading or validation feedback must preserve layout instead of shifting adjacent controls.
+
+### Feedback and recovery
+
+Feedback has three semantic treatments without adding decorative hues: neutral uses `--feedback-neutral-*`, error uses `--feedback-error-*`, and notice uses `--feedback-notice-*`. Every message writes the state in words. Error and recovery copy follows **what happened → what remains safe → next available action**. Use `role="status"` for non-urgent updates and `role="alert"` only when immediate attention is required.
+
+### Evidence media
+
+Owned captures use `--evidence-media-*` for the plate and `--evidence-caption-*` for the source label and explanation. Open, loading, empty, and failed media states use their dedicated `--evidence-*` lifecycle roles. Preserve the source aspect ratio until a crop is documented. Keep captions outside clipping media regions. An Open media request stays visibly Open until owned evidence replaces it; a polished placeholder is not proof.
+
+### System map
+
+The source five-part decision chain is a reusable product component: **Context → Work → Checks → Handoffs → Recovery**. On desktop, show an equal-column sequence with compact direction connectors; on mobile, hide the connectors and stack it vertically in document order. Each step needs a concrete question, not an icon-only label. Add a written recovery-to-context note so failure produces a better next input rather than looking like a terminal state.
+
+Do not remove steps to make the row fit. At narrower widths, switch from five columns to two columns, then one. The component is a decision sequence rather than a progress meter, so do not imply completion percentages without real workflow state.
+
+### Logo tiles
+
+Use the exact adopted SVGs in `logos/`. Byte-identical source copies remain under `assets/` as provenance evidence:
+
+- `Logo---Ryan-1.svg`: charcoal mark on light surfaces.
+- `Logo---Ryan-2.svg`: coral mark on controlled light or dark surfaces.
+- `Logo---Ryan-3.svg`: signal-yellow mark on charcoal.
+- `Logo---Ryan-4.svg`: white mark on charcoal, coral, or protected dark imagery.
+
+Center logo tiles with grid or flex on both axes. Center the visible glyph optically, not only the image element’s rectangular box. Preserve the `255 × 211` viewBox proportions. Do not stretch, skew, outline, recolor, split the lightning, or add shadows. `Ryan Brosas` may be a plain typographic name lockup; **Agent Systems Builder** remains secondary and never enters permanent logo geometry.
+
+## Motion and Interaction
+
+Motion is functional and restrained:
+
+- Standard transition: `150ms` for hover and pressed feedback.
+- Panel/menu transition: `220ms` for opacity and a maximum 6px movement.
+- Do not animate layout over long distances.
+- Do not loop decorative motion.
+- Respect `prefers-reduced-motion: reduce` by removing transforms and nonessential transitions.
+
+Required interaction states are hover, focus-visible, active/selected, disabled, loading, and invalid where applicable. Copy actions use the Clipboard API and announce success through an `aria-live` status. Secondary-track choices persist only when that behavior is useful; never hide the primary page structure behind filters.
+
+Theme changes may use a short color transition but must not animate layout. Apply the theme attribute before rendering the main interface when possible to avoid a light-mode flash.
+
+## Reusable Implementation Notes
+
+### Start order
+
+1. Load root `tokens.css` once. Do not also load `colors_and_type.css` or `system/variables.css` in the same consumer artifact.
+2. Apply `data-theme="light"` or `data-theme="dark"` to the owned root.
+3. Read `component-manifest.json` for the component anatomy and state contract.
+4. Load `assets/components/Primitives.js` and `assets/components/LifecycleComponents.js` before any composed runtime component.
+5. Reuse the implementation listed by the manifest; preview markup is not a substitute.
+6. Build extensions from semantic, component, and named typography roles rather than source pigments or one-off display clamps.
+7. Load the correct production SVG from `logos/`.
+8. Populate content using the Verified/Proposed/Open taxonomy.
+9. Add real states, recovery copy, and responsive behavior before visual polish.
+10. Escape every data-driven text and attribute value through `BrandEscape` before composing runtime HTML.
+11. Check the light and dark contracts side by side before treating either mode as complete.
+
+### Text encoding and mirror integrity
+
+- Keep every distributed Markdown, JSON, CSS, JavaScript, SVG, and HTML file valid UTF-8. Do not pass UTF-8 text through a legacy Windows code page and write the mis-decoded result back to disk.
+- Reject the Unicode replacement character and common double-encoding signatures beginning with `U+00C3`, `U+00C2`, or the UTF-8 bytes for smart punctuation decoded through a legacy code page. Revision evidence may preserve historical bytes, but no registered or user-facing surface may render them.
+- Generate `showcase-landing-page.html` from the canonical landing page without changing text bytes. Generate `system/artifacts/landing.html` from that same source with only the documented two-level asset-path rebase.
+- After synchronizing the registered package, scan both canonical and registered active files for encoding corruption. A valid source file is not enough if its distributed mirror is damaged.
+
+### Showcase and registered-package contract
+
+The Open Design Showcase reads `system/kit.html` from the registered design-system directory. The active token channel reads the root `manifest.json` and `tokens.css`; it does not infer tokens from `system/variables.css` or `preview/`. Keep these surfaces synchronized:
+
+- `manifest.json` — the normalized Open Design package map; its id remains `brand-design-system`, which is served as `user:brand-design-system`.
+- `tokens.css` — the runtime token entry loaded into AI-authored artifacts and package context.
+- `DESIGN.md` — human-readable rules.
+- `brand.json` — machine-readable identity, source evidence, and implementation pointers.
+- `colors_and_type.css` and `system/variables.css` — canonical and packaged token contracts.
+- `component-manifest.json` — anatomy, states, accessibility, responsiveness, and content integrity.
+- `ui_kits/app/components/` — editable source for the seven runtime implementations.
+- `assets/components/` — byte-identical registered distribution that the applied kit and downstream consumers actually load.
+- `system/kit.html` and `system/kit.dark.html` — the registered light/dark Showcase surfaces.
+- `founder-dependence-client-pitch-deck.html` and its `.artifact.json` sidecar — the canonical client-pitch asset indexed beside the living landing page.
+- `system/artifacts/deck.html` — the generated deck-renderer mirror; only `assets/` and `logos/` references are rebased two levels to the package root.
+- `system/artifacts/poster.html` — the generated poster-renderer mirror; only `tokens.css`, `assets/`, and `logos/` references are rebased two levels to the package root.
+- `system/artifacts/email.html` — the generated email-renderer mirror; only `tokens.css`, `assets/`, and `logos/` references are rebased two levels to the package root.
+- `system/artifacts/newsletter.html` — the generated newsletter-renderer mirror; only `tokens.css`, `assets/`, and `logos/` references are rebased two levels to the package root.
+- `system/artifacts/form.html` — the generated form-renderer mirror; only `tokens.css`, `assets/`, and `logos/` references are rebased two levels to the package root.
+- `logos/` — the canonical four adopted SVGs; byte-identical copies under `assets/` are used by the served Showcase because `assetsDir` is the registered static boundary.
+
+An in-place refinement is incomplete until the registered `user:brand-design-system` record contains the current files, remains the same id, is marked published, and its Showcase renders the production logo rather than a generated placeholder mark.
+
+Component refinement is incomplete until the registered package contains the same seven runtime files named by `component-manifest.json`, the applied kit loads them in the documented order, and no unreferenced prototype remains in the active component directory.
+
+`colors_and_type.css` is the canonical maintainer authoring source. Root `tokens.css` and `system/variables.css` are generated, self-contained mirrors. Generated artifacts and downstream consumers load only root `tokens.css`; maintainers edit `colors_and_type.css`, regenerate both mirrors, and verify byte parity. The system mirror preserves the legacy package surface. Never load or hand-maintain divergent token sheets. `system/theme.json` provides explicit token inventories and must not use wildcard names that require consumer-specific expansion.
+
+### Mode-safe component recipe
+
+```css
+.component {
+  background: var(--surface-1);
+  color: var(--text-1);
+  border: 1px solid var(--stroke-subtle);
+  border-radius: var(--radius-panel);
+}
+.component__meta { color: var(--text-2); }
+.component__action {
+  background: var(--action-primary-bg);
+  color: var(--action-primary-fg);
+}
+```
+
+Do not branch component CSS with separate hard-coded light and dark selectors unless the component is an intentional fixed brand plate. The semantic roles already carry mode behavior.
+
+### Evidence lifecycle recipe
+
+```css
+.evidence[data-state="loading"] { background: var(--evidence-loading-bg); color: var(--evidence-loading-fg); }
+.evidence[data-state="loading"] .evidence__detail { color: var(--evidence-loading-muted); }
+.evidence[data-state="error"] { background: var(--evidence-error-bg); color: var(--evidence-error-fg); border-color: var(--evidence-error-border); }
+.evidence[data-state="error"] .evidence__detail { color: var(--evidence-error-muted); }
+```
+
+Each state owns its complete family. Do not style operational lifecycle copy with Verified, Open, hover, or selected roles.
+
+### Form-field recipe
+
+```css
+.field {
+  min-height: var(--target-min);
+  background: var(--field-bg);
+  color: var(--field-fg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-control);
+}
+.field[aria-invalid="true"] {
+  background: var(--field-invalid-bg);
+  border-color: var(--field-invalid-border);
+}
+.field[readonly] {
+  background: var(--field-readonly-bg);
+  color: var(--field-readonly-fg);
+  border-color: var(--field-readonly-border);
+}
+```
+
+Use `--field-placeholder` only for example formats; it maps to the contrast-safe secondary text role rather than faint tertiary text. Disabled fields use `--field-disabled-bg` and remain legible.
+
+### Responsive implementation
+
+- Verify no horizontal page scroll at 360, 390, 430, 600, 768, 820, 1024, 1366, 1440, and 1920px.
+- Collapse complex grids at measured source breakpoints: 1024px, 820px, and 600px.
+- Let type wrap; never use `white-space: nowrap` on display statements or values that can grow.
+- Redesign navigation and action groups for mobile instead of shrinking desktop controls.
+- Keep source examples unchanged; adaptation belongs in `ui_kits/app/` and downstream products.
+
+## Voice and Brand
+
+The voice is casual, nerdy, exploratory, specific, honest, and non-corporate. Ryan sounds like a builder thinking through a real system in public.
+
+### Identity language
+
+- Name: **Ryan Brosas**.
+- Descriptor: **Agent Systems Builder**.
+- Primary statement: **I build agent systems so repetitive work stops coming back to you.**
+- Campaign line: **Building systems so everything doesn’t need you.**
+
+Keep the descriptor secondary. Use the campaign line in presentations and campaigns, never as part of the permanent logo lockup.
+
+### Writing pattern
+
+For personal build logs: exploration → expectation → what happened → what broke → next rabbit hole.
+
+For client/explainer surfaces: problem → system choice → tradeoff → evidence → next step.
+
+For landing pages and campaigns: operating consequence → workflow tension → system mechanism → evidence boundary → specific next action.
+
+Use first person, concrete verbs, short paragraphs, plain technical language, and genuine questions. Natural `lol` or `kek` may appear in a real build log, but never force it. Explain when a script or process change is more honest than an agent.
+
+### Voice calibration
+
+| Dimension | Target | Avoid |
+|---|---|---|
+| Confidence | Clear about what the evidence supports | Certainty theater or vague disclaimers |
+| Technical depth | Concrete enough to name context, checks, handoffs, and recovery | Jargon without an operational consequence |
+| Energy | Curious and direct | Hype, chest-thumping, or corporate polish |
+| Humor | Occasional and natural | Forced slang or a joke in every paragraph |
+| Failure | Plainly reported with consequence and next question | Turning every bug into a victory story |
+
+### Disclosure grammar
+
+- **Verified:** “The source files show…” followed by the exact evidence.
+- **Proposed:** “I’d use…” followed by the tradeoff and why.
+- **Open:** “Still needed:” followed by the owned proof required.
+
+A source being present does not make every sentence about it Verified. Verified copy names the inspected source and limits the claim to what that source actually shows. Proposed copy uses recommendation language and names the tradeoff. Open copy names the missing owned proof and the decision it blocks. Avoid verbs such as “proves,” “guarantees,” or “solves” unless the source directly supports that exact claim.
+
+Prefer “The first agent completed the task, but the handoff lost the failure context” over “The workflow needs better reliability.” Prefer “A script is enough here” over inflating a process change into an AI feature.
+
+### Voice acceptance test
+
+Copy passes when a reader can identify the work, the system choice, the evidence boundary, and the next step. Copy fails when it could belong to any AI consultancy after replacing the name. Lead with the operating consequence, then name the mechanism. A Verified sentence names its source; a Proposed sentence names its tradeoff; an Open sentence starts with **Still needed:** and names the proof. Interface errors name what happened, what remains safe, and what the person can do next.
+
+For marketing surfaces, keep each section to one operating consequence, one system mechanism, and one evidence boundary. When testimonials, client outcomes, or metrics are unavailable, replace social-proof theatre with an honest proof request or owned build artifact. For component documentation, use an imperative instruction and name the implementation file. This keeps voice guidance executable rather than merely tonal.
+
+Interface microcopy follows a compact contract: actions use a concrete verb plus object, disclosure labels name the content they reveal, loading labels name the work underway without changing control width, and recovery messages state what happened, what remains safe, and the next available action. Keep labels visible whenever space allows; an icon is reinforcement, not substitute copy.
+
+Heading copy follows the same discipline. A workbench heading names one operating consequence in one sentence and normally stays within 3–10 words. If the thought needs two clauses, keep the first as the heading and move the mechanism or evidence boundary into the following paragraph instead of enlarging or compressing the type.
+
+### AI-authored voice contract
+
+Generated copy must name the smallest reliable system choice as an **agent**, **script**, or **process change**. Use the sequence operating consequence → system choice → tradeoff → evidence boundary → next action. Reject the draft when it uses a banned hype phrase, broadens a Verified claim beyond its named source, recommends a Proposed choice without the tradeoff, leaves an Open proof request vague, or describes an error without the next available action. Personal build logs use first person for observed behavior and failure; client-facing copy stays direct about the operating consequence and decision.
+
+### Banned phrases
+
+Do not use: “unlock the power of AI,” “revolutionize,” “10x productivity,” “digital workforce,” “seamless,” “cutting-edge,” “transform your business,” or “AI-powered solution.”
+
+## Assets and Imagery
+
+Prefer owned evidence: product screenshots, terminal captures, workflow diagrams, context maps, usage/cost evidence, checks, failure states, recovery paths, and bugs that changed the design.
+
+`assets/reference/Untitled.png` is a contained inspiration board only. Extract scale contrast, strong crops, image/type tension, collage, and mixed rhythm. Do not copy third-party characters, layouts, logos, or photographs from it into new artifacts.
+
+Raster logo files are compatibility references. Adopted production SVGs live under `logos/`; byte-identical source copies remain under `assets/`. Source page screenshots under `assets/source-previews/` are review evidence, not replaceable UI assets.
+
+The primary approved hero illustration is `assets/illustrations/agent-operator-hero-system-conductor-clean-print.png`. Its full-body conductor pose and sweeping coral cable make it the expressive lead asset for website heroes, presentation covers, campaign openers, and major section introductions. Preserve the complete figure, cable sweep, connected modules, transparent margin, and yellow junction signal. Default to a light semantic surface; on charcoal, place it on a protected light plate so the dark modules remain legible. It is a narrative hero, never operating evidence, a functional icon, or a substitute for the R/lightning mark.
+
+The approved editorial illustration layer currently contains eleven production assets under `assets/illustrations/`: `agent-operator-context-assembly-clean-print.png`, `agent-operator-recovery-loop-clean-print.png`, `agent-operator-guardrail-check-clean-print.png`, `agent-operator-evidence-review-clean-print.png`, `agent-operator-memory-update-clean-print.png`, `agent-operator-budget-boundary-clean-print.png`, `agent-operator-scheduled-run-clean-print.png`, `agent-operator-failure-triage-clean-print.png`, `agent-operator-checked-handoff-clean-print.png`, `agent-operator-work-execution-clean-print.png`, and `agent-operator-system-choice-clean-print.png`. All eleven are transparent, fully in frame, and use clean cel blocks with sparse intentional ink texture. Context assembly, guardrail check, evidence review, memory update, budget boundary, scheduled run, failure triage, checked handoff, work execution, and system choice are proven on light semantic surfaces; recovery loop is proven on a protected charcoal plate. Keep each complete silhouette and clear margin. These illustrations support explanation and campaign rhythm; they never substitute for operating evidence, functional icons, or the R/lightning mark.
+
+`ryan-brosas-landing-page.html` is the living applied proof for the four-layer asset system. It uses the R/lightning identity, System Conductor hero, selected operational scenes, and labelled utility icons without turning narrative art into product evidence. Improve this same page continuously, regenerate `showcase-landing-page.html` for Library indexing, and regenerate `system/artifacts/landing.html` for the fixed Assets renderer slot with stylesheet, logo, and illustration URLs rebased two levels to the package root. Refresh `assets/source-previews/ryan-brosas-landing-page-applied.png` after each accepted visual revision; do not create disconnected landing-page variants unless the user explicitly asks for an alternative direction.
+
+## Anti-patterns
+
+- Generic SaaS dashboards or a field of identical rounded cards.
+- Purple gradients, decorative gradients, neon AI color, and glowing effects.
+- Condensed, narrow, or poster-heavy type used to simulate energy.
+- A full-page yellow background, especially behind the yellow mark.
+- More than one dominant expressive flourish per screen.
+- Excessive pills, emoji feature icons, or an icon beside every heading.
+- Decorative left-accent cards.
+- Generic robots, AI brains, floating chat bubbles, or “future of AI” stock imagery.
+- Invented metrics, testimonials, clients, project results, or outcomes.
+- Hiding missing evidence behind polished placeholder media.
+- Recoloring, stretching, shadowing, or reconstructing the R/lightning mark.
+- Making **Agent Systems Builder** or the campaign line permanent logo geometry.
+- Treating Personal Branding and Client Branding as primary pages.
+- Motion without state, hierarchy, or navigation value.
+
+## Application Checklist
+
+The canonical social campaign proof is `building-systems-social-poster.html`, a fixed 1080 × 1350 composition for “Building systems so everything doesn’t need you.” It uses the System Conductor as narrative art, not operating evidence; keeps the full illustration inside the canvas and clear of a protected charcoal footer rail; names Context, Work, Checks, Handoffs, and Recovery as the operating loop; uses the charcoal mark on its protected signal-yellow tile; loads root `tokens.css` once; and consumes the fixed `--campaign-*` surface, safe-area, accent-field, title, art-scale, and footer roles. Keep this poster indexed after the primary landing page and the client-pitch asset. Generate `system/artifacts/poster.html` from this canonical source for the fixed Assets renderer, rebasing only `tokens.css`, `assets/`, and `logos/` two levels to the package root.
+
+The canonical service-introduction email is `agent-systems-service-introduction-email.html`. It serves overworked founders and operators with a medium-length explanation of the service: operating consequence → smallest reliable system choice → checks and recovery → evidence boundary → reply prompt. Keep the message inside a responsive 640px table shell, use visible normal-width typography at 15px or larger for reading copy, include a hidden preheader, and make reply the single next action. The System Conductor remains narrative explanation, not proof. Before an ESP send, inline the resolved CSS and replace project-relative image paths with owned hosted URLs; the canonical Open Design artifact keeps `tokens.css` and local assets for inspectable package rendering. Generate `system/artifacts/email.html` with only the documented two-level resource rebase.
+
+The canonical reusable newsletter is `agent-build-breakdown-newsletter-template.html`. It serves overworked founders and operators with a medium-length build log: exploration → expectation → observed run → interesting failure → system change → evidence boundary → next question. Keep every replaceable claim visibly bracketed until owned evidence is inserted, preserve the written Verified/Proposed/Open labels, show Context → Work → Checks → Handoffs → Recovery, and make reply the single next action. Work Execution remains narrative explanation, not proof. Before an ESP send, delete the instruction plate, replace all bracketed slots, inline the resolved CSS, and replace project-relative image paths with owned hosted URLs. Generate `system/artifacts/newsletter.html` with only the documented two-level resource rebase.
+
+The canonical workflow intake is `workflow-service-inquiry-form.html`. It serves overworked founders and operators with a responsive general service inquiry that asks where work starts, where it breaks, which tools or information sources are involved, what must remain human, and what should stop returning. Do not ask for a budget or a generic AI wish list. Validate required inputs in words, preserve the entered answers when validation fails, show validating and completion states without shifting the surrounding interface, and state that the proof neither transmits nor stores data. Booking is the intended next step, but the external destination remains **Open** until Ryan’s owned scheduling URL is configured. System Choice remains narrative explanation, not proof. Generate `system/artifacts/form.html` for the fixed Assets renderer by rebasing only `tokens.css`, `assets/`, and `logos/` two levels to the package root.
+
+Before shipping an artifact:
+
+1. Confirm the audience and primary job are explicit.
+2. Label uncertain content Verified, Proposed, or Open.
+3. Load root `tokens.css` once; do not recreate the palette by eye or load multiple token mirrors.
+4. Use the correct preserved SVG for its background.
+5. Verify the visible logo glyph is optically centered in every tile.
+6. Keep typography normal-width, readable, within the declared measures, and bound to the named composition roles.
+7. Repeat coral and ration yellow.
+8. Demonstrate real hover, pressed, focus-visible, selected, read-only, disabled, loading, invalid, error, and notice states where relevant.
+9. Check Context, Work, Checks, Handoffs, and Recovery when describing an agent system.
+10. Remove hype, invented proof, generic AI imagery, and unresolved placeholders masquerading as facts.
+11. Confirm the registered Showcase uses `system/kit.html`, displays the adopted logo collection, and matches the current package version.
+12. Compare light and dark role proofs side by side; do not accept a mode that depends on one-off component overrides.
+13. Confirm `manifest.json` is valid, `tokens.css` is available through the registered static endpoint, and both `tokens.css` and `system/variables.css` match `colors_and_type.css` without relying on `@import`.
+14. Confirm every rewritten Showcase CSS, logo, and evidence URL returns 200.
+15. Confirm `system/theme.json` lists concrete token names and the registered distribution contains no unreferenced off-brand prototypes.
+16. Confirm generated artifacts load `tokens.css` once, and loading, validating, empty, error, and recovery states consume dedicated component roles.
+17. Confirm every active component file is loaded by `ui_kits/app/index.html`, named by `component-manifest.json`, and visibly exercised by the applied kit.
+18. Confirm `ui_kits/app/components/` and `assets/components/` contain exactly the seven active runtime filenames and no prototype or alternate-system code.
+19. Confirm the living landing page still demonstrates all four asset roles and its registered applied capture matches the current file.
+20. Confirm every declared lifecycle state is styled by the active kit and visibly exercised in both semantic modes.
+21. Confirm data-driven runtime values are escaped and mobile navigation label changes preserve its icon geometry.
+22. Confirm Design System Assets exposes `showcase-landing-page.html`, `founder-dependence-client-pitch-deck.html`, `building-systems-social-poster.html`, `agent-systems-service-introduction-email.html`, `agent-build-breakdown-newsletter-template.html`, and `workflow-service-inquiry-form.html`; the landing page remains primary, every artifact has its sidecar, `system/artifacts/landing.html`, `system/artifacts/deck.html`, `system/artifacts/poster.html`, `system/artifacts/email.html`, `system/artifacts/newsletter.html`, and `system/artifacts/form.html` exist in canonical and registered packages, and every nested renderer resource resolves after its two-level path rebase.
+23. Confirm every active canonical and registered text file is valid UTF-8 and contains no replacement characters or common double-encoded punctuation signatures.
