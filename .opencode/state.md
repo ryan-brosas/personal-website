@@ -52,7 +52,7 @@ infrastructure, or final content:
 - [x] **Repository baseline approved and committed** (`.pi` -> `.opencode` migration; commit `e5956d5`).
 - [x] **Explicit scaffold authorization recorded** (2026-07-22; Plan 01 scope: Astro baseline + publishing contracts + sitemap/robots; broader modules get separate authorization).
 - [x] **Route/origin strategy and visibility policy agreed** (2026-07-22; `docs/sitemap.md` authoritative for route dispositions `launch | conditional | defer | absent` and content visibility `draft | public | noindex`; Plan 01 uses a placeholder origin injected at release).
-- [x] **Toolchain re-pinned** against current registry (2026-07-22; matrix confirmed: Astro 5.18.2 / TS 6.0.3 / `@astrojs/check` 0.9.9 / `@astrojs/rss` 4.0.19; Astro 7.1.3 / TS 7.0.2 declined — `@astrojs/check` 0.9.9 peers `typescript: ^5.0.0 || ^6.0.0`; actual `package.json` pin is Plan 01 Task 1).
+- [x] **Toolchain re-pinned** against current registry (2026-07-22; matrix confirmed: Astro 5.18.2 / TS 6.0.3 / `@astrojs/check` 0.9.9 pinned in Plan 01; `@astrojs/rss` 4.0.19 confirmed (installed in Plan 05); Astro 7.1.3 / TS 7.0.2 declined — `@astrojs/check` 0.9.9 peers `typescript: ^5.0.0 || ^6.0.0`).
 
 Once these are clear, M1 (Astro policy-kernel tracer) may start.
 

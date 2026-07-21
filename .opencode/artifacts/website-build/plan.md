@@ -97,7 +97,7 @@ unnecessary while one sitemap is sufficient.
 - Projects retain `/projects/[slug]/`; AI and website-design work remain project metadata, not new route families.
 - Publication uses one fail-closed state: `draft | public | noindex`.
 - Canonicals are derived from route and final origin, not routinely authored.
-- Plan 01's `astro.config.mjs` uses a placeholder origin; the production origin is injected at release time (Plan 10). The final domain gates the release track (M3), not the build gate.
+- Plan 01's `astro.config.mjs` uses a placeholder origin (e.g. `https://example.com`); Plan 01's verifier validates canonicals against that configured `site` (placeholder allowed locally). The production origin is injected at release time (Plan 10), whose verifier rejects placeholder origins. The final domain gates the release track (M3), not the build gate.
 - Cross-content references use `{ collection, id }`, never authored internal URLs.
 - Evidence status is claim-level and separate from publication, lifecycle, and UI state.
 - Import only approved brand tokens/assets; never publish the complete brand package.
@@ -217,7 +217,7 @@ milestones. Releases are incremental; the credible core (M3) ships first.
    - Pin Astro `5.18.2`, TypeScript `6.0.3`, `@astrojs/check` `0.9.9`, Node `24.16.0`, npm `11.13.0`.
    - Decline Astro 7.1.3 / TypeScript 7.0.2: `@astrojs/check` 0.9.9 peers `typescript: ^5.0.0 || ^6.0.0` and does not support TS 7 (verified 2026-07-22). Revisit when `@astrojs/check` supports TS 7.
    - Add `dev`, `check`, `test`, `build`, `preview`, and `verify` scripts.
-   - Configure static output, strict TypeScript, final `site`, and `trailingSlash: "always"`.
+   - Configure static output, strict TypeScript, placeholder `site` (production origin injected at release), and `trailingSlash: "always"`.
 
 2. **Implement the publishing contracts**
    - Files: `src/content.config.ts`, `src/lib/publishing.ts`, `src/lib/routes.ts`, `src/data/sources.json`, `tests/policy.test.mjs`.
@@ -233,7 +233,7 @@ milestones. Releases are incremental; the credible core (M3) ships first.
    - Files: `src/pages/sitemap.xml.ts`, `src/pages/robots.txt.ts`, `scripts/verify-build.mjs`.
    - Build one sitemap from the public-route inventory; do not also install `@astrojs/sitemap`.
    - Generate robots from the final origin.
-   - Make verification read-only and fail on route, canonical, visibility, or placeholder-origin mismatches.
+   - Make verification read-only and fail on route, canonical, visibility, or origin mismatches against the configured `site` (placeholder allowed during Plan 01; release rejection of placeholder origins is Plan 10's job).
 
 Verify:
 
