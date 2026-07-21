@@ -1,0 +1,103 @@
+{
+  "bead": "m0-execution-ready-baseline",
+  "title": "M0 Execution-Ready Baseline",
+  "created": "2026-07-22",
+  "status": "in-review",
+  "depends_on": [],
+  "blocks": ["m1-proven-static-foundation"],
+  "success_criteria": [
+    {
+      "id": "sc-1",
+      "description": "Migration baseline committed atomically; git status shows no untracked .pi/ or uncommitted .opencode/ planning files",
+      "verify": "git log --oneline -1 shows the migration commit; git status --short shows no .pi/ or .opencode/ planning-file changes"
+    },
+    {
+      "id": "sc-2",
+      "description": "Scaffold authorization for Plan 01 recorded in planning docs with a date",
+      "verify": "rg -n \"scaffold.*authoriz|M0.*complete|build gate.*closed\" .opencode/artifacts/website-build/ .opencode/state.md"
+    },
+    {
+      "id": "sc-3",
+      "description": "Toolchain matrix confirmed with registry evidence; docs record the Astro 5 / TS 6 decision and the declined Astro 7 / TS 7 alternative",
+      "verify": "rg -n \"astro.*5.18.2|typescript.*6.0.3|declined|Astro 7\" .opencode/tech-stack.md .opencode/artifacts/website-build/plan.md"
+    },
+    {
+      "id": "sc-4",
+      "description": "Route/origin strategy and vocabulary confirmed; docs/sitemap.md recorded as authoritative for route dispositions",
+      "verify": "rg -n \"placeholder origin|authoritative|route disposition\" docs/sitemap.md .opencode/artifacts/website-build/plan.md"
+    },
+    {
+      "id": "sc-5",
+      "description": ".gitignore covers generated/sensitive paths",
+      "verify": "rg -n \"playwright-mcp|\\.env|node_modules|dist\" .gitignore"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "title": "Commit migration baseline with gitignore hygiene",
+      "category": "baseline",
+      "end_state": "The .pi -> .opencode migration lands in one atomic commit and generated/sensitive paths are gitignored before staging.",
+      "depends_on": [],
+      "parallel": false,
+      "conflicts_with": [],
+      "files": [".gitignore"],
+      "verification": [
+        "git status --short shows no untracked .pi/ or uncommitted .opencode/ planning files after the commit",
+        "rg -n \"playwright-mcp|\\.env$|node_modules|dist\" .gitignore confirms ignores are present",
+        "git log --oneline -1 shows the migration commit message"
+      ]
+    },
+    {
+      "id": "t2",
+      "title": "Record scaffold authorization",
+      "category": "config",
+      "end_state": "Plan 01 scaffold authorization is recorded durably in planning docs with a date.",
+      "depends_on": ["t1"],
+      "parallel": false,
+      "conflicts_with": [],
+      "files": [".opencode/state.md", ".opencode/artifacts/website-build/todo.md"],
+      "verification": [
+        "rg -n \"scaffold.*authoriz|Plan 01.*authorized\" .opencode/state.md .opencode/artifacts/website-build/todo.md",
+        "The record names Plan 01 scope (Astro baseline + publishing contracts + sitemap/robots) and a date"
+      ]
+    },
+    {
+      "id": "t3",
+      "title": "Confirm and record toolchain matrix",
+      "category": "config",
+      "end_state": "The Astro 5.18.2 / TS 6.0.3 / check 0.9.9 / rss 4.0.19 matrix is confirmed as latest-in-major and recorded, with the declined Astro 7 / TS 7 alternative and the @astrojs/check peer-compat evidence.",
+      "depends_on": ["t1"],
+      "parallel": true,
+      "conflicts_with": ["t4"],
+      "files": [
+        ".opencode/tech-stack.md",
+        ".opencode/artifacts/website-build/plan.md",
+        ".opencode/artifacts/MEMORY.md"
+      ],
+      "verification": [
+        "rg -n \"5.18.2|6.0.3|0.9.9|4.0.19\" .opencode/tech-stack.md confirms pins unchanged and current",
+        "rg -n \"Astro 7|TS 7|declined|peer.*5.*6\" .opencode/tech-stack.md .opencode/artifacts/website-build/plan.md confirms declined alternative and compat evidence recorded"
+      ]
+    },
+    {
+      "id": "t4",
+      "title": "Confirm route and origin strategy",
+      "category": "config",
+      "end_state": "The route-disposition and content-visibility vocabulary is confirmed with docs/sitemap.md authoritative, and the placeholder-origin strategy for Plan 01 is recorded so M1 need not wait on the final domain.",
+      "depends_on": ["t1"],
+      "parallel": true,
+      "conflicts_with": ["t3"],
+      "files": [
+        "docs/sitemap.md",
+        ".opencode/artifacts/website-build/plan.md",
+        ".opencode/state.md"
+      ],
+      "verification": [
+        "rg -n \"authoritative|placeholder origin|route disposition\" docs/sitemap.md .opencode/artifacts/website-build/plan.md",
+        "docs/sitemap.md route vocabulary (launch | conditional | defer | absent) and content vocabulary (draft | public | noindex) are distinct and confirmed",
+        "Plan 01 site config strategy references a placeholder origin injected at release"
+      ]
+    }
+  ]
+}

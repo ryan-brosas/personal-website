@@ -1,0 +1,21 @@
+# Fallow static-analysis cache
+.fallow/
+
+# OpenCode runtime dependencies (not source)
+.opencode/node_modules/
+
+# Astro / Node build outputs
+node_modules/
+dist/
+.astro/
+
+# Playwright MCP transient output
+.playwright-mcp/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log

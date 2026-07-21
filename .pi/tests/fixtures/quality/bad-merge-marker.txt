@@ -1,7 +1,0 @@
-line one
-<<<<<<< HEAD
-ours
-=======
-theirs
->>>>>>> feature
-line last

@@ -6,24 +6,26 @@ flexible publishing, and static delivery. No application code or dependencies ex
 ## Planning Sources
 
 - Read `docs/sitemap.md` before changing routes or content architecture.
-- Read `.pi/artifacts/website-concrete-plan/plan.md` for the master plan, evidence, and open decisions.
-- Read `.pi/state.md` for current status; `.pi/roadmap.md` for milestone order.
+- Read `.opencode/artifacts/website-build/plan.md` for the master plan, status, open blockers, and dependency graph.
+- Read `.opencode/tech-stack.md` for planned technologies and boundaries.
 
 ## Planned Stack
 
 - Astro 5.x, static output, strict TypeScript
 - Semantic HTML and plain CSS; no UI framework
 - Markdown-first Astro Content Collections in `src/content.config.ts`
-- `@astrojs/sitemap` and `@astrojs/rss`
+- Custom metadata-aware sitemap and `@astrojs/rss`
+- Self-hosted Pages CMS (2.1.8) on the operator VPS behind Caddy as a Git-backed editing layer; isolated PostgreSQL holds CMS application state only, and no CMS runtime ships with the public site
 - npm and static hosting; exact versions/provider remain uninitialized
 
 ## Current Structure
 
-`AGENTS.md` — this guide  
-`docs/sitemap.md` — URL map and architecture  
-`.pi/tech-stack.md` — planned technologies and boundaries  
-`.pi/roadmap.md` / `.pi/state.md` — planning context  
-`.pi/artifacts/website-concrete-plan/plan.md` — concrete master plan
+`AGENTS.md` — this guide<br>
+`docs/sitemap.md` — approved route-disposition contract<br>
+`.opencode/tech-stack.md` — planned technologies and boundaries<br>
+`.opencode/artifacts/website-build/plan.md` — master plan, status, and open blockers<br>
+`.opencode/artifacts/website-build/todo.md` — slice checklist<br>
+`.opencode/artifacts/website-build/decisions.md` — accepted architecture decisions
 
 ## Commands
 
@@ -56,6 +58,6 @@ and `npm run preview`.
 ## Workflow
 
 - Planning and `/init` may edit planning documents only; never scaffold implicitly.
-- Resolve operator decisions in `.pi/state.md` before writing brand or case-study claims.
+- Resolve open blockers in `.opencode/artifacts/website-build/plan.md` before writing brand or case-study claims.
 - Keep changes scoped; update `docs/sitemap.md` when route architecture changes.
 - Verify generated HTML/XML/text, accessibility, redirects, and host behavior before launch claims.

@@ -1,142 +1,110 @@
-# Sitemap & Information Architecture
+# Sitemap — Route-Disposition Contract
 
-> SEO- **and AI-search**-focused personal website on **Astro** (+ semantic HTML/CSS).
-> Design goal: **flexible** — new sections (directories, tools, etc.) plug in
-> without re-architecting. Every section = a Content Collection + a route template.
+Approved 2026-07-22. Companion to `.opencode/artifacts/website-build/plan.md` and
+`.opencode/roadmap.md` (milestones). Update this file whenever route architecture
+changes (`AGENTS.md:62`).
 
-## Core principle
+## Disposition legend
 
-Three repeatable building blocks. Everything on the site is one of these:
+Route disposition (route-level availability) is distinct from content visibility
+(per-record publication state).
 
-1. **Hub** — an index/listing page for a section (`/blog/`, `/directories/`).
-2. **Entry** — a detail page (`/blog/[slug]/`, `/directories/[dir]/[entry]/`).
-3. **Taxonomy** — cross-cutting grouping (`/tags/[tag]/`).
+| Mark | Meaning (route availability) |
+|---|---|
+| `launch` | Route is built. Whether it appears publicly depends on the Release column and the content record's visibility. |
+| `conditional` | Route exists only when a stated condition is met (e.g. a substantive editorial entry, a privacy review). |
+| `defer` | Intentionally deferred to a later phase. Not built initially. |
+| `absent` | Explicitly NOT created. Recorded here to prevent regression. |
 
-Add a new section by: (a) defining a collection schema, (b) copying a hub +
-entry route template. No layout or SEO plumbing changes.
+Content visibility (per record, fail-closed): `draft` (no route output), `public`
+(included in routes, sitemap, RSS, curation), `noindex` (crawlable but excluded from
+discovery outputs). See `plan.md` and `src/lib/publishing.ts` (Plan 01).
 
-## Locked decisions
+## Route rules
 
-- **Trailing slashes: always.** One canonical form everywhere → no duplicate-content splits.
-- **Directory entries:** detail pages supported but optional (thin entries can stay
-  as rows on the directory hub).
-- **Tools: static-first.** `llm-watcher` and future tools render statically; add an
-  SSR adapter (Node/Cloudflare/Vercel) *only* if a specific tool needs live data/an API.
+- HTML routes use canonical **trailing slashes**. File endpoints (`/rss.xml`, `/sitemap.xml`, `/robots.txt`, `/404.html`) do not.
+- `/resources/` is a navigation/discovery **gateway** only. It groups Blog, Directories, and Tools in navigation; it does **not** duplicate or nest their canonical URLs (no `/resources/blog/`, `/resources/projects/`, etc.).
+- One custom metadata-aware `/sitemap.xml` is generated from the public-route inventory. The `@astrojs/sitemap` integration is **not** installed.
+- Projects keep `/projects/[slug]/`. AI and website-design work are project metadata, not separate route families.
+- Do not generate thin tag, facet, project-subtype, tool, or directory-entry pages.
 
-## URL map
+## Release model
 
-```
-/                              Home
-/about/                        About (Person schema anchor)
-/now/                          Optional "now" page
-/contact/
+Releases are **incremental public releases**. The **credible core** (M3) ships first.
+Blog, Directory, LLM Watcher, and Resources each promote to public independently once
+their content and CMS gates pass. The Release column marks the milestone that first
+makes a route public.
 
-# Writing
-/blog/                         Blog hub (paginated)
-/blog/[slug]/                  Post
-/tags/[tag]/                   Cross-content tag pages
-/rss.xml                       Feed
+## HTML routes
 
-# Work
-/projects/                     Projects hub
-/projects/[slug]/              Project detail
+| Route | Disposition | Release | Plan | Notes |
+|---|---|---|---|---|
+| `/` | launch | M3 | P03, P04 | P03 ships a minimal shell; P04 renders the evidence/curation homepage. |
+| `/services/` | launch | M3 | P03 | Labeled **Work With Me** in navigation. |
+| `/about/` | launch | M3 | P03 | Fixed-ID singleton. |
+| `/contact/` | launch | M3 | P03 | External scheduler link + email fallback; no form. |
+| `/projects/` | launch | M3 | P04 | Hub. |
+| `/projects/[slug]/` | launch | M3 | P04 | One complete project at first release; more added incrementally. |
+| `/blog/` | launch | M4 | P05 | Hub. Promotes independently. |
+| `/blog/[slug]/` | launch | M4 | P05 | Substantive entries only. |
+| `/directories/` | launch | M5 | P06 | Hub. Promotes independently. |
+| `/directories/agent-workflow-tools/` | launch | M5 | P06 | First directory. |
+| `/directories/[directory]/[entry]/` | conditional | M5 | P06 | Only for substantive editorial entries; default absent. |
+| `/tools/` | launch | M6 | P07 | Hub. Promotes independently. |
+| `/tools/llm-watcher/` | launch | M6 | P07 | Static snapshot; states cutoff, cadence, limitations. Not live monitoring. |
+| `/resources/` | launch | M7 | P09 | Gateway. Promotes only after at least one resource module is public; links only to modules with substantive published content. |
+| `/privacy/` | conditional | M3 | P10 | Only if the scheduler/privacy review requires it. |
 
-# Directories (curated listings — high-SEO)
-/directories/                  Index of all directories
-/directories/[dir]/            One directory (e.g. /directories/ai-tools/)
-/directories/[dir]/[entry]/    Entry detail (optional)
+## File endpoints
 
-# Tools / apps (home for llm-watcher + future apps)
-/tools/                        Tools hub
-/tools/[slug]/                 A tool's page
-/tools/llm-watcher/
+| Endpoint | Release | Plan | Notes |
+|---|---|---|---|
+| `/sitemap.xml` | M3 | P01 | Custom, generated from public-route inventory. Excludes `draft` and `noindex`. Grows as modules promote. |
+| `/robots.txt` | M3 | P01 | Generated from final origin. Crawlable; not a privacy/authorization boundary. |
+| `/rss.xml` | M4 | P05 | Excerpt-only, newest-first, public-only. |
+| `/404.html` | M3 | P03 | Real 404 status on the host. |
 
-# SEO / machine-readable
-/sitemap-index.xml             Auto (@astrojs/sitemap)
-/robots.txt                    Static in public/ (allowlist below)
-/llms.txt                      AI/LLM discoverability index
-/llms-full.txt                 Full-content dump (optional)
-/[page].md                     Per-page markdown twin (AI-clean text; optional)
-/og/[...].png                  Generated OpenGraph images (optional)
-```
+## Deferred routes (not built initially)
 
-## Content collections (`src/content/`)
+| Route | Reason |
+|---|---|
+| `/now/` | Deferred per approved design; not in initial scope. |
+| `/llms.txt` | Optional/experimental; deferred until a named usage hypothesis (Plan 11 / M8). |
 
-| Collection | Type | Notes |
+## Absent routes (explicitly NOT created)
+
+| Route | Reason |
+|---|---|
+| `/tags/`, `/tags/[tag]/` | No thin tag pages (`AGENTS.md:43`). Tags are controlled metadata, not routes. |
+| AI/design capability routes | AI and website-design are project metadata, not separate route families. |
+| `/resources/blog/`, `/resources/projects/`, etc. | `/resources/` is a gateway only; no nested canonical copies. |
+| Directory-entry detail pages below threshold | Only substantive editorial entries get detail routes. |
+| Form endpoints | No form backend; contact uses external scheduler + email. |
+| Search/filter routes | No dynamic filtering/search state. |
+| Generated OG image routes | No generated OG images. |
+| Theme switcher routes | No theme toggle. |
+
+## Plan → route map
+
+| Plan | Builds | Milestone |
 |---|---|---|
-| `pages` | standalone | about, now, contact |
-| `blog` | hub+entry | posts; tags, draft flag, publish date |
-| `projects` | hub+entry | cards, projects, and promoted case studies at stable URLs |
-| `directories` | hub | one file per directory (title, description, category) |
-| `directoryEntries` | entry | `directory: <ref>` links back |
-| `tools` | hub+entry | static-first apps like LLM Watcher |
-| `tags` | taxonomy | controlled cross-content vocabulary and authored descriptions |
+| 01 | `/sitemap.xml`, `/robots.txt` | M1 |
+| 03 | `/services/`, `/about/`, `/contact/`, `/404.html`, minimal `/` shell | M2 |
+| 04 | `/projects/`, `/projects/[slug]/` (first project), evidence/curation homepage | M3 |
+| 05 | `/blog/`, `/blog/[slug]/`, `/rss.xml` | M4 |
+| 06 | `/directories/`, `/directories/agent-workflow-tools/`, conditional `/directories/[directory]/[entry]/` | M5 |
+| 07 | `/tools/`, `/tools/llm-watcher/` | M6 |
+| 09 | `/resources/` gateway, full output verifier | M7 |
+| 10 | `/privacy/` (if required), release/host config (reusable) | release track |
+| 11 | `/llms.txt` (optional, post-launch) | M8 |
 
-### Shared SEO frontmatter (base schema every collection extends)
+## Self-hosted Pages CMS (not a public route)
 
-```ts
-{
-  title: string,          // <title> + og:title
-  description: string,    // meta description + og:description (150–160 chars)
-  canonical?: string,
-  draft?: boolean,        // no public route
-  noindex?: boolean,      // rendered if needed; excluded from discovery outputs
-  ogImage?: string,
-  published?: Date,
-  updated?: Date,         // substantive editorial change only
-  featured?: boolean,
-  tags?: string[],        // controlled references
-  related?: string[],     // validated internal canonical paths
-}
-```
-
-## SEO strategy (why Astro fits)
-
-- **Zero-JS by default** supports performance, accessibility, and complete crawler-visible HTML.
-- **Reusable `<Seo>` + `BaseLayout`**: canonical, OpenGraph, Twitter, robots meta in one place.
-- **JSON-LD helpers:** `Person` + `WebSite` (site-wide), `Article` (blog),
-  `SoftwareApplication` (tools), `ItemList` (directory hubs), `BreadcrumbList` (entries).
-- **`@astrojs/sitemap`** → `sitemap-index.xml`; generated routes are included by default, so exclusions must be configured explicitly.
-
-## AI search / GEO (open to AI answer engines)
-
-Goal: be **crawlable, extractable, and citable** by AI search. Two levers — access
-(robots) and structure (clean content + machine files).
-
-### 1. Access — crawler policy
-
-Generate an explicit `robots.txt` from the final site origin. Ordinary search access,
-AI retrieval/search access, and model-training permission are separate decisions.
-
-Launch policy baseline:
-
-- Allow `Googlebot`, `Bingbot`, and validated ordinary search crawlers.
-- Allow validated retrieval/search bots such as `OAI-SearchBot`,
-  `Claude-SearchBot`, and `Claude-User` when AI-search visibility is desired.
-- Decide training access independently for `GPTBot`, `ClaudeBot`,
-  `Google-Extended`, and other provider-specific training bots.
-- Do not rely on `robots.txt` for privacy or authorization. OpenAI documents
-  `ChatGPT-User` as user-triggered and notes that robots rules may not apply.
-- Revalidate every user-agent and provider policy immediately before launch.
-- Include the final absolute `Sitemap:` URL; never deploy `EXAMPLE.com`.
-
-Google documents that ordinary SEO requirements apply to AI Overviews and AI Mode;
-there is no separate AI-file or schema requirement. `Googlebot` controls Search access,
-while `Google-Extended` applies to training/grounding in other Google systems.
-
-### 2. Structure — make content easy to extract & cite
-
-- **Semantic HTML**, one `<h1>`, descriptive headings, answer-first paragraphs.
-- **JSON-LD where accurate** — describe visible entities only; validity does not guarantee search presentation.
-- **`llms.txt`** (optional experiment): curated index generated from public content.
-  It is a community proposal, not a proven ranking or citation mechanism.
-- **Per-page markdown twins** remain deferred until logs or a named consumer demonstrate value.
-- **RSS + stable canonical URLs + `updated` dates** → freshness signals for retrieval.
-- Fast, JS-free pages: AI crawlers that don't execute JS still get complete content.
-
-## Extensibility checklist (adding a section later)
-
-1. Add collection schema in `src/content.config.ts` (extend the shared schema).
-2. Add `src/pages/<section>/index.astro` (hub) + `[slug].astro` (entry).
-3. Wire the section into shared visibility, tags, sitemap filtering, SEO, and optional `llms.txt` generation.
-4. Add `<section>/[facet]/[value].astro` only if it needs its own taxonomy.
+Pages CMS 2.1.8 is **planned** to run on the operator VPS at `https://cms.ryanjosebrosas.dev`
+behind host Caddy. It is not yet deployed or activated (`cms.ryanjosebrosas.dev` currently
+returns HTTP 525; infrastructure approvals are pending). It is an editing layer only — it
+writes approved content to this Git repository; it is not shipped with, queried by, or
+routed through the public static site. An outage leaves the public site unaffected. It is
+required before the first public release (M3) but does not gate local implementation.
+See `.opencode/artifacts/website-build/decisions.md` ADR-002. This entry records the
+boundary; `cms.ryanjosebrosas.dev` is not part of the public sitemap.
