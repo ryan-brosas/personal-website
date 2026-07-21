@@ -2,12 +2,28 @@
   "bead": "m0-execution-ready-baseline",
   "title": "M0 Execution-Ready Baseline",
   "created": "2026-07-22",
-  "status": "in-review",
+  "status": "in-progress",
   "depends_on": [],
   "blocks": ["m1-proven-static-foundation"],
+  "related_tracks": [
+    {
+      "id": "p02a-homepage-prototype",
+      "spec": ".opencode/artifacts/homepage-art-direction/",
+      "unblocked_by": "t1",
+      "parallel_with": ["m1"],
+      "note": "Signal Path prototype + no-JS mobile-nav repair + visual acceptance; runs once the repository baseline (t1) is committed"
+    },
+    {
+      "id": "p02b-homepage-canonicalization",
+      "spec": ".opencode/artifacts/homepage-art-direction-canonicalization/",
+      "unblocked_by": "p02a-acceptance",
+      "gates": ["plan-03-task-1-visual-integration", "plan-04-choreography"]
+    }
+  ],
   "success_criteria": [
     {
       "id": "sc-1",
+      "status": "complete",
       "description": "Migration baseline committed atomically; git status shows no untracked .pi/ or uncommitted .opencode/ planning files",
       "verify": "git log --oneline -1 shows the migration commit; git status --short shows no .pi/ or .opencode/ planning-file changes"
     },
@@ -28,6 +44,7 @@
     },
     {
       "id": "sc-5",
+      "status": "complete",
       "description": ".gitignore covers generated/sensitive paths",
       "verify": "rg -n \"playwright-mcp|\\.env|node_modules|dist\" .gitignore"
     }
@@ -37,6 +54,9 @@
       "id": "t1",
       "title": "Commit migration baseline with gitignore hygiene",
       "category": "baseline",
+      "status": "complete",
+      "completed_at": "2026-07-22",
+      "commit": "e5956d5",
       "end_state": "The .pi -> .opencode migration lands in one atomic commit and generated/sensitive paths are gitignored before staging.",
       "depends_on": [],
       "parallel": false,

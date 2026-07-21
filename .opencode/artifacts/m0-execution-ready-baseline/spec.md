@@ -2,7 +2,7 @@
 
 **Bead:** m0-execution-ready-baseline  
 **Created:** 2026-07-22  
-**Status:** In Review  
+**Status:** In Progress (t1 complete; t2-t4 + design-track kickoff remain)
 
 ## Bead Metadata
 
@@ -11,6 +11,7 @@ depends_on: [] # First milestone; no predecessor
 parallel: false # Sequential gate tasks
 conflicts_with: [] # No other bead active
 blocks: ["m1-proven-static-foundation"] # M1 cannot start until this gate closes
+# t1 (repository baseline) alone also unblocks P02A (homepage prototype) in parallel
 estimated_hours: 2
 ```
 
@@ -35,6 +36,11 @@ user switched to build mode and requested the first `/create`. M0 is the gate th
 unblocks every later milestone. Committing the migration baseline now prevents the
 ~600-file uncommitted `.pi` deletion set from tangling with future scaffold commits.
 
+A homepage art-direction track (Signal Path — Editorial Cut, Plans 02A/02B) was
+approved during planning. Its prototype slice (P02A) needs only the repository baseline
+(t1), so completing t1 also unblocks design work in parallel with M1; P02A does not
+require t2/t3/t4.
+
 ### Who is affected?
 
 - **Primary:** Ryan (operator/solo builder) — needs a clean, authorized baseline before scaffolding.
@@ -50,6 +56,7 @@ unblocks every later milestone. Committing the migration baseline now prevents t
 - Recording explicit scaffold authorization for Plan 01 (Astro baseline + publishing contracts).
 - Confirming and recording the toolchain matrix: Astro 5.18.2, TypeScript 6.0.3, `@astrojs/check` 0.9.9, `@astrojs/rss` 4.0.19, Node 24.16.0, npm 11.13.0.
 - Confirming the route-disposition + content-visibility vocabulary and the origin strategy M1 will use (placeholder origin until the production domain is selected in the release track).
+- Recording that the design track (Plans 02A/02B — Signal Path — Editorial Cut) is unblocked by t1 (repository baseline) and runs in parallel with the remaining build-gate items; P02A does not require t2/t3/t4.
 - Updating planning docs to reflect the closed gate.
 
 ### Out-of-Scope
@@ -118,7 +125,7 @@ Not user-facing. This is an operator/agent gate.
 
 ## Success Criteria
 
-- [ ] Migration baseline committed atomically; `git status` shows no untracked `.pi/` or uncommitted planning files.
+- [x] Migration baseline committed atomically; `git status` shows no untracked `.pi/` or uncommitted planning files. (DONE: commit `e5956d5`, 2026-07-22.)
   - Verify: `git log --oneline -1` shows the migration commit; `git status --short` shows no `.pi/` or `.opencode/` planning-file changes.
 - [ ] Scaffold authorization for Plan 01 recorded in planning docs with a date.
   - Verify: `rg -n "scaffold.*authoriz|M0.*complete|build gate.*closed" .opencode/artifacts/website-build/ .opencode/state.md`
@@ -126,7 +133,7 @@ Not user-facing. This is an operator/agent gate.
   - Verify: `rg -n "astro.*5.18.2|typescript.*6.0.3|declined|Astro 7" .opencode/tech-stack.md .opencode/artifacts/website-build/plan.md`
 - [ ] Route/origin strategy and vocabulary confirmed; `docs/sitemap.md` recorded as authoritative for route dispositions.
   - Verify: `rg -n "placeholder origin|authoritative|route disposition" docs/sitemap.md .opencode/artifacts/website-build/plan.md`
-- [ ] `.gitignore` covers generated/sensitive paths.
+- [x] `.gitignore` covers generated/sensitive paths. (DONE: `.opencode/node_modules/`, `node_modules/`, `dist/`, `.astro/`, `.playwright-mcp/`, `.env*` added 2026-07-22.)
   - Verify: `rg -n "playwright-mcp|\.env|node_modules|dist" .gitignore`
 
 ---
@@ -194,7 +201,7 @@ files:
 
 ### Commit migration baseline with gitignore hygiene [baseline]
 
-The `.pi -> .opencode` migration lands in one atomic commit and generated/sensitive paths are gitignored before staging.
+**Status: COMPLETE (commit `e5956d5`, 2026-07-22).** The `.pi -> .opencode` migration lands in one atomic commit and generated/sensitive paths are gitignored before staging.
 
 **Metadata:**
 
@@ -295,4 +302,5 @@ files:
 - **Origin strategy:** M1 sets `site` to a placeholder origin in `astro.config.mjs`; the production origin is injected at release time. The final domain is a release-track decision (M3), not a build-gate item.
 - **Migration commit hygiene:** `.pi` deletions + `.opencode` additions in one atomic commit. Gitignore `.playwright-mcp/`, `.env`, `node_modules/`, `dist/` before staging. The nested `.opencode/package.json` and `.opencode/node_modules/` stay gitignored (root `package.json` is Plan 01 work).
 - **NOTICED BUT NOT TOUCHING:** `.opencode/skill/development-lifecycle/SKILL.md` still references `.pi/artifacts/` as canonical. Skill edits are out of M0 scope; flagged for a later cleanup.
+- **Design track (Plans 02A/02B — Signal Path — Editorial Cut):** Approved 2026-07-22 as the homepage art direction. P02A (canonical prototype + no-JS mobile-nav repair + visual acceptance) needs only the repository baseline (t1, now committed), so it runs in parallel with the remaining build-gate items (t2/t3/t4) and with M1. P02B (motion contract + local mirrors/capture + registered `user:brand-design-system` distribution) starts only after P02A acceptance and gates Plan 03 Task 1 visual integration + Plan 04 homepage choreography, not Plan 01 or Plan 03 semantic-shell work. See `.opencode/artifacts/homepage-art-direction/` and `.opencode/artifacts/homepage-art-direction-canonicalization/`.
 - **No implementation code.** This bead closes a gate; Plan 01 (M1) writes the scaffold.
