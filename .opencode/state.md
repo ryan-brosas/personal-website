@@ -11,8 +11,10 @@ coordinated launch. The credible core (M3) ships first; Blog, Directory, LLM Wat
 and Resources promote independently.
 
 No application code, dependencies, or Astro scaffold exists yet. The repository
-worktree still carries the uncommitted `.pi/` -> `.opencode/` migration (deletions +
-untracked `.opencode/`); that baseline has not been committed.
+baseline is committed (`e5956d5`: `.pi/` -> `.opencode/` migration recorded as
+high-similarity renames, `.gitignore` expanded to exclude `.opencode/node_modules/`,
+`node_modules/`, `dist/`, `.astro/`, `.playwright-mcp/`, and `.env*`, `docs/sitemap.md`
+republished); `git status` is clean.
 
 Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 `.opencode/roadmap.md`, `.opencode/user.md`, `.fallowrc.json`,
@@ -47,7 +49,7 @@ Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 Only the minimal baseline gates local work — not domain, scheduler, CMS
 infrastructure, or final content:
 
-- [ ] **Repository baseline approved and committed** (`.pi` -> `.opencode` migration).
+- [x] **Repository baseline approved and committed** (`.pi` -> `.opencode` migration; commit `e5956d5`).
 - [ ] **Explicit scaffold authorization recorded.**
 - [ ] **Route/origin strategy and visibility policy agreed** (already documented in
       `docs/sitemap.md` and `plan.md`; confirm at scaffold time).
@@ -74,9 +76,8 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
 
 ## Next Priorities
 
-1. Close the build gate: confirm `git status --short` contains only operator-approved
-   planning changes; commit the migration baseline; record scaffold authorization;
-   re-pin the toolchain.
+1. Close the remaining build gate: record scaffold authorization; re-pin the toolchain
+   against the current registry. (Repository baseline committed `e5956d5`; `git status` clean.)
 2. Start M1 (Astro baseline + publishing contracts + sitemap/robots) once the build
    gate is clear.
 3. After the repository baseline is approved, run P02A and stop for the durable visual

@@ -21,7 +21,7 @@
 - [x] Resolve `.pi` -> `.opencode` migration decision and confirm planning root
 - [x] Update stale `.pi` references in `AGENTS.md` (or restore `.pi`)
 - [x] Publish `docs/sitemap.md` route-disposition contract (every route marked once)
-- [ ] Confirm `git status --short` contains only operator-approved planning changes
+- [x] Confirm `git status --short` contains only operator-approved planning changes (clean after `e5956d5`)
 - [ ] Record explicit scaffold authorization
 - [ ] Re-pin toolchain against current registry (plan pins Astro 5.18.2/TS 6.0.3; latest Astro 7.1.3/TS 7.0.2)
 
