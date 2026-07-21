@@ -50,11 +50,9 @@ Only the minimal baseline gates local work — not domain, scheduler, CMS
 infrastructure, or final content:
 
 - [x] **Repository baseline approved and committed** (`.pi` -> `.opencode` migration; commit `e5956d5`).
-- [ ] **Explicit scaffold authorization recorded.**
-- [ ] **Route/origin strategy and visibility policy agreed** (already documented in
-      `docs/sitemap.md` and `plan.md`; confirm at scaffold time).
-- [ ] **Toolchain re-pinned** against current registry. Plan pins Astro 5.18.2 / TS
-      6.0.3; latest is Astro 7.1.3 / TS 7.0.2. Revalidate and re-pin at scaffold.
+- [x] **Explicit scaffold authorization recorded** (2026-07-22; Plan 01 scope: Astro baseline + publishing contracts + sitemap/robots; broader modules get separate authorization).
+- [x] **Route/origin strategy and visibility policy agreed** (2026-07-22; `docs/sitemap.md` authoritative for route dispositions `launch | conditional | defer | absent` and content visibility `draft | public | noindex`; Plan 01 uses a placeholder origin injected at release).
+- [x] **Toolchain re-pinned** against current registry (2026-07-22; matrix confirmed: Astro 5.18.2 / TS 6.0.3 / `@astrojs/check` 0.9.9 / `@astrojs/rss` 4.0.19; Astro 7.1.3 / TS 7.0.2 declined — `@astrojs/check` 0.9.9 peers `typescript: ^5.0.0 || ^6.0.0`; actual `package.json` pin is Plan 01 Task 1).
 
 Once these are clear, M1 (Astro policy-kernel tracer) may start.
 
@@ -76,15 +74,14 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
 
 ## Next Priorities
 
-1. Close the remaining build gate: record scaffold authorization; re-pin the toolchain
-   against the current registry. (Repository baseline committed `e5956d5`; `git status` clean.)
-2. Start M1 (Astro baseline + publishing contracts + sitemap/robots) once the build
-   gate is clear.
-3. After the repository baseline is approved, run P02A and stop for the durable visual
-   decision. Run P02B only after acceptance to synchronize/verify local and registered
-   package surfaces. Use the standalone plans' scoped build-agent handoffs; do not switch
-   `.active` or use `/ship` for these pre-scaffold static-package slices.
-4. In parallel, work the Content Desk and release tracks toward M3 readiness.
+1. M0 build gate closed (all four items checked 2026-07-22). Start M1 (Astro baseline +
+   publishing contracts + sitemap/robots) via Plan 01.
+2. Run P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
+   and stop for the durable visual decision. Run P02B only after acceptance to
+   synchronize/verify local and registered package surfaces. Use the standalone plans'
+   scoped build-agent handoffs; do not switch `.active` or use `/ship` for these
+   pre-scaffold static-package slices.
+3. In parallel, work the Content Desk and release tracks toward M3 readiness.
 
 ## Blockers (not started)
 

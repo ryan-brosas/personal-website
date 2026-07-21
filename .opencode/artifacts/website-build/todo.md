@@ -22,8 +22,8 @@
 - [x] Update stale `.pi` references in `AGENTS.md` (or restore `.pi`)
 - [x] Publish `docs/sitemap.md` route-disposition contract (every route marked once)
 - [x] Confirm `git status --short` contains only operator-approved planning changes (clean after `e5956d5`)
-- [ ] Record explicit scaffold authorization
-- [ ] Re-pin toolchain against current registry (plan pins Astro 5.18.2/TS 6.0.3; latest Astro 7.1.3/TS 7.0.2)
+- [x] Record explicit scaffold authorization (2026-07-22; Plan 01: Astro baseline + publishing contracts + sitemap/robots)
+- [x] Re-pin toolchain against current registry (2026-07-22; Astro 5.18.2/TS 6.0.3/`@astrojs/check` 0.9.9; Astro 7.1.3/TS 7.0.2 declined — `@astrojs/check` peers ^5||^6)
 
 ## Content Desk track (gates Plan 02, Plan 08, and M3 — not local work)
 

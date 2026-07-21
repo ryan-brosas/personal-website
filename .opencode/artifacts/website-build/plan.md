@@ -97,6 +97,7 @@ unnecessary while one sitemap is sufficient.
 - Projects retain `/projects/[slug]/`; AI and website-design work remain project metadata, not new route families.
 - Publication uses one fail-closed state: `draft | public | noindex`.
 - Canonicals are derived from route and final origin, not routinely authored.
+- Plan 01's `astro.config.mjs` uses a placeholder origin; the production origin is injected at release time (Plan 10). The final domain gates the release track (M3), not the build gate.
 - Cross-content references use `{ collection, id }`, never authored internal URLs.
 - Evidence status is claim-level and separate from publication, lifecycle, and UI state.
 - Import only approved brand tokens/assets; never publish the complete brand package.

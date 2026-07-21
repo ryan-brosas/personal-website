@@ -27,6 +27,7 @@ discovery outputs). See `plan.md` and `src/lib/publishing.ts` (Plan 01).
 - One custom metadata-aware `/sitemap.xml` is generated from the public-route inventory. The `@astrojs/sitemap` integration is **not** installed.
 - Projects keep `/projects/[slug]/`. AI and website-design work are project metadata, not separate route families.
 - Do not generate thin tag, facet, project-subtype, tool, or directory-entry pages.
+- **Origin strategy:** Plan 01 sets `site` in `astro.config.mjs` to a placeholder origin. The production origin is injected at release time (Plan 10 / M3); the final domain is NOT a build-gate item. `scripts/verify-build.mjs` rejects placeholder origins in generated output, so the build gate never ships a placeholder to production.
 
 ## Release model
 
