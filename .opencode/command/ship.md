@@ -451,6 +451,16 @@ If confirmed:
 
 Update `.opencode/artifacts/todo.md` to mark all tasks complete and append summary to `.opencode/artifacts/$(cat .opencode/artifacts/.active)/progress.md`.
 
+**Commit and push the close** (per the user close routine in `.opencode/user.md`):
+
+1. `git status --short` to list close-touched files.
+2. Stage individually (NEVER `git add .`) — typically `.opencode/artifacts/todo.md`, `.opencode/artifacts/$(cat .opencode/artifacts/.active)/progress.md` and `prd.json`, `.opencode/state.md`, plus any other close-touched files.
+3. Commit: `git commit -m "docs(<slug>): close <slug> — <one-line summary>"` (type per Conventional Commits).
+4. Push the current branch: `git push origin HEAD`.
+5. Record the close commit hash and pushed remote in the close report.
+
+The harness `ask` permission gates each commit and push for confirmation — this is the standard close routine, not an extra request.
+
 Record significant learnings with `/compound` after closing.
 
 ## Output
@@ -487,8 +497,8 @@ Report:
    - Overall assessment: [pass/needs work]
 
 6. **Next Steps:**
-   - **Ask user** if they want a PR created from the current branch — always ask, never push without confirmation
-   - Manual commits if not already done
+   - Close commit and push handled in Phase 6; per-task commits recorded above.
+   - If on a feature branch, ask the user whether to open a PR (push already happened in Phase 6). On `main` for a solo repo, push is the close action — no PR unless requested.
    - Note deferred work in `.opencode/artifacts/todo.md`
 
 ## Related Commands

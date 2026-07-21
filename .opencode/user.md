@@ -16,8 +16,9 @@ On-demand reference, not injected. Read this when personalizing responses or com
 
 ## Git Workflow
 
-- **Ask first** before commit or push. (Matches `.opencode/opencode.json` permissions: `git commit *` and `git push *` are `ask`.)
-- **Surgical diffs only** — every changed line traces to the current request. Never `git add .`; scope commits to your changes.
+- **Permission gate:** `git commit *` and `git push *` are `ask` in `.opencode/opencode.json`, so each commit and push prompts for confirmation. Initiate commits/pushes as the routine below requires; the gate provides the confirmation, not a wait-to-be-asked rule.
+- **Close routine:** After an artifact closes — `/ship` Phase 6 confirmed, or a standalone P02 slice acceptance — commit the close changes as one scoped close commit and push to `origin`. Close changes typically include `.opencode/artifacts/todo.md`, `.opencode/artifacts/<slug>/progress.md`, `<slug>/prd.json` status, `.opencode/state.md`, and any other close-touched files. One commit, then push the current branch.
+- **Surgical diffs only** — every changed line traces to the current request. Never `git add .`; stage close files individually.
 - **Git safety:** never force-push main/master, never bypass hooks, never `reset --hard` / `checkout .` / `clean -fd` without explicit request.
 
 ## Working Preferences
