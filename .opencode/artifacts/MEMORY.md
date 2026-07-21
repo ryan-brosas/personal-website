@@ -76,6 +76,13 @@ Updated: 2026-07-22
 - **Rationale:** It gives the site a memorable, evidence-compatible point of view without turning the static Astro site into an interaction-heavy app or copying 60fps.design's catalog UI.
 - **Consequences:** P02A refines `docs/Ryan-Brosas-Brand-System/ryan-brosas-landing-page.html` in place, repairs its no-JavaScript mobile-navigation baseline, and records explicit responsive/no-JavaScript/reduced-motion/accessibility/performance and visual acceptance with the exact hash. P02B then updates `DESIGN.md`, generated mirrors, the applied capture, and verifies the existing published `user:brand-design-system` record before Plan 03 Task 1 or Plan 04 consumes it. Final readable HTML/CSS is always the fallback; no production motion exists yet. See `.opencode/artifacts/homepage-art-direction/{spec,plan}.md`, `.opencode/artifacts/homepage-art-direction-canonicalization/{spec,plan}.md`, and website-build ADR-004.
 
+### [2026-07-22] Plan 01 Toolchain Pinned — Astro 5 / TS 6 (Astro 7 / TS 7 Declined)
+
+- **Context:** M0 build-gate item t3 requires the toolchain matrix to be confirmed with registry evidence before Plan 01 scaffolds. Plan 01 runs `astro check` as a typecheck gate, so the Astro/TypeScript/`@astrojs/check` versions must be internally compatible.
+- **Decision:** Pin Plan 01 to Astro 5.18.2 + TypeScript 6.0.3 + `@astrojs/check` 0.9.9 + `@astrojs/rss` 4.0.19. Astro 7.1.3 / TypeScript 7.0.2 are declined because `@astrojs/check` 0.9.9 peerDependencies (`typescript: ^5.0.0 || ^6.0.0`) do not support TypeScript 7; upgrading would break `astro check`. Confirmed against the live npm registry 2026-07-22.
+- **Rationale:** Avoids a broken `astro check` gate on day one. Latest-in-major pins stay current without crossing the unsupported TS 7 boundary.
+- **Consequences:** Plan 01 pins these exact versions in `package.json` and `package-lock.json` (use `npm ci`). Revisit when `@astrojs/check` publishes TS 7 support; that is a separate upgrade decision, not automatic. Recorded in `.opencode/tech-stack.md` (Toolchain Decision section) and `.opencode/artifacts/website-build/plan.md` (Plan 01 Task 1).
+
 ---
 
 ## Patterns

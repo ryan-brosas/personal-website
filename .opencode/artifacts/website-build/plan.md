@@ -214,6 +214,7 @@ milestones. Releases are incremental; the credible core (M3) ships first.
 1. **Create the pinned Astro baseline**
    - Files: `package.json`, `package-lock.json`, `astro.config.mjs`, `tsconfig.json`, `src/env.d.ts`.
    - Pin Astro `5.18.2`, TypeScript `6.0.3`, `@astrojs/check` `0.9.9`, Node `24.16.0`, npm `11.13.0`.
+   - Decline Astro 7.1.3 / TypeScript 7.0.2: `@astrojs/check` 0.9.9 peers `typescript: ^5.0.0 || ^6.0.0` and does not support TS 7 (verified 2026-07-22). Revisit when `@astrojs/check` supports TS 7.
    - Add `dev`, `check`, `test`, `build`, `preview`, and `verify` scripts.
    - Configure static output, strict TypeScript, final `site`, and `trailingSlash: "always"`.
 

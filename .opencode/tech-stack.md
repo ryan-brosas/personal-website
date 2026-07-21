@@ -25,6 +25,21 @@ Pin exact versions in `package.json` during Plan 01. Use `package-lock.json` wit
 | @astrojs/check | 0.9.9 | `astro check` type diagnostics (supports TS 5 or 6) |
 | @astrojs/rss | 4.0.19 | RSS feed (add with blog slice, Plan 05) |
 
+## Toolchain Decision (2026-07-22)
+
+Staying on Astro 5.18.2 + TypeScript 6.0.3 + `@astrojs/check` 0.9.9. Astro 7.1.3 /
+TypeScript 7.0.2 are declined because `@astrojs/check` 0.9.9 peerDependencies declare
+`typescript: '^5.0.0 || ^6.0.0'` and do not support TypeScript 7; upgrading to TS 7 would
+break `astro check`. Confirmed against the live registry 2026-07-22:
+
+- `astro@5` latest = 5.18.2; dist-tag `latest` = 7.1.3 (declined)
+- `typescript@6` latest = 6.0.3; dist-tag `latest` = 7.0.2 (declined)
+- `@astrojs/check` latest = 0.9.9 (peers `typescript: ^5.0.0 || ^6.0.0`)
+- `@astrojs/rss` latest = 4.0.19
+
+Revalidate these pins at Plan 01 scaffold time; if `@astrojs/check` releases TS 7
+support, revisit the Astro 7 / TS 7 upgrade as a separate decision.
+
 ## Self-Hosted Pages CMS (Editing Service)
 
 Pages CMS 2.1.8 runs on the operator's existing VPS, not as a hosted service. It is an
