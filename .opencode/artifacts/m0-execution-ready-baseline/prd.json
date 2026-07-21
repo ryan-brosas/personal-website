@@ -2,7 +2,8 @@
   "bead": "m0-execution-ready-baseline",
   "title": "M0 Execution-Ready Baseline",
   "created": "2026-07-22",
-  "status": "in-progress",
+  "completed_at": "2026-07-22",
+  "status": "complete",
   "depends_on": [],
   "blocks": ["m1-proven-static-foundation"],
   "related_tracks": [

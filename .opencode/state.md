@@ -21,7 +21,7 @@ Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 `.opencode/artifacts/website-build/{plan,todo,decisions}.md`,
 `.opencode/artifacts/MEMORY.md`, `docs/sitemap.md`.
 
-**Active milestone:** M0 — Execution-Ready Baseline.
+**Active milestone:** M0 — Execution-Ready Baseline (complete 2026-07-22; next milestone M1 via Plan 01).
 
 ## Active Decisions
 
@@ -74,8 +74,9 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
 
 ## Next Priorities
 
-1. M0 build gate closed (all four items checked 2026-07-22). Start M1 (Astro baseline +
-   publishing contracts + sitemap/robots) via Plan 01.
+1. Start M1 (Astro baseline + publishing contracts + sitemap/robots) via Plan 01.
+   M0 build gate closed 2026-07-22 (all four items checked; review 5/5). Switch
+   `.active` to the Plan 01 artifact when scaffolding begins.
 2. Run P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
    and stop for the durable visual decision. Run P02B only after acceptance to
    synchronize/verify local and registered package surfaces. Use the standalone plans'
