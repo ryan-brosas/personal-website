@@ -132,9 +132,9 @@ Task files (conflict detection):
 
 3. **Append to `.opencode/artifacts/MEMORY.md`** — in the decisions section, add:
    ```markdown
-   - **Decision:** Pinned Plan 01 toolchain to Astro 5.18.2 + TypeScript 6.0.3 + `@astrojs/check` 0.9.9 + `@astrojs/rss` 4.0.19. Astro 7.1.3 / TypeScript 7.0.2 declined because `@astrojs/check` 0.9.9 peerDependencies (`typescript: ^5.0.0 || ^6.0.0`) do not support TS 7; upgrading would break `astro check`. Confirmed against the live npm registry 2026-07-22.
+   - **Decision:** Pin Plan 01 to Astro 5.18.2 + TypeScript 6.0.3 + `@astrojs/check` 0.9.9. `@astrojs/rss` 4.0.19 is confirmed now but installed and pinned by Plan 05. Astro 7.1.3 / TypeScript 7.0.2 declined because `@astrojs/check` 0.9.9 peerDependencies (`typescript: ^5.0.0 || ^6.0.0`) do not support TS 7; upgrading would break `astro check`. Confirmed against the live npm registry 2026-07-22.
    - **Rationale:** Avoids a broken `astro check` gate on day one. Latest-in-major pins stay current without crossing the unsupported TS 7 boundary.
-   - **Consequences:** Plan 01 pins these exact versions in `package.json`. Revisit when `@astrojs/check` publishes TS 7 support; that is a separate upgrade decision, not automatic.
+   - **Consequences:** Plan 01 pins Astro, TypeScript, and `@astrojs/check` in `package.json` and `package-lock.json` (use `npm ci`); `@astrojs/rss` 4.0.19 is confirmed now but installed and pinned by Plan 05. Revisit when `@astrojs/check` publishes TS 7 support; that is a separate upgrade decision, not automatic.
    ```
 
 4. **Verify:**
@@ -156,7 +156,7 @@ Task files (conflict detection):
 
 1. **Edit `docs/sitemap.md`** — add an "Origin strategy" note. Locate the existing "Locked decisions" / trailing-slash section and append:
    ```markdown
-   - **Origin strategy:** Plan 01 sets `site` in `astro.config.mjs` to a placeholder origin. The production origin is injected at release time (Plan 10 / M3); the final domain is NOT a build-gate item. `scripts/verify-build.mjs` rejects placeholder origins in generated output, so the build gate never ships a placeholder to production.
+   - **Origin strategy:** Plan 01 sets `site` in `astro.config.mjs` to a placeholder origin (e.g. `https://example.com`). Plan 01's `scripts/verify-build.mjs` validates generated canonicals against that configured `site` (placeholder allowed during local M1–M2 work). The production origin is injected at release time (Plan 10 / M3); the release verifier rejects placeholder origins so no placeholder ships to production. The final domain is NOT a build-gate item.
    ```
 
 2. **Edit `.opencode/artifacts/website-build/plan.md`** — in the Constraints section (around line 99), add:

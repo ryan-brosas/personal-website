@@ -79,7 +79,7 @@ Updated: 2026-07-22
 ### [2026-07-22] Plan 01 Toolchain Pinned — Astro 5 / TS 6 (Astro 7 / TS 7 Declined)
 
 - **Context:** M0 build-gate item t3 requires the toolchain matrix to be confirmed with registry evidence before Plan 01 scaffolds. Plan 01 runs `astro check` as a typecheck gate, so the Astro/TypeScript/`@astrojs/check` versions must be internally compatible.
-- **Decision:** Pin Plan 01 to Astro 5.18.2 + TypeScript 6.0.3 + `@astrojs/check` 0.9.9 + `@astrojs/rss` 4.0.19. Astro 7.1.3 / TypeScript 7.0.2 are declined because `@astrojs/check` 0.9.9 peerDependencies (`typescript: ^5.0.0 || ^6.0.0`) do not support TypeScript 7; upgrading would break `astro check`. Confirmed against the live npm registry 2026-07-22.
+- **Decision:** Pin Plan 01 to Astro 5.18.2 + TypeScript 6.0.3 + `@astrojs/check` 0.9.9. `@astrojs/rss` 4.0.19 is confirmed now but installed and pinned by Plan 05. Astro 7.1.3 / TypeScript 7.0.2 are declined because `@astrojs/check` 0.9.9 peerDependencies (`typescript: ^5.0.0 || ^6.0.0`) do not support TypeScript 7; upgrading would break `astro check`. Confirmed against the live npm registry 2026-07-22.
 - **Rationale:** Avoids a broken `astro check` gate on day one. Latest-in-major pins stay current without crossing the unsupported TS 7 boundary.
 - **Consequences:** Plan 01 pins Astro, TypeScript, and `@astrojs/check` in `package.json` and `package-lock.json` (use `npm ci`); `@astrojs/rss` 4.0.19 is confirmed now but installed and pinned by Plan 05. Revisit when `@astrojs/check` publishes TS 7 support; that is a separate upgrade decision, not automatic. Recorded in `.opencode/tech-stack.md` (Toolchain Decision section) and `.opencode/artifacts/website-build/plan.md` (Plan 01 Task 1).
 

@@ -430,7 +430,7 @@ does not wait for CMS expansion or for every module to be ready.
 
 **Effort: L. Needs the release inputs from Plan 00 Task 3. First use: the credible core (Plans 03 + 04 + the Content Desk track). Reused for each public increment.**
 
-1. Add the provider-specific configuration named in `docs/launch-contract.md`, a clean-checkout CI gate, and `docs/runbooks/deploy.md`. CI must run `npm ci`, checks, tests, build, and output verification for developer and Pages CMS commits.
+1. Add the provider-specific configuration named in `docs/launch-contract.md`, a clean-checkout CI gate, and `docs/runbooks/deploy.md`. CI must run `npm ci`, checks, tests, build, and output verification for developer and Pages CMS commits. Before each release build, inject the production origin (from `docs/launch-contract.md`, supplied as a CI build secret) into the build's `site` configuration; release-mode output verification rejects placeholder origins (e.g. `https://example.com`) so Plan 01's local placeholder allowance never ships to production.
 2. Configure preferred-host redirects, HTTPS, real 404 behavior, atomic last-good deployment behavior, rollback, and supported security headers. Add `/privacy/` only if the recorded scheduler/privacy decision requires it.
 3. Revalidate crawler documentation immediately before each release. With search and training access approved, prefer a simple crawlable policy and the exact sitemap URL; never treat robots as privacy or authorization.
 
