@@ -4,8 +4,12 @@
   "created": "2026-07-22",
   "status": "in-progress",
   "aggregate": true,
-  "depends_on": ["m1-proven-static-foundation"],
-  "blocks": ["m3-credible-core-release"],
+  "depends_on": [
+    "m1-proven-static-foundation"
+  ],
+  "blocks": [
+    "m3-credible-core-release"
+  ],
   "children": [
     {
       "slug": "m2-content-route-contracts",
@@ -17,23 +21,32 @@
       "slug": "m2-semantic-shell",
       "status": "complete",
       "tasks": 3,
-      "gates": ["m2-content-route-contracts"]
+      "gates": [
+        "m2-content-route-contracts"
+      ]
     },
     {
       "slug": "m2-core-pages",
       "status": "complete",
       "tasks": 3,
-      "gates": ["m2-semantic-shell"]
+      "gates": [
+        "m2-semantic-shell"
+      ]
     },
     {
       "slug": "m2-contact-page",
       "status": "pending",
       "tasks": 0,
-      "gates": ["scheduler-url", "email-fallback", "privacy-decision", "copy-approval"]
+      "gates": [
+        "scheduler-url",
+        "email-fallback",
+        "privacy-decision",
+        "copy-approval"
+      ]
     },
     {
       "slug": "m2-brand-shell",
-      "status": "in-progress",
+      "status": "complete",
       "tasks": 3,
       "gates": []
     },
@@ -41,7 +54,10 @@
       "slug": "m2-accessibility-acceptance",
       "status": "pending",
       "tasks": 0,
-      "gates": ["all-ui-children-complete", "browser-environment"]
+      "gates": [
+        "all-ui-children-complete",
+        "browser-environment"
+      ]
     }
   ],
   "success_criteria": [
@@ -62,9 +78,13 @@
       "title": "Verify all child ledgers and run full gates",
       "category": "aggregate-verification",
       "end_state": "Every child plan's prd.json status is complete; full code gate passes (npm run check && npm test && npm run build && npm run verify); no child is blocked.",
-      "depends_on": ["all-children-complete"],
+      "depends_on": [
+        "all-children-complete"
+      ],
       "parallel": false,
-      "files": [".opencode/artifacts/m2-accessible-core-shell/progress.md"],
+      "files": [
+        ".opencode/artifacts/m2-accessible-core-shell/progress.md"
+      ],
       "verification": [
         "Each child prd.json status field reads 'complete'",
         "npm run check && npm test && npm run build && npm run verify all exit 0",
@@ -76,7 +96,9 @@
       "title": "Verify accessibility evidence matches final commit and request aggregate close",
       "category": "aggregate-close",
       "end_state": "Accessibility acceptance record exists, its recorded commit/output hash matches HEAD, and the user has confirmed M2 aggregate close.",
-      "depends_on": ["close-1"],
+      "depends_on": [
+        "close-1"
+      ],
       "parallel": false,
       "files": [
         ".opencode/artifacts/m2-accessible-core-shell/progress.md",

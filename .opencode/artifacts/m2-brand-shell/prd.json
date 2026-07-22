@@ -2,10 +2,16 @@
   "slug": "m2-brand-shell",
   "title": "M2 Brand Shell (Child 4 of Plan 03)",
   "created": "2026-07-22",
-  "status": "in-progress",
+  "status": "complete",
   "parent": "m2-accessible-core-shell",
-  "depends_on": ["m2-core-pages", "p02a", "p02b"],
-  "blocks": ["m2-accessibility-acceptance"],
+  "depends_on": [
+    "m2-core-pages",
+    "p02a",
+    "p02b"
+  ],
+  "blocks": [
+    "m2-accessibility-acceptance"
+  ],
   "success_criteria": [
     {
       "id": "sc-1",
@@ -53,7 +59,9 @@
       "title": "Canonical token channel and header identity",
       "category": "shell",
       "end_state": "src/styles/global.css contains exactly one direct @import of ../../docs/Ryan-Brosas-Brand-System/tokens.css plus the structural shell CSS moved from BaseLayout, rewritten to consume SEMANTIC tokens (--canvas/--text-1/--font-body/--leading-body/--font-display/--nav-*/--link-*/--focus-*/--space-*/--content-max), not system-ui or raw --color-* pigments. BaseLayout imports global.css once in frontmatter. SiteHeader renders a root brand anchor (decorative inline logo-charcoal.svg via Astro SVG component + visible Ryan Brosas siteTitle) OUTSIDE the Primary nav; brand anchor owns root aria-current. Copied-noindex variant setup creates <temp>/docs/Ryan-Brosas-Brand-System/tokens.css from canonical. No SiteFooter change.",
-      "depends_on": ["d1"],
+      "depends_on": [
+        "d1"
+      ],
       "parallel": false,
       "files": [
         "tests/shell.test.mjs",
@@ -73,7 +81,9 @@
       "title": "Progressive navigation and approved sprite",
       "category": "shell",
       "end_state": "src/assets/brand/icons.svg is a byte-identical copy of the approved sprite (no root width/height/viewBox, so it must be imported via ?raw + set:html in an absolutely-positioned zero-size wrapper, NOT as an Astro SVG component). DOM order: brand anchor -> toggle button -> Primary nav (id=primary-navigation). Toggle: type=button, stable name Menu, aria-expanded, aria-controls=primary-navigation, min 44x44, decorative menu/close icons via same-document <use href=#icon-menu/#icon-close>. Exactly one <script is:inline data-nav-enhancement> IIFE: bind click/link-close/Escape+focus-return FIRST, set data-nav-ready LAST in try/catch. Base CSS: links visible, toggle hidden; only under max-width 820px AND data-nav-ready does the disclosure collapse. Reduced motion: no spatial panel transition. Inherited no-script assertions replaced with one helper requiring exactly one script with data-nav-enhancement and no _astro/*.js. 5 CDP runtime scenarios pass.",
-      "depends_on": ["d2"],
+      "depends_on": [
+        "d2"
+      ],
       "parallel": false,
       "files": [
         "tests/shell.test.mjs",
@@ -87,5 +97,6 @@
         "GREEN static: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; DOM order brand->toggle->nav; exactly one data-nav-enhancement script; no _astro/*.js; base CSS links-visible/toggle-hidden; ready mobile toggle-visible/closed-nav-hidden. GREEN runtime: 5 CDP scenarios (390 normal/no-JS/reduced/init-fail, 1440 normal) pass; captures under .playwright-mcp/m2-brand-shell/. Commit: feat(m2): add progressive mobile navigation"
       ]
     }
-  ]
+  ],
+  "completed_at": "2026-07-22"
 }

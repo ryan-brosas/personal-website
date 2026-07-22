@@ -21,7 +21,7 @@ Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 `.opencode/artifacts/website-build/{plan,todo,decisions}.md`,
 `.opencode/artifacts/MEMORY.md`, `docs/sitemap.md`.
 
-**Active milestone:** M2 — Accessible Core Shell (in progress; decomposed into child plans: `m2-content-route-contracts` complete 2026-07-22 (`8cf77ab`), `m2-semantic-shell` complete 2026-07-22 (`1d3e65a`; 88/88 tests), `m2-core-pages` complete 2026-07-22 (`333c074`; 106/106 tests, first public content routes /about/ + /services/ shipped), plus gated contact/brand/accessibility children). M1 — Proven Static Foundation complete 2026-07-22 (`9fd70ce`).
+**Active milestone:** M2 — Accessible Core Shell (in progress; decomposed into child plans: `m2-content-route-contracts` complete 2026-07-22 (`8cf77ab`), `m2-semantic-shell` complete 2026-07-22 (`1d3e65a`; 88/88 tests), `m2-core-pages` complete 2026-07-22 (`333c074`; 106/106 tests, first public content routes /about/ + /services/ shipped), `m2-brand-shell` complete 2026-07-22 (`1f305f4`; 119/119 tests, favicon + brand tokens + progressive mobile nav shipped), plus gated contact/accessibility children). M1 — Proven Static Foundation complete 2026-07-22 (`9fd70ce`).
 
 ## Active Decisions
 
@@ -83,8 +83,10 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
    (`8cf77ab`; 82/82 tests) → `m2-semantic-shell` complete (`1d3e65a`; 88/88 tests,
    first HTML routes `/` noindex + `/404.html` shipped) → `m2-core-pages` complete
    (`333c074`; 106/106 tests, first public content routes `/about/` + `/services/`
-   shipped, markdown body safety guard landed) → Contact → brand → accessibility.
-   The M2 parent is a non-executable aggregate; `/ship` only on the active child.
+   shipped, markdown body safety guard landed) → `m2-brand-shell` complete
+   (`1f305f4`; 119/119 tests, favicon + brand tokens + progressive mobile nav
+   shipped) → accessibility acceptance → Contact (input-gated). The M2 parent is
+   a non-executable aggregate; `/ship` only on the active child.
 2. P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
    — **accepted 2026-07-22** (prototype `214f66e8ef16...`, 16 viewport captures,
    progressive enhancement byte-identical, failure injections safe,
