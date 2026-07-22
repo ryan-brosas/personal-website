@@ -19,6 +19,7 @@ import os from "node:os";
 import { verifyBuild } from "../scripts/verify-build.mjs";
 import { PageSchema, SettingsDataSchema } from "../src/lib/content-schemas.ts";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
+import markdownSafety, { assertMarkdownRendered } from "../src/lib/markdown-safety.ts";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -1077,6 +1078,293 @@ describe("M2 slug override regression (real glob loader)", () => {
       );
     } finally {
       fs.rmSync(fixtureDist, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("C1 markdown safety", () => {
+  // --- Unit tests: the plugin function throws on each violation class ---
+
+  test("throws on a raw hast node (raw HTML)", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [{ type: "raw", value: "<script>alert(1)</script>" }],
+    };
+    assert.throws(() => transform(tree), /raw-html/);
+  });
+
+  test("throws on case-insensitive on* event properties", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "img",
+          properties: { onerror: "alert(1)" },
+          children: [],
+        },
+      ],
+    };
+    assert.throws(() => transform(tree), /event-handler/);
+  });
+
+  test("throws on ONERROR (uppercase event property)", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "img",
+          properties: { ONERROR: "alert(1)" },
+          children: [],
+        },
+      ],
+    };
+    assert.throws(() => transform(tree), /event-handler/);
+  });
+
+  test("throws on javascript: protocol in href", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "a",
+          properties: { href: "javascript:alert(1)" },
+          children: [],
+        },
+      ],
+    };
+    assert.throws(() => transform(tree), /unsafe-protocol/);
+  });
+
+  test("throws on data: protocol in src", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "img",
+          properties: { src: "data:text/html,<script>alert(1)</script>" },
+          children: [],
+        },
+      ],
+    };
+    assert.throws(() => transform(tree), /unsafe-protocol/);
+  });
+
+  test("throws on javascript: with whitespace prefix in href", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "a",
+          properties: { href: "  javascript:alert(1)" },
+          children: [],
+        },
+      ],
+    };
+    assert.throws(() => transform(tree), /unsafe-protocol/);
+  });
+
+  test("passes safe relative links", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "a",
+          properties: { href: "/about/" },
+          children: [],
+        },
+      ],
+    };
+    assert.doesNotThrow(() => transform(tree));
+  });
+
+  test("passes safe fragment links", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "a",
+          properties: { href: "#section" },
+          children: [],
+        },
+      ],
+    };
+    assert.doesNotThrow(() => transform(tree));
+  });
+
+  test("passes safe https links", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "a",
+          properties: { href: "https://example.com/page" },
+          children: [],
+        },
+      ],
+    };
+    assert.doesNotThrow(() => transform(tree));
+  });
+
+  test("passes safe protocol-relative links", () => {
+    const transform = markdownSafety();
+    const tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "a",
+          properties: { href: "//example.com/page" },
+          children: [],
+        },
+      ],
+    };
+    assert.doesNotThrow(() => transform(tree));
+  });
+
+  test("assertMarkdownRendered throws when rendered.html is missing", () => {
+    assert.throws(() => assertMarkdownRendered({ rendered: undefined }), /render-failed/);
+  });
+
+  test("assertMarkdownRendered passes when rendered.html is a string", () => {
+    assert.doesNotThrow(() => assertMarkdownRendered({ rendered: { html: "<p>safe</p>" } }));
+  });
+
+  // --- Production-chain fixture: proves root config registration + glob +
+  // assertMarkdownRendered wiring. Builds via --config ../../../astro.config.mjs
+  // so the ROOT production markdown.rehypePlugins is exercised, not a fixture
+  // config. The test fails if either production registration or assertion
+  // wiring is removed.
+
+  test("production chain: unsafe markdown fails the build", () => {
+    const fixtureSrc = path.resolve(import.meta.dirname, "fixtures", "markdown-safety");
+    const tempRoot = fs.mkdtempSync(path.join(import.meta.dirname, "fixtures", ".md-safety-"));
+    try {
+      // Assert temp root stays inside the repo (node_modules resolution).
+      const repoRoot = path.resolve(import.meta.dirname, "..");
+      assert.ok(
+        path.relative(repoRoot, tempRoot).startsWith("..") === false,
+        "temp root must stay inside the repo",
+      );
+
+      // Copy fixture src/ into temp root.
+      fs.cpSync(path.join(fixtureSrc, "src"), path.join(tempRoot, "src"), { recursive: true });
+
+      // Write temp content.config.ts mirroring production pages loader.
+      fs.writeFileSync(
+        path.join(tempRoot, "src", "content.config.ts"),
+        `import { defineCollection } from "astro:content";
+import { glob } from "astro/loaders";
+import { PageSchema } from "../../../../src/lib/content-schemas.ts";
+
+const pages = defineCollection({
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/pages",
+    generateId: ({ entry }) => entry.replace(/\\.[^.]+$/, ""),
+  }),
+  schema: PageSchema,
+});
+
+export const collections = { pages };
+`,
+      );
+
+      const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
+      const result = spawnSync(
+        astroBin,
+        ["build", "--root", tempRoot, "--config", "../../../astro.config.mjs"],
+        { cwd: repoRoot, encoding: "utf-8" },
+      );
+
+      // Unsafe markdown must fail the build (guard throws -> glob catches ->
+      // rendered:undefined -> probe's assertMarkdownRendered throws).
+      assert.notEqual(result.status, 0, "unsafe markdown build must fail");
+      assert.ok(
+        result.stderr.includes("render-failed") ||
+          result.stdout.includes("render-failed") ||
+          result.stderr.includes("raw-html") ||
+          result.stdout.includes("raw-html") ||
+          result.stderr.includes("unsafe-protocol") ||
+          result.stdout.includes("unsafe-protocol") ||
+          result.stderr.includes("event-handler") ||
+          result.stdout.includes("event-handler"),
+        `build must report a markdown-safety error; got stderr: ${result.stderr.slice(0, 500)}`,
+      );
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  test("production chain: safe markdown builds successfully", () => {
+    const fixtureSrc = path.resolve(import.meta.dirname, "fixtures", "markdown-safety");
+    const tempRoot = fs.mkdtempSync(path.join(import.meta.dirname, "fixtures", ".md-safety-"));
+    try {
+      const repoRoot = path.resolve(import.meta.dirname, "..");
+      fs.cpSync(path.join(fixtureSrc, "src"), path.join(tempRoot, "src"), { recursive: true });
+
+      // Overwrite the copied unsafe.md with safe content (never mutate tracked fixture).
+      fs.writeFileSync(
+        path.join(tempRoot, "src", "content", "pages", "unsafe.md"),
+        `---
+title: "Safe"
+description: "Safe test page"
+visibility: draft
+---
+
+A safe paragraph with a [normal link](/about/).
+`,
+      );
+
+      fs.writeFileSync(
+        path.join(tempRoot, "src", "content.config.ts"),
+        `import { defineCollection } from "astro:content";
+import { glob } from "astro/loaders";
+import { PageSchema } from "../../../../src/lib/content-schemas.ts";
+
+const pages = defineCollection({
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/pages",
+    generateId: ({ entry }) => entry.replace(/\\.[^.]+$/, ""),
+  }),
+  schema: PageSchema,
+});
+
+export const collections = { pages };
+`,
+      );
+
+      const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
+      const result = spawnSync(
+        astroBin,
+        ["build", "--root", tempRoot, "--config", "../../../astro.config.mjs"],
+        { cwd: repoRoot, encoding: "utf-8" },
+      );
+
+      assert.equal(
+        result.status,
+        0,
+        `safe markdown build must succeed; stderr: ${result.stderr.slice(0, 500)}`,
+      );
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
     }
   });
 });

@@ -1,0 +1,23 @@
+---
+// Test-only probe: imports the production assertMarkdownRendered and calls
+// it on every pages collection entry before rendering. This makes Astro's
+// swallowed glob-render errors fatal (the glob loader catches rehype plugin
+// exceptions and stores rendered:undefined; this assertion catches that).
+//
+// Relative import path: tests/fixtures/.md-safety-XXXX/src/pages/probe.astro
+// → repo root src/lib/markdown-safety.ts is ../../../../../src/lib/...
+import { getCollection } from "astro:content";
+import { assertMarkdownRendered } from "../../../../../src/lib/markdown-safety.ts";
+
+const pages = await getCollection("pages");
+for (const page of pages) {
+  assertMarkdownRendered(page);
+}
+---
+<html lang="en">
+  <body>
+    <ul>
+      {pages.map((p) => <li data-id={p.id}>{p.id}</li>)}
+    </ul>
+  </body>
+</html>
