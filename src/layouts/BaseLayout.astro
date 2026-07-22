@@ -6,6 +6,7 @@
 // content.
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 
 interface Props {
   title: string;
@@ -32,6 +33,7 @@ const { title, description, canonicalPath, noindex } = Astro.props;
     <main id="main">
       <slot />
     </main>
+    <SiteFooter />
     <style is:global>
       /* Structural shell CSS — no brand tokens, no motion. */
       * {
@@ -77,6 +79,22 @@ const { title, description, canonicalPath, noindex } = Astro.props;
         padding: 1rem;
         max-width: 64rem;
         margin-inline: auto;
+      }
+      footer {
+        padding: 1rem;
+        max-width: 64rem;
+        margin-inline: auto;
+      }
+      footer nav ul {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 0;
+        padding: 0;
+      }
+      footer nav a {
+        text-decoration: underline;
       }
     </style>
   </body>

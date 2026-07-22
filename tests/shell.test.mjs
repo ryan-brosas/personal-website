@@ -82,7 +82,7 @@ describe("B1 root shell", () => {
       site: SITE,
       expectedHtmlRoutes: ["/"],
       expectedDiscoverableRoutes: [],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
       allowEmptySitemap: true,
     });
     assert.equal(

@@ -231,7 +231,7 @@ if (process.argv[1] === __filename) {
     site: "https://example.com",
     expectedHtmlRoutes: ["/"],
     expectedDiscoverableRoutes: [],
-    expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+    expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
     allowEmptySitemap: true,
   });
   if (!result.ok) {

@@ -1,0 +1,14 @@
+---
+// M2 (Plan 03, Child 2) — shared footer. Copyright and a secondary navigation
+// with a normal Home link. No inactive or privacy links (privacy route is owned
+// by Plan 10; Contact by the contact child). No brand tokens.
+import { ROOT_ROUTE } from "../lib/routes.ts";
+---
+<footer>
+  <p>© Ryan Brosas</p>
+  <nav aria-label="Footer">
+    <ul>
+      <li><a href={ROOT_ROUTE}>Home</a></li>
+    </ul>
+  </nav>
+</footer>
