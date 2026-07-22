@@ -198,3 +198,86 @@ describe("B2 shared shell", () => {
     );
   });
 });
+
+describe("B3 footer and 404", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("footer with copyright and a secondary Home link", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    assert.ok(/<footer[\s>]/i.test(html), "has a <footer>");
+    assert.ok(/© Ryan Brosas/i.test(html), "footer has copyright (c) Ryan Brosas");
+    const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/i);
+    assert.ok(footerMatch, "footer block is parseable");
+    assert.ok(
+      /<nav[^>]*aria-label=["']Footer["']/i.test(footerMatch[0]),
+      "footer has a secondary <nav aria-label=Footer>",
+    );
+    assert.ok(/<a[^>]+href="\/"[^>]*>/i.test(footerMatch[0]), "footer has a Home link to /");
+  });
+
+  test("404.html is a noindex self-canonical recovery page", () => {
+    const file404 = path.join(distDir, "404.html");
+    // existsSync assertion first: failure is a missing-endpoint assertion, not ENOENT.
+    assert.ok(fs.existsSync(file404), "dist/404.html must exist");
+
+    // The verifier must accept the 404 endpoint once listed.
+    const result = verifyBuild({
+      distDir,
+      site: SITE,
+      expectedHtmlRoutes: ["/"],
+      expectedDiscoverableRoutes: [],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
+      allowEmptySitemap: true,
+    });
+    assert.equal(
+      result.ok,
+      true,
+      `verifier must accept the 404 endpoint: ${JSON.stringify(result.errors)}`,
+    );
+
+    const html = fs.readFileSync(file404, "utf-8");
+
+    // Exactly one canonical pointing at the /404.html file endpoint (slashless).
+    const canonicals = canonicalsOf(html);
+    assert.equal(canonicals.length, 1, "exactly one canonical link");
+    assert.equal(
+      canonicals[0],
+      "https://example.com/404.html",
+      "canonical is /404.html (not /404/)",
+    );
+
+    // noindex,follow — 404 stays crawlable but excluded from discovery.
+    assert.ok(
+      /<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
+      "404 has noindex,follow robots meta",
+    );
+
+    // Page not found heading.
+    assert.ok(/<h1[^>]*>\s*Page not found\s*<\/h1>/i.test(html), "404 has 'Page not found' h1");
+
+    // Recovery link inside main#main with exact text.
+    const mainMatch = html.match(/<main[^>]*id="main"[^>]*>([\s\S]*?)<\/main>/i);
+    assert.ok(mainMatch, "404 has main#main");
+    assert.ok(
+      /<a[^>]+href="\/"[^>]*>\s*Return to the home page\s*<\/a>/i.test(mainMatch[1]),
+      "404 main has a recovery link to / with text 'Return to the home page'",
+    );
+
+    // The 404 header nav must not mark any item current (it is not a nav page).
+    const headerMatch = html.match(/<header[\s\S]*?<\/header>/i);
+    assert.ok(headerMatch, "404 has a header");
+    assert.ok(!/aria-current="page"/i.test(headerMatch[0]), "404 header has no aria-current=page");
+  });
+});
