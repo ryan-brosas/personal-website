@@ -317,22 +317,20 @@ describe("C2 about route", () => {
     assert.deepEqual(resolveRoutes({ unconfigured: "public" }), []);
   });
 
-  test("/about/ is routable but not discoverable (noindex)", () => {
-    // The verifier is the gate: it fails with `missing-route: /about/` until
-    // [page].astro + about.md exist, so the first assertion fails before any
-    // HTML read can ENOENT.
+  test("/about/ is public and discoverable", () => {
+    // The verifier is the gate: it fails until /about/ is public and in the sitemap.
     const result = verifyBuild({
       distDir,
       site: SITE,
       expectedHtmlRoutes: ["/", "/about/"],
-      expectedDiscoverableRoutes: [],
+      expectedDiscoverableRoutes: ["/about/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
-      allowEmptySitemap: true,
+      allowEmptySitemap: false,
     });
     assert.equal(
       result.ok,
       true,
-      `verifier must accept /about/ as routable-not-discoverable: ${JSON.stringify(result.errors)}`,
+      `verifier must accept /about/ as public+discoverable: ${JSON.stringify(result.errors)}`,
     );
 
     const html = readHtml(distDir, "/about/");
@@ -342,22 +340,96 @@ describe("C2 about route", () => {
     assert.equal(canonicals.length, 1, "exactly one canonical");
     assert.equal(canonicals[0], "https://example.com/about/", "canonical is the /about/ self-URL");
 
-    // noindex,follow — routable but excluded from discovery.
+    // Public page has NO noindex meta.
     assert.ok(
-      /<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
-      "about has noindex,follow robots meta",
+      !/<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
+      "public about has no noindex meta",
     );
 
-    // About is NOT in the sitemap (not discoverable).
+    // About IS in the sitemap (discoverable).
     const sitemap = fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf-8");
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-    assert.ok(!locs.includes("https://example.com/about/"), "about is not in the sitemap");
+    assert.ok(locs.includes("https://example.com/about/"), "about is in the sitemap");
 
-    // About link appears in navigation (routable => nav).
+    // About link appears in navigation.
     assert.ok(/href="\/about\/"/i.test(html), "about link appears in nav");
     // Services and Contact still absent (no records yet).
     assert.ok(!/href="\/services\/"/i.test(html), "no /services/ link without a routable record");
     assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+  });
+});
+
+// Permanent copied-production noindex variant: copies production src + configs
+// to an isolated repo-local temp root, rewrites the COPIED about visibility to
+// noindex, and builds the copy. This proves the dynamic route handles noindex
+// visibility (route + noindex meta + sitemap exclusion + nav) even after the
+// tracked About record is promoted to public. The tracked source is never
+// mutated.
+describe("C2 noindex variant (copied production)", () => {
+  let variantDist;
+  let variantCleanup;
+
+  before(() => {
+    const tempRoot = fs.mkdtempSync(path.join(repoRoot, "node_modules", ".core-pages-variant-"));
+    const rel = path.relative(repoRoot, tempRoot);
+    assert.ok(
+      !path.isAbsolute(rel) && !rel.startsWith(".."),
+      `variant temp root must stay inside repo (got ${rel})`,
+    );
+
+    // Copy production files needed for a standalone build.
+    fs.cpSync(path.join(repoRoot, "src"), path.join(tempRoot, "src"), { recursive: true });
+    fs.copyFileSync(
+      path.join(repoRoot, "astro.config.mjs"),
+      path.join(tempRoot, "astro.config.mjs"),
+    );
+    fs.copyFileSync(path.join(repoRoot, "tsconfig.json"), path.join(tempRoot, "tsconfig.json"));
+    fs.copyFileSync(path.join(repoRoot, "package.json"), path.join(tempRoot, "package.json"));
+
+    // Rewrite the COPIED about visibility to noindex (never the tracked file).
+    const aboutPath = path.join(tempRoot, "src", "content", "pages", "about.md");
+    const aboutContent = fs
+      .readFileSync(aboutPath, "utf-8")
+      .replace(/^visibility:.*$/m, "visibility: noindex");
+    fs.writeFileSync(aboutPath, aboutContent, "utf-8");
+
+    variantDist = path.join(tempRoot, "dist");
+    const result = spawnSync(astroBin, ["build", "--outDir", variantDist], {
+      cwd: tempRoot,
+      encoding: "utf-8",
+    });
+    if (result.status !== 0) {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+      assert.fail(
+        `variant build failed (status ${result.status}):\n${result.stdout}\n${result.stderr}`,
+      );
+    }
+    variantCleanup = () => fs.rmSync(tempRoot, { recursive: true, force: true });
+  });
+
+  after(() => {
+    if (variantCleanup) variantCleanup();
+  });
+
+  test("noindex about is routable, has noindex meta, excluded from sitemap, in nav", () => {
+    const html = readHtml(variantDist, "/about/");
+    assert.ok(html, "variant dist/about/index.html must exist");
+
+    const canonicals = canonicalsOf(html);
+    assert.equal(canonicals.length, 1, "exactly one canonical");
+    assert.equal(canonicals[0], "https://example.com/about/", "canonical is the /about/ self-URL");
+
+    assert.ok(
+      /<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
+      "variant about has noindex,follow robots meta",
+    );
+
+    const sitemap = fs.readFileSync(path.join(variantDist, "sitemap.xml"), "utf-8");
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    assert.ok(!locs.includes("https://example.com/about/"), "variant about is not in the sitemap");
+
+    assert.ok(/href="\/about\/"/i.test(html), "variant about link appears in nav");
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
   });
 });
