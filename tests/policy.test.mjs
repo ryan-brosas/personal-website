@@ -10,6 +10,7 @@ import {
   DateFieldsSchema,
 } from "../src/lib/publishing.ts";
 import { ROUTES, canonicalHref, isHtmlRoute, isFileEndpoint } from "../src/lib/routes.ts";
+import { renderSitemap, renderRobots } from "../src/lib/discovery.ts";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -194,6 +195,86 @@ describe("T3 routes and canonical helpers", () => {
         canonicalHref("/sitemap.xml", "https://example.com/"),
         "https://example.com/sitemap.xml",
       );
+    });
+  });
+});
+
+describe("T4 discovery rendering", () => {
+  const site = "https://example.com";
+
+  describe("renderSitemap", () => {
+    test("empty input emits a well-formed urlset placeholder", () => {
+      assert.equal(
+        renderSitemap([], site),
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
+      );
+    });
+
+    test("includes only public routes (draft and noindex excluded)", () => {
+      const routes = [
+        { path: "/services/", visibility: "public" },
+        { path: "/draft-page/", visibility: "draft" },
+        { path: "/noindex-page/", visibility: "noindex" },
+        { path: "/about/", visibility: "public" },
+      ];
+      const xml = renderSitemap(routes, site);
+      assert.ok(xml.includes("https://example.com/services/"), "services included");
+      assert.ok(xml.includes("https://example.com/about/"), "about included");
+      assert.ok(!xml.includes("draft-page"), "draft excluded");
+      assert.ok(!xml.includes("noindex-page"), "noindex excluded");
+    });
+
+    test("emits a schema-valid urlset wrapper", () => {
+      const xml = renderSitemap([{ path: "/services/", visibility: "public" }], site);
+      assert.ok(
+        xml.startsWith('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'),
+        "starts with urlset",
+      );
+      assert.ok(xml.endsWith("</urlset>"), "ends with closing urlset");
+    });
+
+    test("deterministic order (sorted by path)", () => {
+      const routes = [
+        { path: "/zebra/", visibility: "public" },
+        { path: "/alpha/", visibility: "public" },
+        { path: "/mid/", visibility: "public" },
+      ];
+      const xml = renderSitemap(routes, site);
+      const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+      assert.deepEqual(locs, [
+        "https://example.com/alpha/",
+        "https://example.com/mid/",
+        "https://example.com/zebra/",
+      ]);
+    });
+
+    test("XML-escapes special characters in loc", () => {
+      const xml = renderSitemap([{ path: "/a&b/", visibility: "public" }], site);
+      assert.ok(xml.includes("https://example.com/a&amp;b/"), "ampersand escaped");
+      assert.ok(!xml.includes("&b/</loc>"), "raw ampersand not in loc");
+    });
+  });
+
+  describe("renderRobots", () => {
+    test("emits User-agent: * with no Disallow", () => {
+      const txt = renderRobots(site);
+      assert.ok(txt.includes("User-agent: *"), "has User-agent: *");
+      assert.ok(!txt.includes("Disallow"), "no Disallow for any route");
+    });
+
+    test("emits an absolute slashless Sitemap line", () => {
+      const txt = renderRobots(site);
+      assert.ok(txt.includes("Sitemap: https://example.com/sitemap.xml"), "absolute sitemap line");
+      assert.ok(!txt.includes("sitemap.xml/"), "no trailing slash on sitemap endpoint");
+    });
+
+    test("normalizes a trailing slash on the origin", () => {
+      const txt = renderRobots("https://example.com/");
+      assert.ok(
+        txt.includes("Sitemap: https://example.com/sitemap.xml"),
+        "single slash between origin and endpoint",
+      );
+      assert.ok(!txt.includes("//sitemap.xml"), "no double slash");
     });
   });
 });
