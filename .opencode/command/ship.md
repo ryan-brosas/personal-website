@@ -270,7 +270,7 @@ Detect changed UI files:
 
 ```bash
 git diff --name-only $BASE_SHA...HEAD -- \
-  '*.tsx' '*.jsx' '*.css' '*.scss' '*.sass' '*.less' '*.html' '*.mdx'
+  '*.tsx' '*.jsx' '*.astro' '*.css' '*.scss' '*.sass' '*.less' '*.html' '*.mdx'
 ```
 
 If any UI files changed:
