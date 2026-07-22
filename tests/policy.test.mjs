@@ -9,6 +9,7 @@ import {
   resolveRelationship,
   DateFieldsSchema,
 } from "../src/lib/publishing.ts";
+import { ROUTES, canonicalHref, isHtmlRoute, isFileEndpoint } from "../src/lib/routes.ts";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -120,5 +121,79 @@ describe("T2 publishing policy", () => {
 
   test("sources.json is the empty public-safe evidence registry", () => {
     assert.deepEqual(sourcesRegistry, {});
+  });
+});
+
+describe("T3 routes and canonical helpers", () => {
+  test("ROUTES is an array (empty in M1)", () => {
+    assert.ok(Array.isArray(ROUTES));
+  });
+
+  describe("isHtmlRoute / isFileEndpoint", () => {
+    test("HTML routes (no extension) are HTML routes", () => {
+      assert.equal(isHtmlRoute("/services/"), true);
+      assert.equal(isHtmlRoute("/projects/"), true);
+      assert.equal(isHtmlRoute("/"), true);
+    });
+
+    test("file endpoints (with extension) are NOT HTML routes", () => {
+      assert.equal(isHtmlRoute("/sitemap.xml"), false);
+      assert.equal(isHtmlRoute("/robots.txt"), false);
+      assert.equal(isHtmlRoute("/404.html"), false);
+      assert.equal(isHtmlRoute("/rss.xml"), false);
+    });
+
+    test("file endpoints are detected by extension", () => {
+      assert.equal(isFileEndpoint("/sitemap.xml"), true);
+      assert.equal(isFileEndpoint("/robots.txt"), true);
+      assert.equal(isFileEndpoint("/404.html"), true);
+      assert.equal(isFileEndpoint("/rss.xml"), true);
+    });
+
+    test("HTML routes are NOT file endpoints", () => {
+      assert.equal(isFileEndpoint("/services/"), false);
+      assert.equal(isFileEndpoint("/projects/"), false);
+      assert.equal(isFileEndpoint("/"), false);
+    });
+  });
+
+  describe("canonicalHref", () => {
+    test("HTML route gets an absolute URL with trailing slash", () => {
+      assert.equal(
+        canonicalHref("/services/", "https://example.com"),
+        "https://example.com/services/",
+      );
+      assert.equal(canonicalHref("/probe/", "https://example.com"), "https://example.com/probe/");
+    });
+
+    test("root gets a single trailing slash", () => {
+      assert.equal(canonicalHref("/", "https://example.com"), "https://example.com/");
+    });
+
+    test("file endpoint gets a slashless absolute URL", () => {
+      assert.equal(
+        canonicalHref("/sitemap.xml", "https://example.com"),
+        "https://example.com/sitemap.xml",
+      );
+      assert.equal(
+        canonicalHref("/robots.txt", "https://example.com"),
+        "https://example.com/robots.txt",
+      );
+      assert.equal(
+        canonicalHref("/404.html", "https://example.com"),
+        "https://example.com/404.html",
+      );
+    });
+
+    test("normalizes a trailing slash on the origin (no double slash)", () => {
+      assert.equal(
+        canonicalHref("/services/", "https://example.com/"),
+        "https://example.com/services/",
+      );
+      assert.equal(
+        canonicalHref("/sitemap.xml", "https://example.com/"),
+        "https://example.com/sitemap.xml",
+      );
+    });
   });
 });
