@@ -694,3 +694,102 @@ describe("D1 favicon", () => {
     );
   });
 });
+
+describe("D2 token shell", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("global.css imports the canonical token sheet once", () => {
+    const globalCssPath = path.join(repoRoot, "src", "styles", "global.css");
+    // Existence guard before reading (assertion, not ENOENT).
+    assert.ok(fs.existsSync(globalCssPath), "src/styles/global.css must exist");
+    const source = fs.readFileSync(globalCssPath, "utf-8");
+    assert.ok(
+      source.includes('@import "../../docs/Ryan-Brosas-Brand-System/tokens.css"'),
+      "global.css imports the canonical tokens.css via a relative path",
+    );
+  });
+
+  test("built shell consumes semantic brand tokens, not system-ui", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    const css = collectCss(html, distDir);
+    assert.ok(css.length > 0, "some CSS is present (inline or linked)");
+    // Semantic token consumption, not raw pigments or system-ui.
+    for (const token of [
+      "var(--canvas)",
+      "var(--text-1)",
+      "var(--font-body)",
+      "var(--leading-body)",
+      "var(--font-display)",
+      "var(--content-max)",
+    ]) {
+      assert.ok(css.includes(token), `built CSS consumes ${token}`);
+    }
+    assert.ok(!/system-ui/i.test(css), "built CSS no longer uses system-ui");
+  });
+
+  test("header brand lockup: decorative mark beside visible site title, root current on /", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+
+    // A brand anchor linking the root, containing the approved mark (inline SVG
+    // with the R/lightning viewBox) beside the visible site title.
+    const brandAnchorMatch = html.match(/<a[^>]+href="\/"[^>]*>([\s\S]*?)<\/a>/i);
+    assert.ok(brandAnchorMatch, "header has a root brand anchor");
+    const brandInner = brandAnchorMatch[1];
+    assert.ok(
+      /<svg[^>]+viewBox="0 0 255 211"/i.test(brandInner),
+      "brand anchor contains the approved R/lightning mark (viewBox 0 0 255 211)",
+    );
+    assert.ok(
+      /aria-hidden="true"/i.test(brandInner) && /focusable="false"/i.test(brandInner),
+      "brand mark SVG is decorative to assistive technology",
+    );
+    assert.ok(
+      brandInner
+        .replace(/<[^>]+>/g, "")
+        .trim()
+        .includes("Ryan Brosas"),
+      "brand anchor shows the visible site title beside the mark",
+    );
+
+    // The brand anchor owns the root current-page state on /.
+    assert.ok(
+      /<a[^>]+href="\/"[^>]*aria-current="page"/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/"/i.test(html),
+      "brand anchor has aria-current=page on /",
+    );
+
+    // The Primary nav contains only page routes (root lives in the brand anchor).
+    const navMatch = html.match(/<nav[^>]*aria-label=["']Primary["'][^>]*>([\s\S]*?)<\/nav>/i);
+    assert.ok(navMatch, "exactly one <nav aria-label=Primary>");
+    assert.ok(
+      !/href="\/"/i.test(navMatch[1]),
+      "primary nav does not duplicate the root link (brand anchor owns it)",
+    );
+    assert.ok(/href="\/about\/"/i.test(navMatch[1]), "primary nav has the about link");
+    assert.ok(/href="\/services\/"/i.test(navMatch[1]), "primary nav has the services link");
+    assert.ok(!/href="\/contact\/"/i.test(navMatch[1]), "primary nav has no contact link");
+  });
+
+  test("production logo asset is byte-identical to the approved charcoal mark", () => {
+    const prodLogo = path.join(repoRoot, "src", "assets", "brand", "logo-charcoal.svg");
+    assert.ok(fs.existsSync(prodLogo), "src/assets/brand/logo-charcoal.svg must exist");
+    assert.equal(
+      sha256OfFile(prodLogo),
+      LOGO_SOURCE_SHA256,
+      "production logo matches the approved charcoal R/lightning mark",
+    );
+  });
+});
