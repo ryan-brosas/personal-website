@@ -21,7 +21,7 @@ Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 `.opencode/artifacts/website-build/{plan,todo,decisions}.md`,
 `.opencode/artifacts/MEMORY.md`, `docs/sitemap.md`.
 
-**Active milestone:** M2 — Accessible Core Shell (in progress; decomposed into child plans: `m2-content-route-contracts` complete 2026-07-22 (`8cf77ab`), `m2-semantic-shell` complete 2026-07-22 (`1d3e65a`; 88/88 tests), `m2-core-pages` complete 2026-07-22 (`333c074`; 106/106 tests, first public content routes /about/ + /services/ shipped), `m2-brand-shell` complete 2026-07-22 (`1f305f4`; 119/119 tests, favicon + brand tokens + progressive mobile nav shipped), plus gated contact/accessibility children). M1 — Proven Static Foundation complete 2026-07-22 (`9fd70ce`).
+**Active milestone:** M2 — Accessible Core Shell (in progress; decomposed into child plans: `m2-content-route-contracts` complete 2026-07-22 (`8cf77ab`), `m2-semantic-shell` complete 2026-07-22 (`1d3e65a`; 88/88 tests), `m2-core-pages` complete 2026-07-22 (`333c074`; 106/106 tests, first public content routes /about/ + /services/ shipped), `m2-brand-shell` complete 2026-07-22 (`1f305f4`; 119/119 tests, favicon + brand tokens + progressive mobile nav shipped), `m2-contact-page` complete 2026-07-22 (`c6dfdf7`; 122/122 tests, `/contact/` shipped), `m2-accessibility-acceptance` complete 2026-07-22 (`3ccbf1f`; 122/122 tests, accessibility evidence recorded via `scripts/a11y-capture.mjs` — screen-reader smoke BLOCKED on no reader installed, M2 aggregate close pending)). M1 — Proven Static Foundation complete 2026-07-22 (`9fd70ce`).
 
 ## Active Decisions
 
@@ -68,7 +68,10 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
   favicon derivation are resolved (operator 2026-07-22: local repo authoritative,
   favicon from the charcoal R/lightning mark, selected assets = charcoal logo +
   utility sprite). P02B is locally complete; Plan 03 Task 1 visual integration and
-  Plan 04 are unblocked.
+  Plan 04 are unblocked. Accessibility acceptance is recorded (2026-07-22;
+  `m2-accessibility-acceptance` complete at `3ccbf1f`, 122/122 tests, real browser
+  evidence captured for all 5 routes; screen-reader smoke BLOCKED on no reader
+  installed — install a reader to re-open; M2 aggregate close pending).
 - **M3 (first public release):** one approved/redacted real-work project artifact; the
   self-hosted Pages CMS core workflow (VPS deployment, isolated PostgreSQL, Caddy,
   GitHub App, backup) verified; release operations (domain, host, CI provider).
@@ -87,8 +90,11 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
    shipped, markdown body safety guard landed) → `m2-brand-shell` complete
    (`1f305f4`; 119/119 tests, favicon + brand tokens + progressive mobile nav
    shipped) → Contact complete (`c6dfdf7`; 122/122 tests, `/contact/` shipped) →
-   accessibility acceptance. The M2 parent is a non-executable aggregate;
-   `/ship` only on the active child.
+   accessibility acceptance complete (`3ccbf1f`; 122/122 tests; screen-reader
+   smoke BLOCKED on no reader installed). The M2 parent is a non-executable
+   aggregate; `/ship` only on the active child. All M2 children are now
+   complete; the M2 aggregate close (parent ledger sync + reconcile the
+   acceptance-record hash wording) is a separate documentation-only decision.
 2. P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
    — **accepted 2026-07-22** (prototype `214f66e8ef16...`, 16 viewport captures,
    progressive enhancement byte-identical, failure injections safe,
