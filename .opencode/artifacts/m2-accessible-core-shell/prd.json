@@ -15,7 +15,7 @@
     },
     {
       "slug": "m2-semantic-shell",
-      "status": "active",
+      "status": "complete",
       "tasks": 3,
       "gates": ["m2-content-route-contracts"]
     },
