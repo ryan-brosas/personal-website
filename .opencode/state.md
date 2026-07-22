@@ -10,18 +10,18 @@ Planning complete and approved. Releases are incremental public releases, not on
 coordinated launch. The credible core (M3) ships first; Blog, Directory, LLM Watcher,
 and Resources promote independently.
 
-No application code, dependencies, or Astro scaffold exists yet. The repository
-baseline is committed (`e5956d5`: `.pi/` -> `.opencode/` migration recorded as
-high-similarity renames, `.gitignore` expanded to exclude `.opencode/node_modules/`,
-`node_modules/`, `dist/`, `.astro/`, `.playwright-mcp/`, and `.env*`, `docs/sitemap.md`
-republished); `git status` is clean.
+Astro scaffold is committed and M1 is complete (`9fd70ce`: pinned Astro 5.18.2 / TS
+6.0.3 / `@astrojs/check` 0.9.9, policy kernel, publishing contracts, discovery output,
+read-only verifier; 57/57 tests pass, all gates green). M2 (accessible core shell) is
+active and decomposed into child plans. The earlier `.pi/` -> `.opencode/` migration is
+commit `e5956d5`; `git status` is clean.
 
 Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 `.opencode/roadmap.md`, `.opencode/user.md`, `.fallowrc.json`,
 `.opencode/artifacts/website-build/{plan,todo,decisions}.md`,
 `.opencode/artifacts/MEMORY.md`, `docs/sitemap.md`.
 
-**Active milestone:** M1 — Proven Static Foundation (complete 2026-07-22; next milestone M2 via Plan 03).
+**Active milestone:** M2 — Accessible Core Shell (in progress; decomposed into child plans: `m2-content-route-contracts` active, `m2-semantic-shell` pending, plus gated core-pages/contact/brand/accessibility children). M1 — Proven Static Foundation complete 2026-07-22 (`9fd70ce`).
 
 ## Active Decisions
 
@@ -54,7 +54,7 @@ infrastructure, or final content:
 - [x] **Route/origin strategy and visibility policy agreed** (2026-07-22; `docs/sitemap.md` authoritative for route dispositions `launch | conditional | defer | absent` and content visibility `draft | public | noindex`; Plan 01 uses a placeholder origin injected at release).
 - [x] **Toolchain re-pinned** against current registry (2026-07-22; matrix confirmed: Astro 5.18.2 / TS 6.0.3 / `@astrojs/check` 0.9.9 pinned in Plan 01; `@astrojs/rss` 4.0.19 confirmed (installed in Plan 05); Astro 7.1.3 / TS 7.0.2 declined — `@astrojs/check` 0.9.9 peers `typescript: ^5.0.0 || ^6.0.0`).
 
-Once these are clear, M1 (Astro policy-kernel tracer) may start.
+M1 (Astro policy-kernel tracer) is complete. M2 (accessible core shell) is active.
 
 ## Downstream Gates (block only the milestones that consume them)
 
@@ -74,10 +74,10 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
 
 ## Next Priorities
 
-1. Start M2 (Accessible Core Shell) via Plan 03. M1 complete 2026-07-22 (Astro
-   policy-kernel tracer: pinned scaffold, publishing contracts, discovery output,
-   read-only verifier; 57/57 tests pass; review 4/5 after 5 rounds of fixes).
-   Switch `.active` to the Plan 03 artifact when starting.
+1. Execute M2 child plans in order: `m2-content-route-contracts` (active) →
+   `m2-semantic-shell` → gated core-pages → Contact → brand → accessibility.
+   M1 complete 2026-07-22 (`9fd70ce`; 57/57 tests, all gates green). The M2 parent is
+   a non-executable aggregate; `/ship` only on the active child.
 2. Run P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
    and stop for the durable visual decision. Run P02B only after acceptance to
    synchronize/verify local and registered package surfaces. Use the standalone plans'

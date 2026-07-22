@@ -3,188 +3,89 @@
   "title": "M2 Accessible Core Shell (Plan 03 — Brand Shell and Core Pages)",
   "created": "2026-07-22",
   "status": "in-progress",
+  "aggregate": true,
   "depends_on": ["m1-proven-static-foundation"],
   "blocks": ["m3-credible-core-release"],
-  "related_tracks": [
+  "children": [
     {
-      "id": "p02a-homepage-prototype",
-      "spec": ".opencode/artifacts/homepage-art-direction/",
-      "parallel_with": ["m2"],
-      "note": "Signal Path prototype + no-JS mobile-nav repair + visual acceptance; disjoint files, runs in parallel; gates Task 5 via P02B"
+      "slug": "m2-content-route-contracts",
+      "status": "active",
+      "tasks": 3,
+      "gates": []
     },
     {
-      "id": "p02b-homepage-canonicalization",
-      "spec": ".opencode/artifacts/homepage-art-direction-canonicalization/",
-      "gates": ["m2-task-5-brand-integration", "m2-exit-accessibility"],
-      "note": "Does not gate Tasks 1-4 semantic shell work"
+      "slug": "m2-semantic-shell",
+      "status": "pending",
+      "tasks": 3,
+      "gates": ["m2-content-route-contracts"]
+    },
+    {
+      "slug": "m2-core-pages",
+      "status": "pending",
+      "tasks": 0,
+      "gates": ["m2-semantic-shell", "copy-approval", "markdown-safety"]
+    },
+    {
+      "slug": "m2-contact-page",
+      "status": "pending",
+      "tasks": 0,
+      "gates": ["scheduler-url", "email-fallback", "privacy-decision", "copy-approval"]
+    },
+    {
+      "slug": "m2-brand-shell",
+      "status": "pending",
+      "tasks": 0,
+      "gates": ["p02b-verified-distribution", "asset-allowlist", "favicon-derivation"]
+    },
+    {
+      "slug": "m2-accessibility-acceptance",
+      "status": "pending",
+      "tasks": 0,
+      "gates": ["all-ui-children-complete", "browser-environment"]
     }
   ],
   "success_criteria": [
     {
       "id": "sc-1",
-      "description": "Page and settings schemas validate real records; bad records rejected at build; route inventory has 4 launch HTML routes + 3 file endpoints",
-      "verify": "npm run check && npm test exit 0; schema/route/verifier tests assert validation and route inventory"
+      "description": "All child plans complete: content/route contracts, semantic shell, core pages, contact, brand, accessibility",
+      "verify": "parent plan.md Task close-1 verifies all child ledgers show complete and full gate passes"
     },
     {
       "id": "sc-2",
-      "description": "Semantic shell works without JavaScript: skip nav, landmarks, focus, canonical, noindex, and navigation usable with JS disabled",
-      "verify": "npm run build exits 0; generated HTML has correct landmarks, self-canonicals, and no-JS-accessible navigation"
-    },
-    {
-      "id": "sc-3",
-      "description": "Core pages render correctly: /about/, /services/, /404.html with self-canonicals; draft pages excluded from sitemap and route output",
-      "verify": "npm run build && npm run verify exit 0; sitemap excludes draft; each public page has exactly one self-canonical"
-    },
-    {
-      "id": "sc-4",
-      "description": "Verifier is read-only and updated for M2: accepts launch routes + file endpoints, rejects unexpected routes, never mutates dist/",
-      "verify": "npm run verify exits 0 against placeholder site; read-only snapshot test passes"
-    },
-    {
-      "id": "sc-5",
-      "description": "[BLOCKED by P02B] Brand integration: global.css imports distributed tokens; brand palette, typography, and motion applied; favicon renders",
-      "verify": "npm run build exits 0; visual + build check after P02B distribution verified and asset allowlist approved"
-    },
-    {
-      "id": "sc-6",
-      "description": "[BLOCKED by browser + sc-5] Accessibility: keyboard, reflow, 200% zoom, reduced motion, no-JS pass at 360/768/desktop without filler content",
-      "verify": "browser evidence (headed or headless) or durable blocked record; no inferred pass from static inspection"
+      "description": "Accessibility evidence matches the final commit; no blocked child remains",
+      "verify": "parent plan.md Task close-2 verifies acceptance.md commit hash matches HEAD and user confirms close"
     }
   ],
   "tasks": [
     {
-      "id": "t1",
-      "title": "Schema, config, and route inventory",
-      "category": "scaffold",
-      "end_state": "Page and settings schemas are expanded and validated; code-controlled route/page IDs are centralized; ROUTES is populated with the 4 launch HTML routes; the settings singleton has its first substantive record.",
-      "depends_on": [],
+      "id": "close-1",
+      "title": "Verify all child ledgers and run full gates",
+      "category": "aggregate-verification",
+      "end_state": "Every child plan's prd.json status is complete; full code gate passes (npm run check && npm test && npm run build && npm run verify); no child is blocked.",
+      "depends_on": ["all-children-complete"],
       "parallel": false,
-      "conflicts_with": [],
+      "files": [".opencode/artifacts/m2-accessible-core-shell/progress.md"],
+      "verification": [
+        "Each child prd.json status field reads 'complete'",
+        "npm run check && npm test && npm run build && npm run verify all exit 0",
+        "No child has a 'blocked' or 'pending' status"
+      ]
+    },
+    {
+      "id": "close-2",
+      "title": "Verify accessibility evidence matches final commit and request aggregate close",
+      "category": "aggregate-close",
+      "end_state": "Accessibility acceptance record exists, its recorded commit/output hash matches HEAD, and the user has confirmed M2 aggregate close.",
+      "depends_on": ["close-1"],
+      "parallel": false,
       "files": [
-        "src/content.config.ts",
-        "src/config/site.ts",
-        "src/lib/routes.ts",
-        "src/content/settings/site.json"
+        ".opencode/artifacts/m2-accessible-core-shell/progress.md",
+        ".opencode/artifacts/m2-accessible-core-shell/prd.json"
       ],
       "verification": [
-        "npm run check exits 0",
-        "npm test exits 0 (schema validation, route inventory, bad-record rejection tests)",
-        "ROUTES contains / /about/ /services/ /contact/ (rg -n 'ROUTES' src/lib/routes.ts)",
-        "PageSchema extends RecordBase with title and description; SettingsSchema has nav labels and optional contact fields"
-      ]
-    },
-    {
-      "id": "t2",
-      "title": "Semantic HTML shell",
-      "category": "shell",
-      "end_state": "BaseLayout, SeoHead, SiteHeader, and SiteFooter render a no-JavaScript-accessible shell with skip nav, semantic landmarks, visible focus, canonical metadata, noindex handling, and always-available navigation.",
-      "depends_on": ["t1"],
-      "parallel": false,
-      "conflicts_with": [],
-      "files": [
-        "src/layouts/BaseLayout.astro",
-        "src/components/SeoHead.astro",
-        "src/components/SiteHeader.astro",
-        "src/components/SiteFooter.astro"
-      ],
-      "verification": [
-        "npm run check exits 0",
-        "npm run build exits 0",
-        "BaseLayout includes skip-link to #main, html lang=en, slot, and structural CSS",
-        "SiteHeader nav is visible without JS (no JS-only display:none); aria-current on active route",
-        "SeoHead emits canonical via new URL(Astro.url.pathname, Astro.site).href and noindex when requested"
-      ]
-    },
-    {
-      "id": "t3",
-      "title": "Core pages and fixed-ID records",
-      "category": "pages",
-      "end_state": "About, Services (Work With Me), Contact, 404, and a minimal / shell render with correct canonicals; About and Services are public; Contact, Home, and Resources remain draft until their inputs resolve.",
-      "depends_on": ["t2"],
-      "parallel": false,
-      "conflicts_with": [],
-      "files": [
-        "src/pages/about/index.astro",
-        "src/pages/services/index.astro",
-        "src/pages/contact/index.astro",
-        "src/pages/404.astro",
-        "src/pages/index.astro",
-        "src/content/pages/about.md",
-        "src/content/pages/services.md",
-        "src/content/pages/contact.md",
-        "src/content/pages/home.md",
-        "src/content/pages/resources.md"
-      ],
-      "verification": [
-        "npm run check exits 0",
-        "npm run build exits 0 and generates dist/about/index.html, dist/services/index.html, dist/404.html, dist/index.html",
-        "draft pages (contact, home, resources) are excluded from sitemap and generate no route output OR remain noindex",
-        "/services/ is labeled Work With Me in navigation",
-        "/ has only a navigation + positioning placeholder (no filler marketing copy)",
-        "404.astro builds to dist/404.html"
-      ]
-    },
-    {
-      "id": "t4",
-      "title": "Verifier and test updates for M2 routes",
-      "category": "tests",
-      "end_state": "The read-only verifier accepts M2 launch routes and file endpoints, rejects unexpected routes, and never mutates dist/; tests cover schema validation, route inventory, page canonicals, draft exclusion, and 404 rendering.",
-      "depends_on": ["t3"],
-      "parallel": false,
-      "conflicts_with": [],
-      "files": ["scripts/verify-build.mjs", "tests/policy.test.mjs"],
-      "verification": [
-        "npm run check exits 0",
-        "npm test exits 0",
-        "npm run build exits 0",
-        "npm run verify exits 0 (read-only; updated manifest with M2 routes and endpoints; allowEmptySitemap: false)",
-        "verifier rejects unexpected routes, missing canonicals, draft sitemap leaks, and endpoint mismatches",
-        "read-only snapshot test proves no dist/ mutation"
-      ]
-    },
-    {
-      "id": "t5",
-      "title": "[BLOCKED by P02B + asset allowlist] Brand integration",
-      "category": "brand",
-      "end_state": "global.css imports distributed tokens.css; brand palette, typography, spacing, and motion are applied to the shell; selected approved assets and favicon are copied into production paths.",
-      "depends_on": ["t4"],
-      "parallel": false,
-      "conflicts_with": [],
-      "gated_by": [
-        "p02b-verified-distribution",
-        "brand-asset-allowlist-approved",
-        "favicon-derivation-decided"
-      ],
-      "files": [
-        "src/styles/global.css",
-        "src/assets/brand/",
-        "public/favicon.svg",
-        "src/layouts/BaseLayout.astro"
-      ],
-      "verification": [
-        "npm run build exits 0",
-        "global.css imports tokens.css once and applies brand palette (#FEFEFE #1A1A1A #FF5555 #ECC90F), typography stacks, 8px rhythm, motion policy, and reduced-motion media query",
-        "only explicitly selected assets are in src/assets/brand/ (no revisions, previews, temporary files, or component kit)",
-        "favicon.svg renders at public/favicon.svg",
-        "internal routes use only functional motion (150ms hover, 220ms panel, max 6px); no homepage choreography leaks"
-      ]
-    },
-    {
-      "id": "t6",
-      "title": "[BLOCKED by browser + t5] Accessibility verification",
-      "category": "accessibility",
-      "end_state": "Keyboard navigation, reflow, 200% zoom, reduced motion, and no-JS behavior pass at 360px, 768px, and desktop without filler content; a real screen-reader smoke or durable blocked record is produced.",
-      "depends_on": ["t5"],
-      "parallel": false,
-      "conflicts_with": [],
-      "gated_by": ["t5-complete", "browser-environment-available"],
-      "files": ["tests/accessibility.test.mjs"],
-      "verification": [
-        "keyboard navigation reaches all interactive elements via Tab",
-        "reflow works at 320 CSS px equivalent (200% zoom at 640px viewport) without 2D scrolling",
-        "reduced-motion media query disables non-essential animation/transition",
-        "no-JS: all navigation and content are accessible with JavaScript disabled",
-        "real screen-reader smoke (if available) or durable blocked record if not"
+        "acceptance.md exists with environment, route/viewport matrix, results, and exact tested commit hash",
+        "acceptance.md commit hash matches current HEAD",
+        "User confirms aggregate close via question tool"
       ]
     }
   ]

@@ -322,9 +322,11 @@ Complete spec and execution contract:
    - Keep all navigation usable without JavaScript.
 
 3. **Publish core pages**
-   - Files: `src/config/site.ts`, fixed-ID records for Home/About/Services/Contact/Resources under `src/content/pages/`, `src/content/settings/site.json`, `src/pages/about/index.astro`, `src/pages/services/index.astro`, `src/pages/contact/index.astro`, `src/pages/404.astro`.
+   - Files: `src/config/site.ts`, `src/content.config.ts` (schema expansion), records for About/Services/Contact under `src/content/pages/`, `src/content/settings/site.json`, `src/pages/[page].astro` (dynamic route), `src/pages/index.astro`, `src/pages/404.astro`.
+    - Core pages use a constrained dynamic route (`src/pages/[page].astro`) with `getStaticPaths()` filtered by `isRoutable` so `draft` records produce no route, `noindex` records produce a route excluded from discovery, and `public` records produce a route in the sitemap. Fixed static files cannot uphold `draft → no route`.
+    - The minimal `/` is code-owned and `noindex` with approved identity copy only — no Home Markdown record is consumed during M2. Plan 04 promotes `/` to public.
     - Keep page IDs and route paths code-controlled while loading editable public copy, navigation labels, scheduler link, and email fallback from validated records.
-    - Plan 03 owns a minimal `/` shell (navigation + positioning placeholder) and the About/Services/Contact/404 routes. The evidence/curation homepage is owned by Plan 04. Home and Resources records may remain draft until Plans 04 and 09 render their full routes; do not use filler copy to force them public.
+    - Plan 03 owns the About/Services/Contact/404 routes and the minimal `/` shell. The evidence/curation homepage is owned by Plan 04. Contact and Resources records remain draft until their inputs resolve; do not use filler copy to force them public.
     - Label `/services/` as **Work With Me**.
     - Contact explains fit and process, then links normally to the approved external scheduler with an email fallback.
 
@@ -345,7 +347,8 @@ Verify at 360px, 768px, and desktop widths with keyboard navigation, 200% zoom, 
    - Use a semantic static System Map; do not vendor the brand-system runtime.
 
 3. **Build the homepage foundation**
-   - Files: `src/content/pages/home.md`, `src/data/home-curation.json`, `src/pages/index.astro`, homepage-scoped styles/motion module, `tests/home-curation.test.mjs`.
+   - Files: `src/content/pages/home.md`, `src/data/home-curation.json`, `src/pages/index.astro`, `src/lib/routes.ts` (promote `/` from `noindex` to `public`), homepage-scoped styles/motion module, `tests/home-curation.test.mjs`.
+   - Promote `/` from `noindex` to `public`: update route visibility, remove the `noindex` meta, and verify `/` appears exactly once in the sitemap. This is the atomic promotion gate from M2 to M3 homepage.
    - Order: positioning and CTA -> real artifact -> selected proof -> agent/script/process method -> available resources -> CTA.
    - Use typed, manually ordered references; reject draft, noindex, or missing targets.
    - Translate the Plan 02B-distributed hero, manifesto, system, and evidence choreography without importing the brand-package runtime. Keep final HTML readable before enhancement and internal routes outside the expressive motion scope.

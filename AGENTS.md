@@ -1,7 +1,8 @@
 # Personal Website — Agent Guide
 
-Greenfield personal website focused on credible work, SEO, AI-search accessibility,
-flexible publishing, and static delivery. No application code or dependencies exist yet.
+Personal website focused on credible work, SEO, AI-search accessibility,
+flexible publishing, and static delivery. Astro scaffold is committed (M1 complete);
+M2 (accessible core shell) is in progress.
 
 ## Planning Sources
 
@@ -11,12 +12,12 @@ flexible publishing, and static delivery. No application code or dependencies ex
 
 ## Planned Stack
 
-- Astro 5.x, static output, strict TypeScript
+- Astro 5.18.2, static output, strict TypeScript (pinned M1)
 - Semantic HTML and plain CSS; no UI framework
 - Markdown-first Astro Content Collections in `src/content.config.ts`
 - Custom metadata-aware sitemap and `@astrojs/rss`
 - Self-hosted Pages CMS (2.1.8) on the operator VPS behind Caddy as a Git-backed editing layer; isolated PostgreSQL holds CMS application state only, and no CMS runtime ships with the public site
-- npm and static hosting; exact versions/provider remain uninitialized
+- npm 11.13.0; static hosting provider uninitialized (release track)
 
 ## Current Structure
 
@@ -29,9 +30,10 @@ flexible publishing, and static delivery. No application code or dependencies ex
 
 ## Commands
 
-No build, test, lint, or dev commands exist. After explicit scaffold approval,
-validate before documenting: `npm run dev`, `npm run check`, `npm run build`,
-and `npm run preview`.
+Scaffold is committed. Validate before documenting:
+`npm run dev` (local server), `npm run check` (types), `npm test` (Node runner),
+`npm run build` (static output), `npm run preview` (built output), `npm run verify`
+(read-only output contract).
 
 ## Architecture Rules
 

@@ -40,7 +40,7 @@ makes a route public.
 
 | Route | Disposition | Release | Plan | Notes |
 |---|---|---|---|---|
-| `/` | launch | M3 | P03, P04 | P03 ships a minimal shell; P04 renders the evidence/curation homepage. |
+| `/` | launch | M3 | P03, P04 | P03 ships a minimal `noindex` shell (code-owned, excluded from sitemap); P04 promotes it to `public` and renders the evidence/curation homepage. |
 | `/services/` | launch | M3 | P03 | Labeled **Work With Me** in navigation. |
 | `/about/` | launch | M3 | P03 | Fixed-ID singleton. |
 | `/contact/` | launch | M3 | P03 | External scheduler link + email fallback; no form. |

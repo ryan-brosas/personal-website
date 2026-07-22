@@ -1,6 +1,6 @@
 # Tech Stack
 
-Auto-detected by `/init` on 2026-07-22. Greenfield project: stack is **planned, not yet installed**. Scaffolding requires explicit operator approval (Plan 01) and resolution of Plan 00 blockers in `.opencode/artifacts/website-build/plan.md`.
+Auto-detected by `/init` on 2026-07-22. Stack is **installed** (M1 complete, commit `9fd70ce`): Astro 5.18.2, TypeScript 6.0.3, `@astrojs/check` 0.9.9 pinned in `package.json`.
 
 Updated: 2026-07-22
 
@@ -14,9 +14,9 @@ Updated: 2026-07-22
 | npm | 11.13.0 |
 | Fallow | 3.7.1 (via npx cache) |
 
-## Planned Dependencies (not yet installed)
+## Dependencies (installed M1)
 
-Pin exact versions in `package.json` during Plan 01. Use `package-lock.json` with `npm ci`.
+Pinned in `package.json` + `package-lock.json`. Use `npm ci` for reproducible installs.
 
 | Package | Version | Purpose |
 |---|---|---|
@@ -94,9 +94,9 @@ Deployment notes:
 - Evidence is claim-level (`Verified | Proposed | Open`), separate from publication, lifecycle, and UI state.
 - Import only approved brand tokens/assets; never publish the complete brand package.
 
-## Commands (planned, not yet available)
+## Commands (available)
 
-None exist. After Plan 01 scaffold:
+Installed at M1 scaffold:
 
 ```bash
 npm run dev       # local dev server

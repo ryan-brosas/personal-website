@@ -2,7 +2,7 @@
 
 **Slug:** m2-accessible-core-shell
 **Created:** 2026-07-22
-**Status:** In Progress (artifact created; no tasks started)
+**Status:** Aggregate (non-executable; child plans execute and report to this artifact)
 **Master plan ref:** `.opencode/artifacts/website-build/plan.md:309-331`
 **Roadmap exit:** `.opencode/roadmap.md:83-97`
 
@@ -10,7 +10,9 @@
 
 ```yaml
 depends_on: ["m1-proven-static-foundation"]  # policy kernel + verifier complete (9fd70ce)
-parallel: false                              # sequential tracer: schema -> shell -> pages -> verifier -> [gated] brand -> [gated] a11y
+aggregate: true                              # non-executable; children execute via /ship
+children: ["m2-content-route-contracts", "m2-semantic-shell"]  # plus gated: core-pages, contact, brand, accessibility
+parallel: false                              # children execute sequentially (shared files)
 conflicts_with: []                           # P02A/P02B run in separate artifacts, disjoint files
 blocks: ["m3-credible-core-release"]          # M3 needs the branded shell + first project (Plan 04)
 estimated_hours: 12
@@ -63,12 +65,16 @@ strict TypeScript, content adapter, route helpers, and verifier are all in place
    - Progressive enhancement: base nav visible without JS; if a mobile toggle is needed,
      use native `<details>/<summary>` (keyboard accessible), not JS-only `display:none`.
 
-3. **Core pages + fixed-ID records** (partially blocked):
-   - `src/pages/about/index.astro`, `src/pages/services/index.astro`,
-     `src/pages/contact/index.astro`, `src/pages/404.astro`, `src/pages/index.astro`
-     (minimal `/` — navigation + positioning placeholder, NOT filler marketing copy).
-   - Fixed-ID records under `src/content/pages/`: `about.md`, `services.md` (public);
-     `contact.md`, `home.md`, `resources.md` (draft until inputs resolve / Plan 04/09).
+3. **Core pages + dynamic route** (partially blocked):
+   - `src/pages/[page].astro` with `getStaticPaths()` filtered by `isRoutable` so `draft`
+     records produce no route, `noindex` records produce a route excluded from discovery,
+     and `public` records produce a route in the sitemap. Fixed static files cannot uphold
+     `draft → no route`.
+   - `src/pages/index.astro` (code-owned minimal `/` — `noindex`, approved identity copy
+     only, NOT a Home Markdown record; promoted to public by Plan 04).
+   - `src/pages/404.astro` (canonical `/404.html`, `noindex`, recovery link to `/`).
+   - Records under `src/content/pages/`: `about.md`, `services.md` (public after copy
+     approval); `contact.md` (draft until inputs resolve). No `home.md` in M2.
    - Label `/services/` as **Work With Me** in navigation.
    - Contact: build the page structure and schema; keep the record `draft` until scheduler
      URL + email fallback + privacy decision are approved.
@@ -131,8 +137,9 @@ strict TypeScript, content adapter, route helpers, and verifier are all in place
 5. **[BLOCKED — P02B] Brand integration:** `global.css` imports distributed tokens; brand
    palette, typography, and motion are applied; favicon renders. Verify: visual + build.
 6. **[BLOCKED — browser] Accessibility:** keyboard, reflow, 200% zoom, reduced motion, and
-   no-JS pass at 360/768/desktop without filler content. Verify: browser evidence or a
-   durable blocked record.
+   no-JS pass at 360/768/desktop without filler content. Verify: browser evidence required
+   (not inferred from static inspection). A blocked browser environment keeps M2 in
+   progress; it does not close the milestone.
 
 ---
 
@@ -159,7 +166,7 @@ strict TypeScript, content adapter, route helpers, and verifier are all in place
 
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
-| P02B never completes, blocking M2 brand exit | Med | High | Structural tasks (1-4) are independently shippable; M2 can partially close with brand/accessibility deferred. Spec marks gates explicitly. |
+| P02B never completes, blocking M2 brand exit | Med | High | Structural child plans (contracts, shell) ship independently; M2 stays in progress (not partially closed) until brand + accessibility gates pass. |
 | Contact inputs (scheduler/email/privacy) stay open | Med | Med | Contact page structure + schema are built now; record stays `draft` until approved. No filler. |
 | Verifier rejects valid M2 output (expects 0 routes) | High | High | Task 4 updates the verifier manifest before/with the first core page build. |
 | No-JS mobile nav fails (as the landing page does) | Med | High | Use progressive enhancement: base nav visible, CSS reflow, `<details>/<summary>` if a toggle is needed. Never JS-only `display:none`. |
