@@ -1,24 +1,17 @@
-// M1 (Plan 01) content adapter. Thin wiring over the shared policy kernel in
-// ./lib/publishing.ts — imports schemas, does NOT restate them. Registers the
-// launch collections (empty in M1; glob() warns but does not throw) and the
-// settings singleton (empty {} container; Plan 03 owns the first record).
+// M2 (Plan 03, Child 1) content adapter. Thin wiring over the shared content
+// schemas in ./lib/content-schemas.ts (which compose the policy kernel in
+// ./lib/publishing.ts). Registers the launch collections (empty until content
+// arrives; glob() warns but does not throw) and the settings singleton.
 // Runtime-only astro:content / astro:loaders imports are gated by
 // `astro check` + `astro build`, not Node behavioral tests.
 import { defineCollection, reference } from "astro:content";
 import { glob, file } from "astro/loaders";
 import { z } from "astro/zod";
-import { VisibilitySchema, EvidenceSchema, DateFieldsSchema } from "./lib/publishing.ts";
-
-// Shared record base — imported from the policy kernel, not restated here.
-const RecordBase = z.object({
-  visibility: VisibilitySchema.default("draft"),
-  evidence: EvidenceSchema.optional(),
-  dates: DateFieldsSchema.optional(),
-});
+import { RecordBase, PageSchema, SettingsDataSchema } from "./lib/content-schemas.ts";
 
 const pages = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx,json}", base: "./src/content/pages" }),
-  schema: RecordBase,
+  loader: glob({ pattern: "**/*.md", base: "./src/content/pages" }),
+  schema: PageSchema,
 });
 
 const projects = defineCollection({
@@ -47,7 +40,7 @@ const directoryEntries = defineCollection({
 
 const settings = defineCollection({
   loader: file("./src/content/settings/site.json"),
-  schema: z.object({}),
+  schema: SettingsDataSchema,
 });
 
 export const collections = {

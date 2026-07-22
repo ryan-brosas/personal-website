@@ -1,1 +1,10 @@
-{}
+{
+  "site": {
+    "siteTitle": "Ryan Brosas",
+    "navLabels": {
+      "about": "About",
+      "services": "Work With Me",
+      "contact": "Contact"
+    }
+  }
+}
