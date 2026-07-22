@@ -26,7 +26,7 @@ All five M2 UI-producing children are shipped (content-route-contracts, semantic
 
 **In scope:**
 
-1. **Browser accessibility evidence capture** (A1): a reproducible capture script using Playwright 1.61.1 (available via `npx`; chromium in `~/.cache/ms-playwright`; NO new deps) builds the site (isolated pattern) and captures real browser evidence across all built routes (`/`, `/about/`, `/services/`, `/contact/`, `/404.html`) for: keyboard navigation (Tab/Shift+Tab order, visible focus, skip-link target, Escape/focus-return on the nav toggle), reflow at 360/768/desktop (no horizontal scroll, no clipped content — WCAG 1.4.10), 200% zoom (real browser zoom, not CSS transform — WCAG 1.4.4), reduced-motion (`prefers-reduced-motion: reduce`), no-JS (content + nav usable with script disabled), console errors + network 4xx harvest, and a color-contrast spot-check of the token pairings. Evidence binaries written to `.playwright-mcp/m2-accessibility-acceptance/` (gitignored, regenerable).
+1. **Browser accessibility evidence capture** (A1): a reproducible capture script using dependency-free Node 24 + Chromium via the Chrome DevTools Protocol (installed `/snap/bin/chromium`/`/usr/bin/google-chrome`; NO new deps — Playwright packages are not installed/resolvable) builds the site (isolated pattern) and captures real browser evidence across all built routes (`/`, `/about/`, `/services/`, `/contact/`, `/404.html`) for: keyboard navigation (Tab/Shift+Tab order, visible focus, skip-link target, Escape/focus-return on the nav toggle), reflow at 320/360/768/desktop CSSpx (320 is the normative WCAG 1.4.10 reflow gate; no horizontal scroll, no clipped content), 200% zoom (headless CDP proxy at 720x450 CSS + DPR 2 for automated evidence, PLUS a mandatory manual headed 200% browser-zoom checkpoint — WCAG 1.4.4 requires real browser zoom, which headless CDP cannot prove), reduced-motion (`prefers-reduced-motion: reduce`), no-JS (content + nav usable with script disabled), console errors + network 4xx harvest, and a color-contrast spot-check of the token pairings. Evidence binaries written to `.playwright-mcp/m2-accessibility-acceptance/` (gitignored, regenerable).
 2. **Acceptance evidence record** (A2): `acceptance.md` in P02A format (header metadata, Environment, route/viewport matrix, per-check PASS results, a dedicated BLOCKED screen-reader section with re-open trigger, Evidence paths, Resume guard, exact tested commit hash, Decision) committed under `.opencode/artifacts/m2-accessibility-acceptance/`.
 3. **Screen-reader smoke**: recorded as BLOCKED (env: no reader installed); re-open trigger = install `orca`/`espeak-ng`/`nvda` and re-run the smoke.
 4. **Capture script committed for reproducibility** (evidence binaries gitignored, regenerable from the script).
@@ -34,7 +34,7 @@ All five M2 UI-producing children are shipped (content-route-contracts, semantic
 **Non-goals:**
 
 - No screen-reader smoke (BLOCKED — no reader; recorded honestly, not inferred as passing).
-- No new pinned dependencies (no `@axe-core/playwright`, no `playwright` in `package.json` — use available `npx playwright` + chromium). The master-plan `tests/e2e/` regression suite + pinned browser-test deps (`website-build/plan.md:427`) is a later/repeatable gate, NOT this acceptance.
+- No new pinned dependencies (no `@axe-core/playwright`, no `playwright` in `package.json` — use dependency-free Node 24 + Chromium CDP; `npx playwright` cannot run an arbitrary standalone script and Playwright packages are not installed). The master-plan `tests/e2e/` regression suite + pinned browser-test deps (`website-build/plan.md:427`) is a later/repeatable gate, NOT this acceptance.
 - No `tests/e2e/` permanent regression suite (this is a point-in-time evidence gate per parent close-2, not a CI regression layer).
 - No fixing accessibility defects found during the audit (any defect is a separate fix child; this child only RECORDS evidence). If a defect blocks acceptance, STOP and escalate — do not silently fix.
 - No M3/homepage/P02B scope; no brand/favicon/CSS/route changes; no production code changes (acceptance is evidence-only).
@@ -52,7 +52,7 @@ All five M2 UI-producing children are shipped (content-route-contracts, semantic
 
 ## Technical Context
 
-- **Tooling:** `npx playwright` 1.61.1 + chromium (chromium-1200/1228, headless shells in `~/.cache/ms-playwright`); snap/system chromium (`/snap/bin/chromium`, `/usr/bin/google-chrome`) for headed captures. NO new deps.
+- **Tooling:** dependency-free Node 24 built-ins (`child_process`, `fs`, `crypto`, `fetch`, `WebSocket`) + Chromium via the Chrome DevTools Protocol. Browser: installed `/snap/bin/chromium` (150.0.7871.114), `/usr/bin/google-chrome`, `/usr/bin/chromium-browser`. Playwright packages are NOT installed/resolvable (`import('playwright')` returns `ERR_MODULE_NOT_FOUND`); `npx playwright` cannot execute an arbitrary standalone script, so CDP is the reproducible path. NO new deps.
 - **Built routes:** `/` (noindex), `/about/`, `/services/`, `/contact/` (public), `/404.html` (noindex); plus `sitemap.xml`, `robots.txt`, `favicon.svg`. Per-route elements: skip link → `#main` (`BaseLayout.astro:31-35`), `<header>` + nav toggle button (`SiteHeader.astro:54-120`), `<main id="main">`, footer nav; Contact scheduler+mailto links (`[page].astro:74-83`); 404 recovery link (`404.astro:14-17`).
 - **No-JS baseline:** base CSS keeps nav visible + toggle hidden until `data-nav-ready` (`global.css:122-170`, `SiteHeader.astro:8-13,90-119`); with JS off the site is fully navigable. Audit must disable JS and confirm this.
 - **Focus-visible:** token ring `outline: var(--focus-width) solid var(--focus-color); outline-offset: var(--focus-offset)` (`tokens.css:542-544`); skip-link `:focus-visible` (`global.css:30-43`).
@@ -69,13 +69,19 @@ All five M2 UI-producing children are shipped (content-route-contracts, semantic
 
 - **Evidence stales on code change:** any code change after the audit invalidates the record. Mitigation: regenerate + re-commit `acceptance.md` at M2 close so the recorded hash matches the audited code; the acceptance is the M2-exit gate, not a permanent regression.
 - **Blocked screen-reader keeps M2 honest:** the AT-smoke gap is a tracked re-open (install a reader), not a silent skip. A blocked browser environment keeps M2 in progress; it does not close the milestone (`spec.md:139-142`).
-- **Capture script flakiness:** Playwright/chromium headless rendering can differ from headed; flaky timing. Mitigation: record environment, deterministic steps, screenshots as evidence, allow re-runs.
+- **Capture script flakiness:** Chromium headless rendering can differ from headed; flaky timing. Mitigation: record environment, deterministic steps, wait on lifecycle events (not sleeps), screenshots as evidence, allow re-runs.
 - **Audit finds a real defect:** STOP and escalate as a fix child; do not silently fix in this acceptance (scope discipline). A defect blocks acceptance until fixed.
-- **False-pass zoom:** 200% zoom via CSS transform is not WCAG 1.4.4. Mitigation: use real browser zoom (deviceScaleFactor or browser zoom), capture screenshots.
+- **False-pass zoom:** 200% zoom via CSS transform or `deviceScaleFactor` (DPR) is NOT WCAG 1.4.4 — both are raster/transform proxies, not browser-menu zoom. Mitigation: headless CDP produces a 720x450 + DPR-2 proxy for automated evidence, but real 200% acceptance requires a mandatory manual headed browser-zoom checkpoint; capture screenshots in both.
 
 ## Open Questions
 
-1. **Close-2 hash semantics:** parent close-2 says "acceptance.md commit hash matches HEAD" (`m2-accessible-core-shell/plan.md:60-68`). Interpreted as: `acceptance.md` records the exact tested commit hash = the code HEAD at audit time (the commit audited, immediately before the `acceptance.md` docs commit); close-2 verifies the recorded hash is the audited code commit. If the M2 aggregate close rejects this interpretation, the parent close-2 wording needs clarification. (Resolve during `/ship`; not a blocker for capture.)
+Resolved during `/plan` (2026-07-22):
+
+1. **Close-2 hash semantics:** a committed document cannot contain its own final commit SHA. Resolved invariant: `acceptance.md` records the **A1 audited commit** (the final A1 commit immediately before the acceptance docs commit); the acceptance-creating commit's first parent must equal that SHA, and no production files may change after A1 without a full recapture. The parent's literal "recorded hash equals current HEAD" wording will be clarified to this invariant at M2 aggregate close.
+
+2. **Capture runtime:** dependency-free Node 24 + Chromium CDP (Playwright packages are not installed; `npx` cannot run a standalone script).
+
+3. **Resize-text proof:** headless CDP cannot prove real browser-menu zoom; the 200% check is a mandatory manual headed checkpoint (headless proxy is evidence only).
 
 ---
 

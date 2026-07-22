@@ -9,7 +9,7 @@
   "success_criteria": [
     {
       "id": "sc-1",
-      "description": "Browser evidence is real, not inferred: capture script runs and produces browser evidence (screenshots/keyboard traces/console+network logs) for all 5 routes across keyboard, reflow 360/768/desktop, 200% zoom, reduced-motion, no-JS, contrast",
+      "description": "Browser evidence is real, not inferred: capture script runs and produces browser evidence (screenshots/keyboard traces/console+network logs) for all 5 routes across keyboard, reflow 320/360/768/desktop CSSpx, 200% zoom (headless proxy + manual headed checkpoint), reduced-motion, no-JS, contrast",
       "verify": "node scripts/a11y-capture.mjs runs; evidence artifacts exist under .playwright-mcp/m2-accessibility-acceptance/"
     },
     {
@@ -28,7 +28,7 @@
       "id": "a1",
       "title": "Accessibility evidence capture",
       "category": "audit",
-      "end_state": "A reproducible capture script (Playwright via npx, no new deps) builds the site (isolated pattern) and captures real browser evidence across /, /about/, /services/, /contact/, /404.html for: keyboard Tab/Shift+Tab order + visible focus + skip-link target + Escape/focus-return on the nav toggle; reflow at 360/768/desktop (no horizontal scroll, no clipped content); 200% zoom (real browser zoom); reduced-motion emulation; no-JS (content + nav usable with script disabled); console errors + network 4xx harvest; color-contrast spot-check of token pairings. Evidence binaries written under .playwright-mcp/m2-accessibility-acceptance/ (gitignored). Screen-reader smoke attempted and recorded as BLOCKED (no reader). No production code changed; if a defect is found, STOP and escalate (do not silently fix).",
+      "end_state": "A reproducible capture script (dependency-free Node 24 + Chromium CDP, no new deps — Playwright packages not installed) builds the site (isolated pattern) and captures real browser evidence across /, /about/, /services/, /contact/, /404.html for: keyboard Tab/Shift+Tab order + visible focus + skip-link target + Escape/focus-return on the nav toggle; reflow at 320/360/768/desktop CSSpx (320 = normative WCAG 1.4.10 gate; no horizontal scroll, no clipped content); 200% zoom as a headless CDP proxy (720x450 CSS + DPR 2) PLUS a mandatory manual headed 200% browser-zoom checkpoint (real browser zoom, per WCAG 1.4.4); reduced-motion emulation; no-JS (content + nav usable with script disabled); console errors + network 4xx harvest; color-contrast spot-check of token pairings. Evidence binaries written under .playwright-mcp/m2-accessibility-acceptance/ (gitignored). Screen-reader smoke attempted and recorded as BLOCKED (no reader). No production code changed; if a defect is found, STOP and escalate (do not silently fix).",
       "depends_on": [],
       "parallel": false,
       "files": ["scripts/a11y-capture.mjs"],
@@ -41,7 +41,7 @@
       "id": "a2",
       "title": "Acceptance evidence record",
       "category": "evidence",
-      "end_state": ".opencode/artifacts/m2-accessibility-acceptance/acceptance.md exists in P02A format: header metadata (Created/Status/Accepted at/Decided by + audited commit hash), Environment, route/viewport matrix, per-check PASS results, a dedicated BLOCKED screen-reader section with re-open trigger, Evidence paths, Resume guard, Decision. The recorded commit hash equals the audited code HEAD (the commit immediately before the acceptance.md commit). No production code changed.",
+      "end_state": ".opencode/artifacts/m2-accessibility-acceptance/acceptance.md exists in P02A format: header metadata (Created/Status/Accepted at/Decided by + audited commit hash), Environment, route/viewport matrix, per-check PASS results, a dedicated BLOCKED screen-reader section with re-open trigger, Evidence paths, Resume guard, Decision. The recorded commit hash is the A1 audited commit (the final A1 commit immediately before the acceptance.md commit); the acceptance-creating commit's first parent must equal that SHA, and no production files may change after A1 without a full recapture. No production code changed.",
       "depends_on": ["a1"],
       "parallel": false,
       "files": [".opencode/artifacts/m2-accessibility-acceptance/acceptance.md"],
