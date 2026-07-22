@@ -77,10 +77,9 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
 1. Execute M2 child plans in order: `m2-content-route-contracts` complete
    (`8cf77ab`; 82/82 tests) → `m2-semantic-shell` complete (`1d3e65a`; 88/88 tests,
    all gates green; first HTML routes `/` noindex + `/404.html` shipped) →
-   gated `m2-core-pages` (needs copy approval + markdown body safety) → Contact →
-   brand → accessibility. The M2 parent is a non-executable aggregate; `/ship` only
-   on the active child. Do NOT start `m2-core-pages` until its copy-approval and
-   markdown-safety gates are resolved.
+   `m2-core-pages` active (copy waiver recorded; markdown body safety is C1's
+   deliverable, not an external prerequisite) → Contact → brand → accessibility.
+   The M2 parent is a non-executable aggregate; `/ship` only on the active child.
 2. Run P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
    and stop for the durable visual decision. Run P02B only after acceptance to
    synchronize/verify local and registered package surfaces. Use the standalone plans'

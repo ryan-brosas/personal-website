@@ -21,9 +21,9 @@
     },
     {
       "slug": "m2-core-pages",
-      "status": "pending",
-      "tasks": 0,
-      "gates": ["m2-semantic-shell", "copy-approval", "markdown-safety"]
+      "status": "in-progress",
+      "tasks": 3,
+      "gates": ["m2-semantic-shell"]
     },
     {
       "slug": "m2-contact-page",

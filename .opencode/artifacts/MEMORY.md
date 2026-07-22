@@ -83,6 +83,13 @@ Updated: 2026-07-22
 - **Rationale:** Avoids a broken `astro check` gate on day one. Latest-in-major pins stay current without crossing the unsupported TS 7 boundary.
 - **Consequences:** Plan 01 pins Astro, TypeScript, and `@astrojs/check` in `package.json` and `package-lock.json` (use `npm ci`); `@astrojs/rss` 4.0.19 is confirmed now but installed and pinned by Plan 05. Revisit when `@astrojs/check` publishes TS 7 support; that is a separate upgrade decision, not automatic. Recorded in `.opencode/tech-stack.md` (Toolchain Decision section) and `.opencode/artifacts/website-build/plan.md` (Plan 01 Task 1).
 
+### [2026-07-22] M2 Core Pages — Copy Waiver + Production Markdown Safety
+
+- **Context:** `m2-core-pages` (M2 Child 3) activates the first public content routes (`/about/`, `/services/`) and must precede any public Markdown with a body safety guard. Its parent ledger listed `copy-approval` and `markdown-safety` as external entry gates.
+- **Decision:** The user waived the formal copy-approval checkpoint ("approved I can just rewrite that later"), resolving the `copy-approval` gate. Core-pages copy is honest-positioning-only: locked identity language plus factual process framing (context/checks/handoffs/recovery); no metrics, testimonials, client names, dates, or evidence claims. Exact About/Services records are pinned in the plan. Markdown body safety is C1's deliverable, not an external prerequisite — it lands as a zero-dependency rehype plugin registered in `astro.config.mjs`.
+- **Rationale:** Avoids shipping filler or unverified claims while letting the user iterate copy post-ship. Keeps the safety guard as a build-time technical gate inside the child rather than blocking it externally.
+- **Consequences:** Parent ledger for `m2-core-pages` is `in-progress`, `tasks: 3`, gates `["m2-semantic-shell"]` only. State.md no longer says "Do NOT start." Astro 5.18.2 hardcodes `allowDangerousHtml: true` and runs custom rehype plugins before `rehypeRaw`, so the guard throws on `raw` nodes + `javascript:`/`data:` protocols; `allowDangerousHtml: false` is rejected (silently strips instead of failing). `assertMarkdownRendered(entry)` makes Astro's swallowed glob-render errors fatal. See `.opencode/artifacts/m2-core-pages/{spec,plan}.md`.
+
 ---
 
 ## Patterns
