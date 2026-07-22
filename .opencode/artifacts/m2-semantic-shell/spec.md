@@ -36,28 +36,39 @@ scripts, favicon, or substantive page copy — those are gated to later children
 
 **In scope:**
 
-1. **Atomic root shell** (`/`): `src/pages/index.astro` renders code-owned approved
-   identity copy only, `noindex`, exactly one `<h1>`, canonical, skip link, and
-   landmarks. Activates `/` as `expectedHtmlRoutes: ["/"]`, `expectedDiscoverableRoutes:
-   []`, `allowEmptySitemap: true`. No Home Markdown record is consumed.
+1. **Atomic root shell** (`/`): a code-owned `ROOT_ROUTE_POLICY` (`{path:"/",
+   visibility:"noindex"}`) lives in `src/lib/routes.ts` and is consumed by
+   `src/pages/sitemap.xml.ts` so Plan 04 can later promote the same policy to
+   `public`. `src/pages/index.astro` renders code-owned approved identity copy
+   only, `noindex,follow`, exactly one `<h1>`, canonical, skip link, landmarks,
+   and basic OG metadata (title/description/type/url). Activates `/` as
+   `expectedHtmlRoutes: ["/"]`, `expectedDiscoverableRoutes: []`,
+   `allowEmptySitemap: true`. No Home Markdown record is consumed. B1 renders
+   the complete HTML document directly (no SeoHead/BaseLayout yet — B2 extracts
+   them as a refactor preserving B1's behavior).
 2. **SeoHead + BaseLayout**: typed props (`title`, `description`, `canonicalPath?`,
    `noindex`); `<slot />`; canonical via `canonicalHref(canonicalPath ?? Astro.url.pathname,
    Astro.site.href)`. The `canonicalPath` override enables the 404 file-endpoint
    canonical (`/404.html`) under `trailingSlash: "always"`, which would otherwise
    produce `/404/`.
-3. **No-JS header/footer**: one always-visible responsive `<nav aria-label="Primary">`
+3. **No-JS header**: one always-visible responsive `<nav aria-label="Primary">`
    tree (no `<details>`/JS toggle); `getEntry("settings", "site")` for labels (missing
    record fails the build, no silent fallback); `getCollection("pages")` -> visibility
    map -> `resolveRoutes` -> filter by `NAV_ORDER` -> prepend `ROOT_ROUTE` link;
    `aria-current="page"` on the current route; visible `:focus-visible`; structural
    CSS in component `<style>` blocks only (no brand tokens, no `global.css`).
 4. **Recoverable 404**: `src/pages/404.astro` passes `canonicalPath="/404.html"`,
-   renders `noindex`, "Page not found" `<h1>`, and a normal recovery link to `/`.
+   renders `noindex,follow`, "Page not found" `<h1>`, and a page-content recovery
+   link inside `<main id="main">` with `href="/"` and exact text `Return to the
+   home page`. The 404 header nav item must NOT carry `aria-current="page"`.
    Activates `404.html` in `expectedFileEndpoints`.
-5. **Verifier CLI manifests**: B1 updates the CLI to expect `/`; B3 adds `404.html`
+5. **Footer** (B3): `SiteFooter.astro` renders copyright `© Ryan Brosas` and a
+   secondary `<nav aria-label="Footer">` with a normal Home link; no inactive or
+   privacy links. Integrated into `BaseLayout` in B3.
+6. **Verifier CLI manifests**: B1 updates the CLI to expect `/`; B3 adds `404.html`
    to `expectedFileEndpoints`. Each route/endpoint activates atomically with its
    page file so every GREEN boundary passes the full gate.
-6. **Structural accessibility only**: skip link, landmarks, one nav tree, no client
+7. **Structural accessibility only**: skip link, landmarks, one nav tree, no client
    script, `noindex`/canonical metadata, focus CSS. Browser evidence (keyboard path,
    reflow, 200% zoom, reduced-motion, screen-reader smoke) is deferred to
    `m2-accessibility-acceptance`.
@@ -124,10 +135,18 @@ scripts, favicon, or substantive page copy — those are gated to later children
     `docs/sitemap.md:44`).
 - **No approved About/Services/Contact substantive copy** — identity language only on
   `/`; substantive page copy is a separate gated approval (core-pages/contact children).
-- **Test pattern:** `spawnSync(astroBin, ["build"], {cwd: repoRoot})` for the real root
-  build; read `dist/index.html` / `dist/404.html`; regex canonical assertions; `finally`
-  cleanup. No root-build test exists yet — `tests/shell.test.mjs` is a new file
-  (the existing `tests/policy.test.mjs` only builds fixtures, never the root site).
+- **Test pattern (isolated root build):** `tests/shell.test.mjs` builds the real root
+  into a unique repo-local ignored parent `node_modules/.shell-test-XXXX/dist` via
+  `spawnSync(astroBin, ["build", "--outDir", distDir], {cwd: repoRoot})`. It asserts
+  `path.relative(repoRoot, distDir)` is neither absolute nor prefixed by `..` before
+  spawning (an arbitrary external `/tmp` outDir is unsafe: Astro 5.18.2 redirects an
+  outDir outside cwd through root `.astro`, copies it, then removes it —
+  `node_modules/astro/dist/core/build/common.js:75-80`, `static-build.js:284-290`).
+  It reads `<distDir>/index.html` / `<distDir>/404.html`, regex canonical assertions,
+  and cleans only its owned temp parent in `finally`. It never builds into the shared
+  `dist/` (which `npm run build` owns) to avoid races under `node --test`. No
+  root-build test exists yet — `tests/shell.test.mjs` is a new file (the existing
+  `tests/policy.test.mjs` only builds fixtures, never the root site).
 - **`/ship` UI detection gap (resolved in workspace prep):** `ship.md:273` UI glob
   omitted `*.astro`, so this child's UI changes would bypass the auto UI Quality Gate.
   `*.astro` was added to the glob as part of this `/create` workspace prep so the
@@ -164,3 +183,6 @@ complete) plus the workspace prep (`*.astro` added to `/ship` UI detection).
 - **Next children:** `m2-core-pages` (copy approval + markdown safety), `m2-contact-page`
   (scheduler/email/privacy/copy), `m2-brand-shell` (P02B + allowlist + favicon),
   `m2-accessibility-acceptance` (all UI children + browser evidence).
+- **Close handoff:** after this child closes, mark the parent ledger
+  `m2-semantic-shell` → complete; activate `m2-core-pages` only if its copy/safety
+  gates are ready, otherwise leave pending. Update `.opencode/state.md`.
