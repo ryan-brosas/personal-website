@@ -1,0 +1,80 @@
+{
+  "slug": "m2-semantic-shell",
+  "title": "M2 Semantic Shell (Child 2 of Plan 03)",
+  "created": "2026-07-22",
+  "status": "in-progress",
+  "parent": "m2-accessible-core-shell",
+  "depends_on": ["m2-content-route-contracts"],
+  "blocks": ["m2-core-pages", "m2-contact-page", "m2-brand-shell", "m2-accessibility-acceptance"],
+  "success_criteria": [
+    {
+      "id": "sc-1",
+      "description": "Atomic root shell: / renders exactly one self-canonical https://example.com/, noindex meta, one h1 with approved identity copy, skip link to #main, landmarks, no client script",
+      "verify": "npm run build && npm run verify exit 0; tests/shell.test.mjs asserts built dist/index.html"
+    },
+    {
+      "id": "sc-2",
+      "description": "No-JS navigation: header renders one always-visible nav filtered by resolveRoutes (no links to absent/draft routes), aria-current=page on /, settings-driven labels, footer present, no client script",
+      "verify": "npm test exit 0; tests/shell.test.mjs asserts built HTML nav structure"
+    },
+    {
+      "id": "sc-3",
+      "description": "Recoverable 404: dist/404.html has exactly one canonical https://example.com/404.html, noindex, Page not found h1, recovery link to /",
+      "verify": "npm run build && npm run verify exit 0; tests/shell.test.mjs asserts built dist/404.html"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "b1",
+      "title": "Atomic root noindex shell",
+      "category": "shell",
+      "end_state": "An atomic code-owned noindex root shell renders at / with approved identity copy only. SeoHead (typed props: title, description, canonicalPath?, noindex) renders canonical via canonicalHref(canonicalPath ?? Astro.url.pathname, Astro.site.href) and noindex meta. BaseLayout provides the html shell, head via SeoHead, a skip link to #main, one <main id=main>, and <slot />. index.astro renders the approved identity title/description, one h1, noindex, and uses BaseLayout. The verifier CLI manifest is updated to expect / as an html route (not discoverable), with allowEmptySitemap: true. No brand tokens, no global.css, no client script, no favicon, no Home Markdown record.",
+      "depends_on": [],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "scripts/verify-build.mjs",
+        "src/components/SeoHead.astro",
+        "src/layouts/BaseLayout.astro",
+        "src/pages/index.astro"
+      ],
+      "files_note": "Declared 5-file cohesive exception: the atomic root activation requires the page, the shared SeoHead/BaseLayout, the verifier manifest update, and the new test file to land in one GREEN boundary so every gate passes. Approved per .opencode/command/plan.md:340-373.",
+      "verification": [
+        "RED: node --test tests/shell.test.mjs — root-shell test fails on assertion (stub index.astro renders no canonical/noindex/skip-link; verifyBuild({expectedHtmlRoutes:['/'], expectedDiscoverableRoutes:[], allowEmptySitemap:true}) returns ok:false with a missing-canonical or missing-route error, not ENOENT). Commit: test(m2): define root noindex shell contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; dist/index.html has exactly one canonical https://example.com/, one noindex meta, one h1, skip link to #main, no <script>; dist still has sitemap.xml + robots.txt only besides index.html. Commit: feat(m2): atomic root noindex shell"
+      ]
+    },
+    {
+      "id": "b2",
+      "title": "No-JavaScript header and footer",
+      "category": "shell",
+      "end_state": "SiteHeader renders one always-visible <nav aria-label=Primary> tree (no details/summary, no JS toggle). It calls getEntry('settings','site') for labels (missing record throws and fails the build; no silent fallback), getCollection('pages') to build the visibility map, resolveRoutes to keep only routable paths in NAV_ORDER, and prepends the ROOT_ROUTE link with aria-current=page on the active route. SiteFooter renders a minimal footer (no brand tokens). BaseLayout integrates header and footer with structural CSS in <style> blocks (focus-visible outlines, responsive reflow; no brand tokens, no motion). No client script.",
+      "depends_on": ["b1"],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "src/components/SiteHeader.astro",
+        "src/components/SiteFooter.astro",
+        "src/layouts/BaseLayout.astro"
+      ],
+      "files_note": "Declared 4-file cohesive exception: the header/footer are a cohesive nav+chrome unit sharing the BaseLayout integration and one test file. Approved per .opencode/command/plan.md:340-373.",
+      "verification": [
+        "RED: node --test tests/shell.test.mjs — header/footer test fails on assertion (B1 build has zero nav links / no <nav> / no footer; primary-nav count assertion fails, not ENOENT). Commit: test(m2): define no-JS shell chrome contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; built index.html has one <nav aria-label=Primary> with links only to resolved routes (zero page records exist in M2, so nav contains only the root link), aria-current=page on the / link, a footer, no <script>, no links to /about/ /services/ /contact/ until their records become routable. Commit: feat(m2): no-JS header and footer"
+      ]
+    },
+    {
+      "id": "b3",
+      "title": "Recoverable 404 page",
+      "category": "shell",
+      "end_state": "404.astro passes canonicalPath=/404.html to BaseLayout (using the b1 SeoHead override), renders noindex, a Page not found h1, and a normal recovery link to /. The verifier CLI manifest adds 404.html to expectedFileEndpoints. Tests assert exactly one canonical https://example.com/404.html (not /404/), one noindex meta, the h1, and the recovery link. B3 does not modify SeoHead or BaseLayout.",
+      "depends_on": ["b2"],
+      "parallel": false,
+      "files": ["tests/shell.test.mjs", "scripts/verify-build.mjs", "src/pages/404.astro"],
+      "verification": [
+        "RED: node --test tests/shell.test.mjs — 404 test fails on assertion (dist/404.html absent or lacks the /404.html canonical; existsSync assertion before read, so failure is a missing-endpoint/missing-canonical assertion, not ENOENT). Commit: test(m2): define recoverable 404 contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; dist/404.html has exactly one canonical https://example.com/404.html, one noindex meta, a Page not found h1, and a recovery link to https://example.com/. Commit: feat(m2): recoverable 404 page"
+      ]
+    }
+  ]
+}
