@@ -14,6 +14,8 @@ import { renderSitemap, renderRobots } from "../src/lib/discovery.ts";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
+import { verifyBuild } from "../scripts/verify-build.mjs";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -305,6 +307,200 @@ describe("T5 canonical fixture", () => {
       );
     } finally {
       fs.rmSync(fixtureDist, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("T6 read-only build verifier", () => {
+  const site = "https://example.com";
+  const emptyUrlset = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>';
+  const robots = "User-agent: *\n\nSitemap: https://example.com/sitemap.xml\n";
+
+  const makeTempDist = (files) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "verify-test-"));
+    for (const [relPath, content] of Object.entries(files)) {
+      const fullPath = path.join(dir, relPath);
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, content);
+    }
+    return dir;
+  };
+
+  const htmlWithCanonicals = (...hrefs) => {
+    const links = hrefs.map((h) => `<link rel="canonical" href="${h}">`).join("");
+    return `<!DOCTYPE html><html><head>${links}</head><body></body></html>`;
+  };
+
+  const snapshotTree = (dir) => {
+    const result = {};
+    const walk = (d) => {
+      for (const name of fs.readdirSync(d, { withFileTypes: true })) {
+        const full = path.join(d, name.name);
+        if (name.isDirectory()) walk(full);
+        else result[path.relative(dir, full)] = fs.readFileSync(full, "utf-8");
+      }
+    };
+    walk(dir);
+    return result;
+  };
+
+  const rootManifest = (distDir) => ({
+    distDir,
+    site,
+    expectedHtmlRoutes: [],
+    expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+    allowEmptySitemap: true,
+  });
+  const fixtureManifest = (distDir) => ({
+    distDir,
+    site,
+    expectedHtmlRoutes: ["/probe/"],
+    expectedFileEndpoints: [],
+    allowEmptySitemap: false,
+  });
+
+  test("root context (empty sitemap + robots) passes", () => {
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": robots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("fixture context (one self-canonical) passes", () => {
+    const dir = makeTempDist({
+      "probe/index.html": htmlWithCanonicals("https://example.com/probe/"),
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("missing canonical fails", () => {
+    const dir = makeTempDist({ "probe/index.html": htmlWithCanonicals() });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("canonical")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("duplicate canonical fails", () => {
+    const dir = makeTempDist({
+      "probe/index.html": htmlWithCanonicals(
+        "https://example.com/probe/",
+        "https://example.com/probe/",
+      ),
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("canonical")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("wrong-origin canonical fails", () => {
+    const dir = makeTempDist({
+      "probe/index.html": htmlWithCanonicals("https://wrong.com/probe/"),
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("canonical")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("slash-mismatch canonical fails", () => {
+    const dir = makeTempDist({
+      "probe/index.html": htmlWithCanonicals("https://example.com/probe"),
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("canonical")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("sitemap leak of non-public route fails", () => {
+    const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.com/draft-page/</loc></url></urlset>`;
+    const dir = makeTempDist({ "sitemap.xml": sitemap, "robots.txt": robots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("leak") || e.includes("sitemap")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("unexpected route in dist fails", () => {
+    const dir = makeTempDist({
+      "probe/index.html": htmlWithCanonicals("https://example.com/probe/"),
+      "unexpected/index.html": htmlWithCanonicals("https://example.com/unexpected/"),
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("unexpected")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("missing expected endpoint fails", () => {
+    const dir = makeTempDist({ "robots.txt": robots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("missing")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("verifier is read-only (no mutation to dist)", () => {
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": robots });
+    try {
+      const before = snapshotTree(dir);
+      verifyBuild(rootManifest(dir));
+      const after = snapshotTree(dir);
+      assert.deepEqual(after, before, "dist tree unchanged after verify");
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
     }
   });
 });
