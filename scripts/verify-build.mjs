@@ -106,8 +106,11 @@ export const verifyBuild = (manifest) => {
       const content = fs.readFileSync(robotsPath, "utf-8");
       const lines = content
         .split("\n")
-        .map((l) => l.trim())
-        .filter((l) => l && !l.startsWith("#"));
+        .map((l) => {
+          const hashIdx = l.indexOf("#");
+          return (hashIdx >= 0 ? l.slice(0, hashIdx) : l).trim();
+        })
+        .filter((l) => l);
       let hasUserAgent = false;
       let hasCorrectSitemap = false;
       const siteOrigin = site.replace(/\/+$/, "");

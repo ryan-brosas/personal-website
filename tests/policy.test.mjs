@@ -642,6 +642,18 @@ describe("T6 read-only build verifier", () => {
     }
   });
 
+  test("robots.txt with inline comments on directives passes", () => {
+    const goodRobots =
+      "User-agent: * # all crawlers\n\nSitemap: https://example.com/sitemap.xml # primary\n";
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": goodRobots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("canonical with data-rel attribute is NOT detected", () => {
     const dir = makeTempDist({
       "probe/index.html": `<!DOCTYPE html><html><head><link data-rel="canonical" data-href="https://example.com/probe/"></head><body></body></html>`,
