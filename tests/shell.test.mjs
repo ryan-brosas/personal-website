@@ -132,3 +132,69 @@ describe("B1 root shell", () => {
     assert.ok(!sitemap.includes("https://example.com/"), "root / is not in the sitemap");
   });
 });
+
+// Collect all CSS that applies to the built page: inline <style> blocks plus any
+// linked stylesheets (Astro may emit _astro/*.css or inline small styles under
+// 4096 bytes — both paths must be covered).
+const collectCss = (html, distDir) => {
+  let css = "";
+  for (const m of html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)) {
+    css += m[1] + "\n";
+  }
+  for (const m of html.matchAll(/<link[^>]*rel=["']stylesheet["'][^>]*>/gi)) {
+    const href = m[0].match(/href=["']([^"']+)["']/i);
+    if (href && href[1].startsWith("/_astro/")) {
+      const file = path.join(distDir, href[1].slice(1));
+      if (fs.existsSync(file)) css += fs.readFileSync(file, "utf-8") + "\n";
+    }
+  }
+  return css;
+};
+
+describe("B2 shared shell", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("header with one primary nav and a current root link", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    assert.ok(/<header[\s>]/i.test(html), "has a <header>");
+    const navMatches = html.match(/<nav[^>]*aria-label=["']Primary["'][^>]*>/gi);
+    assert.ok(navMatches && navMatches.length === 1, "exactly one <nav aria-label=Primary>");
+    // The root link is current on /.
+    assert.ok(
+      /<a[^>]+href="\/"[^>]*aria-current="page"/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/"/i.test(html),
+      "root link has aria-current=page",
+    );
+    // No links to page routes while no page records exist.
+    assert.ok(!/href="\/about\/"/i.test(html), "no /about/ link without a routable record");
+    assert.ok(!/href="\/services\/"/i.test(html), "no /services/ link without a routable record");
+    assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+  });
+
+  test("applicable visible-focus CSS is present", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    const css = collectCss(html, distDir);
+    assert.ok(css.length > 0, "some CSS is present (inline or linked)");
+    assert.ok(/:focus-visible/i.test(css), "CSS targets :focus-visible");
+    // A non-none, nonzero outline declaration exists somewhere in the CSS.
+    assert.ok(/outline\s*:\s*(?!none|0\b)\S+/i.test(css), "a :focus-visible outline is not none/0");
+    assert.ok(
+      /outline-offset\s*:\s*(?!0\b)\S+/i.test(css),
+      "a :focus-visible outline-offset is nonzero",
+    );
+  });
+});
