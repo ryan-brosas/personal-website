@@ -89,7 +89,7 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
    plans' scoped build-agent handoffs; do not switch `.active` or use `/ship` for
    these pre-scaffold static-package slices.
    - **P02A status:** accepted 2026-07-22 (`214f66e8ef16...`)
-   - **P02B status:** pending distribution
+   - **P02B status:** blocked; see acceptance record
 3. In parallel, work the Content Desk and release tracks toward M3 readiness.
 
 ## Blockers (not started)

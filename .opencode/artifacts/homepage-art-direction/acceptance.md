@@ -218,3 +218,56 @@ Ryan reviewed the visual output and **accepted** the prototype on 2026-07-22.
 - Proceed to P02B (canonicalize: update `DESIGN.md`, regenerate local mirrors,
   refresh capture, synchronize/verify the registered `user:brand-design-system`
   package, close status gates). P02B must start only after this accepted hash.
+
+---
+
+## P02B Distribution
+
+**Capture:**
+- Path: `docs/Ryan-Brosas-Brand-System/assets/source-previews/ryan-brosas-landing-page-applied.png`
+- Dimensions: 1800 x 8225 CSS pixels (width verified exactly 1800)
+- SHA-256: `5dad4c7f372553236555a6a37f96dda48980df0487ce38df1140df904ed7baf6`
+- Method: CDP `Page.captureScreenshot { captureBeyondViewport: true }` at
+  1800px device width, normal motion, settled ~3.5s (hero sequence ~1.4s).
+- Source: `ryan-brosas-landing-page.html` (accepted prototype
+  `214f66e8ef16...`) served from `http://127.0.0.1:4173/`.
+
+**Local canonicalization (Task 1, complete):**
+- `DESIGN.md` extended with the accepted homepage-only editorial exception.
+- `showcase-landing-page.html` byte-identical to canonical.
+- `system/artifacts/landing.html` generated from canonical with only the
+  documented two-level asset-path rebase.
+- Forward + reverse mirror parity: PASS.
+- Text integrity (no mojibake signatures): PASS.
+- Canonical / showcase / renderer + tokens / conductor / logo all return
+  HTTP 200.
+
+**Audit:**
+- Documented audit command: `"$OD_NODE_BIN" "$OD_BIN" tools connectors
+  design-system-package-audit --path . --fail-on-warnings`
+  (source: `docs/Ryan-Brosas-Brand-System/context/source-context.md`).
+- Capability check result: BLOCKED.
+  - `OD_NODE_BIN` env var: unset.
+  - `OD_BIN` env var: unset.
+  - No `opendesign` / `open-design` binary on PATH.
+  - No `OD_*` / `OPEN_DESIGN` / `OPENDSIGN` env vars present.
+  - The `od` on PATH is the octal-dump utility, not Open Design.
+
+**Capability blocker (exact, non-secret):**
+The Open Design CLI audit tooling (`OD_NODE_BIN` + `OD_BIN`) is not
+available in this execution environment. No authorized local publish
+command is known. Per the P02B plan, missing external synchronization
+tooling/access is a blocker, not permission to claim completion from
+local parity.
+
+**Distribution: blocked**
+
+Local mirror parity, capture, and the DESIGN.md motion contract are
+complete and committed. The registered `user:brand-design-system` package
+synchronization and remote verification remain pending an authorized
+Open Design UI/API/CLI path. P02B Task 3 (status closeout to `complete`)
+cannot run until `Distribution: verified`. The accepted P02A prototype,
+DESIGN.md contract, and local mirrors remain the authoritative local
+source of truth for Plan 03 Task 1 shared visual integration and Plan
+04 homepage choreography; downstream visual integration is NOT unblocked
+until the remote package is verified current and published.
