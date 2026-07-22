@@ -1,0 +1,3 @@
+User-agent: *
+
+Sitemap: https://ryan-brosas.github.io/sitemap.xml
