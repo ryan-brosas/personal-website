@@ -203,7 +203,7 @@ describe("B2 shared shell", () => {
         /<a[^>]+aria-current="page"[^>]*href="\/"/i.test(html),
       "root link has aria-current=page",
     );
-    // Routable page links present; contact still absent (no record).
+    // Routable page links present; contact is now a routable record.
     assert.ok(/href="\/about\/"/i.test(html), "about link present (routable record)");
     assert.ok(/href="\/services\/"/i.test(html), "services link present (routable record)");
     assert.ok(/href="\/contact\/"/i.test(html), "contact link present (routable record)");
@@ -382,7 +382,7 @@ describe("C2 about route", () => {
         /<a[^>]+aria-current="page"[^>]*href="\/about\/"/i.test(html),
       "about link has aria-current=page on /about/",
     );
-    // Services is present (public); Contact still absent (no record).
+    // Services is present (public); Contact is now a routable record.
     assert.ok(/href="\/services\/"/i.test(html), "services link present (public record)");
     assert.ok(/href="\/contact\/"/i.test(html), "contact link present (routable record)");
 
@@ -595,7 +595,7 @@ describe("C3 services route", () => {
         /<a[^>]+aria-current="page"[^>]*href="\/services\/"/i.test(html),
       "services link has aria-current=page on /services/",
     );
-    // Contact still absent (no record yet).
+    // Contact is now a routable record.
     assert.ok(/href="\/contact\/"/i.test(html), "contact link present (routable record)");
 
     // Exactly one h1 with the approved Services title.
