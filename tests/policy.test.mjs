@@ -134,6 +134,13 @@ describe("T2 publishing policy", () => {
     test("rejects a missing collection", () => {
       assert.equal(resolveRelationship({ collection: "nope", id: "x" }, collections).ok, false);
     });
+
+    test("rejects an inherited-property collection name (constructor)", () => {
+      assert.equal(
+        resolveRelationship({ collection: "constructor", id: "x" }, collections).ok,
+        false,
+      );
+    });
   });
 
   test("sources.json is the empty public-safe evidence registry", () => {
@@ -665,6 +672,44 @@ describe("T6 read-only build verifier", () => {
         result.errors.some((e) => e.includes("missing-canonical")),
         `errors: ${result.errors.join(", ")}`,
       );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("canonical inside HTML comment is NOT detected", () => {
+    const dir = makeTempDist({
+      "probe/index.html": `<!DOCTYPE html><html><head><!-- <link rel="canonical" href="https://example.com/probe/"> --></head><body></body></html>`,
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("missing-canonical")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("sitemap with XML-escaped URL in loc is not a false leak", () => {
+    const xml = renderSitemap([{ path: "/a&b/", visibility: "public" }], site);
+    const dir = makeTempDist({
+      "sitemap.xml": xml,
+      "robots.txt": robots,
+      "a&b/index.html": htmlWithCanonicals("https://example.com/a&b/"),
+    });
+    try {
+      const result = verifyBuild({
+        distDir: dir,
+        site,
+        expectedHtmlRoutes: ["/a&b/"],
+        expectedDiscoverableRoutes: ["/a&b/"],
+        expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+        allowEmptySitemap: false,
+      });
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }

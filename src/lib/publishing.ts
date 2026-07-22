@@ -79,8 +79,9 @@ export const resolveRelationship = (
   ref: RelationshipTarget,
   collections: CollectionsMap,
 ): ResolveResult => {
+  if (!Object.hasOwn(collections, ref.collection))
+    return { ok: false, error: "missing-collection" };
   const entries = collections[ref.collection];
-  if (!entries) return { ok: false, error: "missing-collection" };
   const target = entries.find((e) => e.id === ref.id);
   if (!target) return { ok: false, error: "missing-target" };
   if (!isDiscoverable(target.visibility)) return { ok: false, error: "not-discoverable" };

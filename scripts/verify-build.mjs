@@ -28,8 +28,9 @@ const listFiles = (dir) => {
 // href), single or double quoted, case-insensitive. Whitespace lookbehind
 // prevents matching data-rel/data-href attributes.
 const extractCanonicals = (html) => {
+  const stripped = html.replace(/<!--[\s\S]*?-->/g, "");
   const canonicals = [];
-  for (const m of html.matchAll(/<link\s[^>]*>/gi)) {
+  for (const m of stripped.matchAll(/<link\s[^>]*>/gi)) {
     const tag = m[0];
     if (!/(?<=\s)rel\s*=\s*["']canonical["']/i.test(tag)) continue;
     const hrefMatch = tag.match(/(?<=\s)href\s*=\s*["']([^"']+)["']/i);
@@ -157,7 +158,14 @@ export const verifyBuild = (manifest) => {
     const sitemapPath = path.join(distDir, "sitemap.xml");
     if (fs.existsSync(sitemapPath)) {
       const content = fs.readFileSync(sitemapPath, "utf-8");
-      const urls = [...content.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+      const urls = [...content.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
+        m[1]
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&quot;/g, '"')
+          .replace(/&apos;/g, "'"),
+      );
       if (urls.length === 0 && !allowEmptySitemap) {
         errors.push("empty-sitemap: sitemap has no URLs and allowEmptySitemap is false");
       }
