@@ -795,18 +795,21 @@ describe("D2 token shell", () => {
     selectorConsumes("footer nav a", "var(--link-decoration)");
     selectorConsumes(".nav-toggle", "var(--control-bg)");
     selectorConsumes(".nav-toggle", "var(--control-fg)");
-    // Every nonzero padding/gap declaration must consume --space-* (no
-    // arbitrary hardcoded rem/px values that bypass the 8px rhythm).
+    // Every nonzero padding/gap component must consume --space-* (no
+    // arbitrary hardcoded rem/px values that bypass the 8px rhythm). Handles
+    // shorthand values like "var(--space-2) 13px" by checking each component.
     const nonzeroPaddingGap = [...css.matchAll(/(?:padding|gap)\s*:\s*([^;}\n]+)/gi)].map((m) =>
       m[1].trim(),
     );
     assert.ok(nonzeroPaddingGap.length > 0, "CSS has padding/gap declarations");
     for (const value of nonzeroPaddingGap) {
-      if (value === "0" || /^0\s/) continue;
-      assert.ok(
-        /var\(--space-/.test(value),
-        `padding/gap value "${value}" must consume --space-* (no hardcoded rem/px)`,
-      );
+      for (const component of value.split(/\s+/)) {
+        if (component === "0" || /^0[a-z]*$/i.test(component)) continue;
+        assert.ok(
+          /var\(--space-/.test(component),
+          `padding/gap component "${component}" in "${value}" must consume --space-* (no hardcoded rem/px)`,
+        );
+      }
     }
   });
 
