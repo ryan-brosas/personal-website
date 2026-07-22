@@ -1,17 +1,23 @@
 ---
-// M2 (Plan 03, Child 4) — no-JavaScript primary navigation. A root brand lockup
-// (decorative R/lightning mark beside the visible site title) sits OUTSIDE the
-// Primary nav and owns the root current-page state; the nav holds only the
-// visibility-filtered page routes. Loads settings labels (missing record fails
-// the build), resolves page visibilities through the single resolveRoutes
-// pipeline, keeps only routable routes in NAV_ORDER. aria-current="page" marks
-// the active route. No links to absent or draft routes.
+// M2 (Plan 03, Child 4) — progressively enhanced primary navigation. A root
+// brand lockup (decorative R/lightning mark beside the visible site title)
+// sits OUTSIDE the Primary nav and owns the root current-page state; the nav
+// holds only the visibility-filtered page routes. A disclosure toggle is
+// inserted between the brand anchor and the nav.
+//
+// Progressive enhancement contract: with JavaScript unavailable or the
+// enhancement failing to initialize, base CSS keeps all nav links visible and
+// the toggle hidden, so navigation works without JavaScript. Only after all
+// handlers bind successfully does the script set data-nav-ready, which reveals
+// the toggle and (on mobile) collapses the nav until opened. Menu/close icons
+// come from the approved utility sprite, injected once via trusted set:html.
 import { getEntry, getCollection } from "astro:content";
 import { ROOT_ROUTE } from "../lib/routes.ts";
 import { resolveRoutes } from "../lib/site-routes.ts";
 import { PAGES, NAV_ORDER } from "../config/site.ts";
 import type { Visibility } from "../lib/publishing.ts";
 import Logo from "../assets/brand/logo-charcoal.svg";
+import iconSprite from "../assets/brand/icons.svg?raw";
 
 const settings = await getEntry("settings", "site");
 if (!settings) {
@@ -26,9 +32,6 @@ for (const page of pages) {
 const resolved = resolveRoutes(visibilities);
 const resolvedByPath = new Map(resolved.map((r) => [r.path, r]));
 
-// Page nav items: only routable pages in NAV_ORDER (root lives in the brand
-// lockup, not the nav). A page is included only if resolveRoutes returned its
-// path (public or noindex); draft/absent pages are omitted.
 interface NavItem {
   href: string;
   label: string;
@@ -57,7 +60,17 @@ const isCurrent = (href: string) =>
     <Logo aria-hidden="true" focusable="false" />
     <span>{settings.data.siteTitle}</span>
   </a>
-  <nav aria-label="Primary">
+  <button
+    class="nav-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="primary-navigation"
+  >
+    <span class="nav-toggle-label">Menu</span>
+    <svg aria-hidden="true" focusable="false"><use href="#icon-menu" class="icon-menu"></use></svg>
+    <svg aria-hidden="true" focusable="false"><use href="#icon-close" class="icon-close"></use></svg>
+  </button>
+  <nav id="primary-navigation" aria-label="Primary">
     <ul>
       {
         navItems.map((item) => (
@@ -73,4 +86,36 @@ const isCurrent = (href: string) =>
       }
     </ul>
   </nav>
+  <div class="icon-sprite" aria-hidden="true" set:html={iconSprite} />
+  <script is:inline data-nav-enhancement>
+    (function () {
+      try {
+        var header = document.querySelector(".site-header");
+        var button = header && header.querySelector(".nav-toggle");
+        var nav = document.getElementById("primary-navigation");
+        if (!header || !button || !nav) return;
+        var setOpen = function (open) {
+          header.setAttribute("data-open", open ? "true" : "false");
+          button.setAttribute("aria-expanded", open ? "true" : "false");
+        };
+        button.addEventListener("click", function () {
+          var isOpen = header.getAttribute("data-open") === "true";
+          setOpen(!isOpen);
+        });
+        nav.addEventListener("click", function (e) {
+          if (e.target.closest("a")) setOpen(false);
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && header.getAttribute("data-open") === "true") {
+            setOpen(false);
+            button.focus();
+          }
+        });
+        setOpen(false);
+        header.setAttribute("data-nav-ready", "true");
+      } catch (e) {
+        // Failure leaves the base CSS: links visible, toggle hidden.
+      }
+    })();
+  </script>
 </header>

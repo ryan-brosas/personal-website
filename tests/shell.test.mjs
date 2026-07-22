@@ -17,6 +17,17 @@ import { resolveRoutes } from "../src/lib/site-routes.ts";
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
 const SITE = "https://example.com";
+
+// Assert exactly one script exists and it is the marked nav enhancement
+// (no other client scripts; no generated _astro/*.js bundles).
+const assertOneNavScript = (html) => {
+  const scripts = [...html.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
+  assert.equal(scripts.length, 1, `expected exactly one script (got ${scripts.length})`);
+  assert.ok(
+    /data-nav-enhancement/i.test(scripts[0]),
+    "the single script must be the nav enhancement",
+  );
+};
 const LOGO_SOURCE = path.join(repoRoot, "docs/Ryan-Brosas-Brand-System/logos/Logo---Ryan-1.svg");
 const LOGO_SOURCE_SHA256 = "a5e1589808b8c2a27a021bceef787ca7198e968273fe6a567c58e68515aa8cf8";
 
@@ -128,7 +139,7 @@ describe("B1 root shell", () => {
     assert.ok(h1Text.includes("Ryan Brosas"), "h1 includes the identity name");
 
     // No client script.
-    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+    assertOneNavScript(html);
   });
 
   test("root / is excluded from the sitemap while noindex", () => {
@@ -192,7 +203,7 @@ describe("B2 shared shell", () => {
     assert.ok(/href="\/about\/"/i.test(html), "about link present (routable record)");
     assert.ok(/href="\/services\/"/i.test(html), "services link present (routable record)");
     assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
-    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+    assertOneNavScript(html);
   });
 
   test("applicable visible-focus CSS is present", () => {
@@ -389,7 +400,7 @@ describe("C2 about route", () => {
       "about body paragraph renders the approved copy",
     );
 
-    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+    assertOneNavScript(html);
   });
 });
 
@@ -478,7 +489,7 @@ describe("C2 noindex variant (copied production)", () => {
     assert.ok(!locs.includes("https://example.com/about/"), "variant about is not in the sitemap");
 
     assert.ok(/href="\/about\/"/i.test(html), "variant about link appears in nav");
-    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+    assertOneNavScript(html);
 
     // Services stays public in the variant (only About was rewritten to noindex).
     const servicesHtml = readHtml(variantDist, "/services/");
@@ -601,7 +612,7 @@ describe("C3 services route", () => {
       "services body paragraph renders the approved copy",
     );
 
-    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+    assertOneNavScript(html);
   });
 });
 
@@ -866,7 +877,7 @@ describe("D3 progressive navigation", () => {
   test("approved sprite is injected once with the menu/close symbols", () => {
     const html = readHtml(distDir, "/");
     assert.ok(html, "dist/index.html must exist");
-    const spriteMatches = [...html.matchAll(/<svg[^>]*class="icon-sprite"[^>]*>/gi)];
+    const spriteMatches = [...html.matchAll(/class="icon-sprite"/gi)];
     assert.ok(spriteMatches.length === 1, "exactly one icon-sprite definition block");
     assert.ok(/<symbol[^>]*id="icon-menu"/i.test(html), "sprite defines icon-menu");
     assert.ok(/<symbol[^>]*id="icon-close"/i.test(html), "sprite defines icon-close");
