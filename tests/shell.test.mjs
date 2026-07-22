@@ -81,8 +81,8 @@ describe("B1 root shell", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/"],
-      expectedDiscoverableRoutes: ["/about/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
       allowEmptySitemap: false,
     });
@@ -185,9 +185,9 @@ describe("B2 shared shell", () => {
         /<a[^>]+aria-current="page"[^>]*href="\/"/i.test(html),
       "root link has aria-current=page",
     );
-    // No links to page routes while no page records exist.
-    assert.ok(/href="\/about\/"/i.test(html), "about link present (routable noindex record)");
-    assert.ok(!/href="\/services\/"/i.test(html), "no /services/ link without a routable record");
+    // Routable page links present; contact still absent (no record).
+    assert.ok(/href="\/about\/"/i.test(html), "about link present (routable record)");
+    assert.ok(/href="\/services\/"/i.test(html), "services link present (routable record)");
     assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
   });
@@ -251,8 +251,8 @@ describe("B3 footer and 404", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/"],
-      expectedDiscoverableRoutes: ["/about/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
       allowEmptySitemap: false,
     });
@@ -322,8 +322,8 @@ describe("C2 about route", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/"],
-      expectedDiscoverableRoutes: ["/about/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
       allowEmptySitemap: false,
     });
@@ -353,8 +353,8 @@ describe("C2 about route", () => {
 
     // About link appears in navigation.
     assert.ok(/href="\/about\/"/i.test(html), "about link appears in nav");
-    // Services and Contact still absent (no records yet).
-    assert.ok(!/href="\/services\/"/i.test(html), "no /services/ link without a routable record");
+    // Services is present (public); Contact still absent (no record).
+    assert.ok(/href="\/services\/"/i.test(html), "services link present (public record)");
     assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
   });
@@ -431,6 +431,20 @@ describe("C2 noindex variant (copied production)", () => {
 
     assert.ok(/href="\/about\/"/i.test(html), "variant about link appears in nav");
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
+
+    // Services stays public in the variant (only About was rewritten to noindex).
+    const servicesHtml = readHtml(variantDist, "/services/");
+    assert.ok(servicesHtml, "variant dist/services/index.html must exist");
+    assert.ok(
+      !/<meta\s+name="robots"\s+content="noindex,follow"/i.test(servicesHtml),
+      "variant services has no noindex meta (stays public)",
+    );
+    const variantSitemap = fs.readFileSync(path.join(variantDist, "sitemap.xml"), "utf-8");
+    const variantLocs = [...variantSitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    assert.ok(
+      variantLocs.includes("https://example.com/services/"),
+      "variant services is in the sitemap (stays public)",
+    );
   });
 });
 
