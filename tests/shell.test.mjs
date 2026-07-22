@@ -99,8 +99,8 @@ describe("B1 root shell", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
@@ -206,7 +206,7 @@ describe("B2 shared shell", () => {
     // Routable page links present; contact still absent (no record).
     assert.ok(/href="\/about\/"/i.test(html), "about link present (routable record)");
     assert.ok(/href="\/services\/"/i.test(html), "services link present (routable record)");
-    assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+    assert.ok(/href="\/contact\/"/i.test(html), "contact link present (routable record)");
     assertOneNavScript(html);
   });
 
@@ -269,8 +269,8 @@ describe("B3 footer and 404", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
@@ -340,8 +340,8 @@ describe("C2 about route", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
@@ -384,7 +384,7 @@ describe("C2 about route", () => {
     );
     // Services is present (public); Contact still absent (no record).
     assert.ok(/href="\/services\/"/i.test(html), "services link present (public record)");
-    assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+    assert.ok(/href="\/contact\/"/i.test(html), "contact link present (routable record)");
 
     // Exactly one h1 with the approved About title.
     assert.equal(html.match(/<h1/gi).length, 1, "exactly one h1 on /about/");
@@ -547,8 +547,8 @@ describe("C3 services route", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
@@ -596,7 +596,7 @@ describe("C3 services route", () => {
       "services link has aria-current=page on /services/",
     );
     // Contact still absent (no record yet).
-    assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+    assert.ok(/href="\/contact\/"/i.test(html), "contact link present (routable record)");
 
     // Exactly one h1 with the approved Services title.
     assert.equal(html.match(/<h1/gi).length, 1, "exactly one h1 on /services/");
@@ -780,8 +780,8 @@ describe("D1 favicon", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/"],
+      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
@@ -815,7 +815,7 @@ describe("D1 favicon", () => {
   });
 
   test("every built page links the favicon once with type and sizes", () => {
-    const routes = ["/", "/about/", "/services/"];
+    const routes = ["/", "/about/", "/services/", "/contact/"];
     for (const route of routes) {
       const html = readHtml(distDir, route);
       assert.ok(html, `dist/${route.replace(/^\/+/, "")}index.html must exist`);
@@ -1012,7 +1012,7 @@ describe("D2 token shell", () => {
     );
     assert.ok(/href="\/about\/"/i.test(navMatch[1]), "primary nav has the about link");
     assert.ok(/href="\/services\/"/i.test(navMatch[1]), "primary nav has the services link");
-    assert.ok(!/href="\/contact\/"/i.test(navMatch[1]), "primary nav has no contact link");
+    assert.ok(/href="\/contact\/"/i.test(navMatch[1]), "primary nav has the contact link");
   });
 
   test("production logo asset is byte-identical to the approved charcoal mark", () => {

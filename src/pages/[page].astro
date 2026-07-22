@@ -6,8 +6,13 @@
 // visibilities through the single pipeline, joins through PAGES, validates a
 // one-segment path, and returns one route per public/noindex record. Draft and
 // unconfigured records produce no route.
+//
+// Contact (Child 5) is the only page that surfaces settings-driven actions. The
+// scheduler link + email fallback come from settings.data.contact (single source
+// of truth), rendered by the template after <Content/> — never authored in
+// markdown — so the body copy and the action destinations cannot drift.
 import type { GetStaticPaths } from "astro";
-import { getCollection, render } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { PAGES } from "../config/site.ts";
 import { resolveRoutes } from "../lib/site-routes.ts";
@@ -47,6 +52,15 @@ export const getStaticPaths = (async () => {
 
 const { entry, route } = Astro.props;
 const { Content } = await render(entry);
+
+// Contact surfaces settings-driven actions; other pages need no settings.
+// Throw at build time if the contact contract is missing so links are never
+// silently omitted.
+const contact =
+  entry.id === "contact" ? (await getEntry("settings", "site"))?.data.contact : undefined;
+if (entry.id === "contact" && !contact) {
+  throw new Error("contact entry requires a validated settings.data.contact block");
+}
 ---
 
 <BaseLayout
@@ -57,4 +71,16 @@ const { Content } = await render(entry);
 >
   <h1>{entry.data.title}</h1>
   <Content />
+  {contact && (
+    <>
+      <p>
+        <a href={contact.schedulerUrl} rel="noopener noreferrer">
+          Schedule a conversation
+        </a>
+      </p>
+      <p>
+        <a href={`mailto:${contact.emailFallback}`}>{contact.emailFallback}</a>
+      </p>
+    </>
+  )}
 </BaseLayout>
