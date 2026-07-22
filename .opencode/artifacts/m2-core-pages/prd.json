@@ -1,0 +1,84 @@
+{
+  "slug": "m2-core-pages",
+  "title": "M2 Core Pages (Child 3 of Plan 03)",
+  "created": "2026-07-22",
+  "status": "in-progress",
+  "parent": "m2-accessible-core-shell",
+  "depends_on": ["m2-semantic-shell"],
+  "blocks": ["m2-contact-page", "m2-brand-shell", "m2-accessibility-acceptance"],
+  "success_criteria": [
+    {
+      "id": "sc-1",
+      "description": "Markdown bodies are build-time safe: a .md page with raw <script>, an on* event attribute, or a javascript:/data: link fails astro build with the guard's error message; safe Markdown builds",
+      "verify": "npm test exit 0 (unit + fixture build-failure cases); npm run build exit 0 on safe content"
+    },
+    {
+      "id": "sc-2",
+      "description": "About route is public and wired: /about/ renders with one self-canonical, no noindex, appears in sitemap, appears in header nav with About label and aria-current on /about/, verifier accepts it",
+      "verify": "npm run build && npm run verify exit 0; tests/shell.test.mjs C2 block asserts built dist/about/index.html"
+    },
+    {
+      "id": "sc-3",
+      "description": "Services route is public and wired: /services/ renders with one self-canonical, no noindex, appears in sitemap, appears in header nav with Work With Me label and aria-current on /services/, verifier accepts it",
+      "verify": "npm run build && npm run verify exit 0; tests/shell.test.mjs C3 block asserts built dist/services/index.html"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "c1",
+      "title": "Markdown body safety guard",
+      "category": "safety",
+      "end_state": "A zero-dependency rehype plugin (src/lib/markdown-safety.ts) is registered in astro.config.mjs via markdown.rehypePlugins. It throws at build time on raw hast nodes (raw HTML, since Astro 5.18.2 hardcodes allowDangerousHtml:true and runs custom rehype plugins before rehypeRaw) and on a[href]/img[src]/* with javascript: or data: protocols. allowDangerousHtml stays default true (NOT false, which silently strips). The plugin is unit-tested (throws on raw node, on* attrs via raw, javascript:/data: links; passes safe markdown/relative/http(s) links). A fixture build test (tests/fixtures/markdown-safety/) proves astro build fails on unsafe Markdown with the guard's error message and succeeds on safe Markdown. No new dependencies. No public Markdown route ships in C1.",
+      "depends_on": [],
+      "parallel": false,
+      "files": [
+        "tests/policy.test.mjs",
+        "src/lib/markdown-safety.ts",
+        "astro.config.mjs",
+        "tests/fixtures/markdown-safety/astro.config.mjs",
+        "tests/fixtures/markdown-safety/src/content/pages/unsafe.md"
+      ],
+      "files_note": "Declared 5-file cohesive exception: the safety guard is one cohesive unit — the plugin, its production registration, its fixture (config + unsafe page), and the unit+fixture test. Approved per .opencode/command/plan.md:340-373.",
+      "verification": [
+        "RED: node --test tests/policy.test.mjs — markdown-safety tests fail (plugin stub returns no-op; unsafe fixture build currently succeeds because no guard exists). Commit: test(m2): define markdown body safety contract",
+        "GREEN: npm run check exit 0; npm test exit 0; the unsafe fixture build fails with the guard's error (raw HTML / unsafe protocol); a safe fixture build succeeds; the unit tests pass (throws on each violation class, passes safe input). Commit: feat(m2): add markdown body safety guard"
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "Dynamic content route and About activation",
+      "category": "routes",
+      "end_state": "src/pages/[page].astro uses getStaticPaths() constrained through PAGES + resolveRoutes (NOT all routable collection entries — only configured IDs; unknown public records produce no route). It calls getEntry('pages', id), throws if missing, renders via render(entry) -> <Content /> inside BaseLayout with noindex=false (public) and canonicalPath derived from the resolved route. About record (src/content/pages/about.md) ships public with honest positioning copy (title + description + one page-specific paragraph; no metrics/testimonials/dates/clients). The verifier CLI manifest adds /about/ to expectedHtmlRoutes and expectedDiscoverableRoutes, allowEmptySitemap:false. Inherited B1/B2/B3 shell tests update atomically: B1/B3 manifests add /about/; B2 nav assertion becomes 'about link present, services/contact absent'; a new C2 describe block asserts /about/ canonical/noindex-absent/sitemap-present/nav-present. No Contact, no Home record, no SiteHeader/sitemap/index/404 changes.",
+      "depends_on": ["c1"],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "src/pages/[page].astro",
+        "src/content/pages/about.md",
+        "scripts/verify-build.mjs"
+      ],
+      "files_note": "Declared 4-file cohesive exception: the dynamic route + first record + verifier manifest + inherited-test updates are one atomic activation unit. Approved per .opencode/command/plan.md:340-373.",
+      "verification": [
+        "RED: node --test --test-name-pattern='C2 about' tests/shell.test.mjs — C2 assertions fail (no /about/ route; verifyBuild with /about/ in manifest returns missing-route: /about/). Also run inherited B1/B2/B3 — they now fail because about.md exists and emits /about/ but manifests still expect only / (this is expected and resolved in GREEN). Commit: test(m2): define about route contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; dist/about/index.html has one self-canonical https://example.com/about/, no noindex meta, one h1, no script; sitemap includes https://example.com/about/; header nav has About link; B1/B2/B3 inherited tests pass with updated manifests/assertions; unknown public record produces no route (RED assertion or dedicated test). Commit: feat(m2): add dynamic content route and About page"
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "Services activation",
+      "category": "routes",
+      "end_state": "Services record (src/content/pages/services.md) ships public with honest positioning copy (title + description + one page-specific paragraph; Work With Me framing; no metrics/testimonials/dates/clients). The verifier CLI manifest adds /services/ to expectedHtmlRoutes and expectedDiscoverableRoutes. Inherited shell tests update atomically: manifests add /services/; B2 nav assertion becomes 'about+services links present, contact absent'; a new C3 describe block asserts /services/ canonical/noindex-absent/sitemap-present/nav-present (Work With Me label, aria-current on /services/). No Contact, no SiteHeader/sitemap/index/404 changes.",
+      "depends_on": ["c2"],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "src/content/pages/services.md",
+        "scripts/verify-build.mjs"
+      ],
+      "verification": [
+        "RED: node --test --test-name-pattern='C3 services' tests/shell.test.mjs — C3 assertions fail (no /services/ route; verifyBuild with /services/ returns missing-route: /services/). Inherited tests fail because services.md emits /services/ not yet expected. Commit: test(m2): define services route contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; dist/services/index.html has one self-canonical https://example.com/services/, no noindex, one h1, no script; sitemap includes both /about/ and /services/; header nav has About + Work With Me links, contact absent; all inherited tests pass. Commit: feat(m2): add Services page"
+      ]
+    }
+  ]
+}
