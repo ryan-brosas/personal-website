@@ -159,12 +159,10 @@ export const verifyBuild = (manifest) => {
     if (fs.existsSync(sitemapPath)) {
       const content = fs.readFileSync(sitemapPath, "utf-8");
       const urls = [...content.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
-        m[1]
-          .replace(/&amp;/g, "&")
-          .replace(/&lt;/g, "<")
-          .replace(/&gt;/g, ">")
-          .replace(/&quot;/g, '"')
-          .replace(/&apos;/g, "'"),
+        m[1].replace(
+          /&(amp|lt|gt|quot|apos);/g,
+          (_, e) => ({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" })[e],
+        ),
       );
       if (urls.length === 0 && !allowEmptySitemap) {
         errors.push("empty-sitemap: sitemap has no URLs and allowEmptySitemap is false");
