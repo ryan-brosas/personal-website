@@ -356,6 +356,27 @@ Required interaction states are hover, focus-visible, active/selected, disabled,
 
 Theme changes may use a short color transition but must not animate layout. Apply the theme attribute before rendering the main interface when possible to avoid a light-mode flash.
 
+### Homepage-only editorial exception (Signal Path — Editorial Cut)
+
+The functional motion policy above is the production default for every internal route. The homepage is the one surface permitted a concentrated editorial sequence. The accepted proof is `ryan-brosas-landing-page.html`; this subsection codifies that accepted choreography so production translation (Plan 04) does not reinterpret it.
+
+- **Scope:** expressive choreography runs on the homepage only. Internal routes use the functional `150–220ms` band and the `max 6px` movement rule above. Do not carry editorial motion onto About, Work With Me, Contact, case studies, or any taxonomy surface.
+- **Editorial band:** homepage editorial motion may use a `400–700ms` band. Hero settles in roughly one second total. Each sequence runs once (`forwards`) and does not loop.
+- **Functional band on the homepage:** functional UI on the homepage still obeys the `150–220ms` rule above; the editorial band applies only to the structural-rule sweep, oversized type planes, color-plane cut, signal trace, system-step rule reveals, and story-media masks.
+- **One finite sequence per screen:** at most one deliberate visual flourish per screen. The hero combines a structural rule sweep, oversized cropped headline planes, and a one-time coral signal trace through the System Conductor illustration; it settles and never repeats.
+- **Manifesto:** a decisive coral color-plane editorial cut (a single wipe), not a generic fade.
+- **System sequence:** restrained numbered/rule choreography reveals each step in order. No pinned scroll, no scroll hijacking, no parallax.
+- **Story/evidence media:** reveal through grid-aligned overflow masks. Captions, status metadata, and evidence labels remain readable and associated with their media; the clip never touches the copy.
+- **CTA and footer:** return to a quiet, static presentation. No expressive motion at the page end.
+- **Progressive enhancement:** the complete readable composition is the default and the fallback. JavaScript failure, an unsupported optional animation API, or `prefers-reduced-motion: reduce` must not hide or delay content. CSS transient states exist only under a `data-motion-ready` marker that is set only as the final successful initialization step. Without it, every region renders its final visible state.
+- **Progressively enhanced navigation:** mobile navigation is a disclosure only when JavaScript is available. The base CSS shows the primary links inline and hides the toggle; the enhanced CSS reveals the toggle and collapses the links only after every disclosure handler has bound. Failure before arming leaves links visible and the toggle inert.
+- **Reduced motion:** `@media (prefers-reduced-motion: reduce)` neutralizes every transient state — no animation, no transforms, no signal-trace draw, system rules fully drawn, story media fully revealed — so the final composition is identical to the no-JavaScript state.
+- **Performance:** animate only `transform`, `opacity`, and `clip-path`. No layout-thrashing properties. One finite sequence; no continuous or ambient motion. The sequence does not gate interaction or readability at any point.
+- **Internal-route restraint:** internal routes do not inherit the editorial band. A page that links into the homepage may use the functional band only.
+- **Prohibited on the homepage and everywhere:** parallax, scroll hijacking, marquees, cursor effects, particles, splash screens, decorative loops, `bounce`/`elastic` easing, generic staggered fade-up soup, and any motion that gates content, evidence, navigation, or meaning. Motion never substitutes for state, hierarchy, or navigation value.
+
+The accepted proof is the authority. A visual change to the homepage returns to art direction (P02A-style acceptance), not to a silent production edit.
+
 ## Reusable Implementation Notes
 
 ### Start order
