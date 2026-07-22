@@ -11,6 +11,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { verifyBuild } from "../scripts/verify-build.mjs";
+import { resolveRoutes } from "../src/lib/site-routes.ts";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
@@ -293,5 +294,70 @@ describe("B3 footer and 404", () => {
     const headerMatch = html.match(/<header[\s\S]*?<\/header>/i);
     assert.ok(headerMatch, "404 has a header");
     assert.ok(!/aria-current="page"/i.test(headerMatch[0]), "404 header has no aria-current=page");
+  });
+});
+
+describe("C2 about route", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("unconfigured public record generates no route", () => {
+    // Contract evidence: resolveRoutes only yields configured PAGES.
+    // A future home.md or 404.md with visibility public must not create a route.
+    assert.deepEqual(resolveRoutes({ unconfigured: "public" }), []);
+  });
+
+  test("/about/ is routable but not discoverable (noindex)", () => {
+    // The verifier is the gate: it fails with `missing-route: /about/` until
+    // [page].astro + about.md exist, so the first assertion fails before any
+    // HTML read can ENOENT.
+    const result = verifyBuild({
+      distDir,
+      site: SITE,
+      expectedHtmlRoutes: ["/", "/about/"],
+      expectedDiscoverableRoutes: [],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
+      allowEmptySitemap: true,
+    });
+    assert.equal(
+      result.ok,
+      true,
+      `verifier must accept /about/ as routable-not-discoverable: ${JSON.stringify(result.errors)}`,
+    );
+
+    const html = readHtml(distDir, "/about/");
+    assert.ok(html, "dist/about/index.html must exist");
+
+    const canonicals = canonicalsOf(html);
+    assert.equal(canonicals.length, 1, "exactly one canonical");
+    assert.equal(canonicals[0], "https://example.com/about/", "canonical is the /about/ self-URL");
+
+    // noindex,follow — routable but excluded from discovery.
+    assert.ok(
+      /<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
+      "about has noindex,follow robots meta",
+    );
+
+    // About is NOT in the sitemap (not discoverable).
+    const sitemap = fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf-8");
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    assert.ok(!locs.includes("https://example.com/about/"), "about is not in the sitemap");
+
+    // About link appears in navigation (routable => nav).
+    assert.ok(/href="\/about\/"/i.test(html), "about link appears in nav");
+    // Services and Contact still absent (no records yet).
+    assert.ok(!/href="\/services\/"/i.test(html), "no /services/ link without a routable record");
+    assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+    assert.ok(!/<script[\s>]/i.test(html), "no client script");
   });
 });
