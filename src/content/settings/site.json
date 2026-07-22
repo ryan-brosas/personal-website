@@ -5,6 +5,11 @@
       "about": "About",
       "services": "Work With Me",
       "contact": "Contact"
+    },
+    "contact": {
+      "schedulerUrl": "https://calendly.com/ryanjoserbrosas/30min",
+      "emailFallback": "ryanjoserbrosas@gmail.com",
+      "privacyRequired": false
     }
   }
 }

@@ -27,10 +27,10 @@ export type PageRecord = z.infer<typeof PageSchema>;
 // {"site": <SettingsData>}; the file() loader uses the top-level key as the
 // entry ID ("site") and validates the inner value against this schema.
 //
-// siteTitle and navLabels are required. The contact block is all-or-none: if
-// present, schedulerUrl (URL), emailFallback (email), and privacyRequired are
-// all required; if absent, Contact is not promoted. The Contact child owns
-// the security checks (HTTPS host, exact scheduler domain, privacy mode).
+// siteTitle and navLabels are required. The contact block is REQUIRED: it owns
+// the scheduler URL + email fallback + privacy mode. The Contact child enforces
+// HTTPS + the exact calendly.com hostname on schedulerUrl (parsed URL, no suffix
+// matching) and locks privacyRequired to literal false (M2 has no privacy route).
 export const SettingsDataSchema = z.object({
   siteTitle: z.string().min(1),
   navLabels: z.object({
@@ -38,12 +38,20 @@ export const SettingsDataSchema = z.object({
     services: z.string().min(1),
     contact: z.string().min(1),
   }),
-  contact: z
-    .object({
-      schedulerUrl: z.string().url(),
-      emailFallback: z.string().email(),
-      privacyRequired: z.boolean(),
-    })
-    .optional(),
+  contact: z.object({
+    schedulerUrl: z
+      .string()
+      .url()
+      .refine((value) => {
+        try {
+          const url = new URL(value);
+          return url.protocol === "https:" && url.hostname === "calendly.com";
+        } catch {
+          return false;
+        }
+      }, "schedulerUrl must use HTTPS on calendly.com"),
+    emailFallback: z.string().email(),
+    privacyRequired: z.literal(false),
+  }),
 });
 export type SettingsData = z.infer<typeof SettingsDataSchema>;
