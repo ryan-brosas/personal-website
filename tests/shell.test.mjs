@@ -86,7 +86,7 @@ describe("B1 root shell", () => {
       site: SITE,
       expectedHtmlRoutes: ["/", "/about/", "/services/"],
       expectedDiscoverableRoutes: ["/about/", "/services/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -256,7 +256,7 @@ describe("B3 footer and 404", () => {
       site: SITE,
       expectedHtmlRoutes: ["/", "/about/", "/services/"],
       expectedDiscoverableRoutes: ["/about/", "/services/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -327,7 +327,7 @@ describe("C2 about route", () => {
       site: SITE,
       expectedHtmlRoutes: ["/", "/about/", "/services/"],
       expectedDiscoverableRoutes: ["/about/", "/services/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -525,7 +525,7 @@ describe("C3 services route", () => {
       site: SITE,
       expectedHtmlRoutes: ["/", "/about/", "/services/"],
       expectedDiscoverableRoutes: ["/about/", "/services/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -627,8 +627,8 @@ describe("D1 favicon", () => {
   });
 
   test("favicon endpoint exists, matches the approved charcoal mark", () => {
-    // The verifier must reject while favicon is absent (missing-endpoint), an
-    // assertion failure rather than a filesystem exception.
+    // The verifier must accept favicon.svg now that it ships alongside the
+    // expected file-endpoint inventory.
     const result = verifyBuild({
       distDir,
       site: SITE,
@@ -639,12 +639,8 @@ describe("D1 favicon", () => {
     });
     assert.equal(
       result.ok,
-      false,
-      `verifier must reject while favicon endpoint is absent: ${JSON.stringify(result.errors)}`,
-    );
-    assert.ok(
-      result.errors.some((e) => e.includes("missing-endpoint") && e.includes("favicon.svg")),
-      `verifier reports missing-endpoint: favicon.svg (got ${JSON.stringify(result.errors)})`,
+      true,
+      `verifier must accept the favicon endpoint: ${JSON.stringify(result.errors)}`,
     );
 
     // Existence guards before reading (assertion, not ENOENT).
