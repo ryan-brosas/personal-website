@@ -21,7 +21,7 @@ Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 `.opencode/artifacts/website-build/{plan,todo,decisions}.md`,
 `.opencode/artifacts/MEMORY.md`, `docs/sitemap.md`.
 
-**Active milestone:** M2 — Accessible Core Shell (in progress; decomposed into child plans: `m2-content-route-contracts` active, `m2-semantic-shell` pending, plus gated core-pages/contact/brand/accessibility children). M1 — Proven Static Foundation complete 2026-07-22 (`9fd70ce`).
+**Active milestone:** M2 — Accessible Core Shell (in progress; decomposed into child plans: `m2-content-route-contracts` complete 2026-07-22 (`8cf77ab`), `m2-semantic-shell` active, plus gated core-pages/contact/brand/accessibility children). M1 — Proven Static Foundation complete 2026-07-22 (`9fd70ce`).
 
 ## Active Decisions
 
@@ -74,9 +74,9 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
 
 ## Next Priorities
 
-1. Execute M2 child plans in order: `m2-content-route-contracts` (active) →
-   `m2-semantic-shell` → gated core-pages → Contact → brand → accessibility.
-   M1 complete 2026-07-22 (`9fd70ce`; 57/57 tests, all gates green). The M2 parent is
+1. Execute M2 child plans in order: `m2-content-route-contracts` complete
+   (`8cf77ab`; 82/82 tests, all gates green) → `m2-semantic-shell` (active) →
+   gated core-pages → Contact → brand → accessibility. The M2 parent is
    a non-executable aggregate; `/ship` only on the active child.
 2. Run P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
    and stop for the durable visual decision. Run P02B only after acceptance to

@@ -9,13 +9,13 @@
   "children": [
     {
       "slug": "m2-content-route-contracts",
-      "status": "active",
+      "status": "complete",
       "tasks": 3,
       "gates": []
     },
     {
       "slug": "m2-semantic-shell",
-      "status": "pending",
+      "status": "active",
       "tasks": 3,
       "gates": ["m2-content-route-contracts"]
     },
