@@ -433,3 +433,64 @@ describe("C2 noindex variant (copied production)", () => {
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
   });
 });
+
+describe("C3 services route", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("/services/ is public and discoverable with Work With Me label", () => {
+    // The verifier is the gate: it fails with `missing-route: /services/` until
+    // services.md exists, so the first assertion fails before any HTML read.
+    const result = verifyBuild({
+      distDir,
+      site: SITE,
+      expectedHtmlRoutes: ["/", "/about/", "/services/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
+      allowEmptySitemap: false,
+    });
+    assert.equal(
+      result.ok,
+      true,
+      `verifier must accept /services/: ${JSON.stringify(result.errors)}`,
+    );
+
+    const html = readHtml(distDir, "/services/");
+    assert.ok(html, "dist/services/index.html must exist");
+
+    const canonicals = canonicalsOf(html);
+    assert.equal(canonicals.length, 1, "exactly one canonical");
+    assert.equal(
+      canonicals[0],
+      "https://example.com/services/",
+      "canonical is the /services/ self-URL",
+    );
+
+    // Public page has NO noindex meta.
+    assert.ok(
+      !/<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
+      "public services has no noindex meta",
+    );
+
+    // Services IS in the sitemap (discoverable).
+    const sitemap = fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf-8");
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    assert.ok(locs.includes("https://example.com/services/"), "services is in the sitemap");
+
+    // Work With Me nav label appears.
+    assert.ok(/href="\/services\/"/i.test(html), "services link appears in nav");
+    // Contact still absent (no record yet).
+    assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+    assert.ok(!/<script[\s>]/i.test(html), "no client script");
+  });
+});
