@@ -11,6 +11,9 @@ import {
 } from "../src/lib/publishing.ts";
 import { ROUTES, canonicalHref, isHtmlRoute, isFileEndpoint } from "../src/lib/routes.ts";
 import { renderSitemap, renderRobots } from "../src/lib/discovery.ts";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -276,5 +279,32 @@ describe("T4 discovery rendering", () => {
       );
       assert.ok(!txt.includes("//sitemap.xml"), "no double slash");
     });
+  });
+});
+
+describe("T5 canonical fixture", () => {
+  const repoRoot = path.resolve(import.meta.dirname, "..");
+  const fixtureRoot = path.resolve(import.meta.dirname, "fixtures", "policy-site");
+  const fixtureDist = path.join(fixtureRoot, "dist");
+  const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
+
+  test("fixture build emits exactly one self-canonical with trailing slash", () => {
+    fs.rmSync(fixtureDist, { recursive: true, force: true });
+    try {
+      const result = spawnSync(astroBin, ["build", "--root", fixtureRoot], {
+        cwd: repoRoot,
+        encoding: "utf-8",
+      });
+      assert.equal(result.status, 0, `astro build failed: ${result.stderr}`);
+      const html = fs.readFileSync(path.join(fixtureDist, "probe", "index.html"), "utf-8");
+      const canonicals = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/g) ?? [];
+      assert.equal(canonicals.length, 1, "exactly one canonical link");
+      assert.ok(
+        canonicals[0].includes('href="https://example.com/probe/"'),
+        "canonical is the probe self-URL with trailing slash",
+      );
+    } finally {
+      fs.rmSync(fixtureDist, { recursive: true, force: true });
+    }
   });
 });
