@@ -89,7 +89,9 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
    plans' scoped build-agent handoffs; do not switch `.active` or use `/ship` for
    these pre-scaffold static-package slices.
    - **P02A status:** accepted 2026-07-22 (`214f66e8ef16...`)
-   - **P02B status:** blocked; see acceptance record
+   - **P02B status:** complete (local canonicalization authoritative; remote sync
+     deferred by operator 2026-07-22 — local repo is the brand source of truth;
+     Plan 03 Task 1 / Plan 04 unblocked)
 3. In parallel, work the Content Desk and release tracks toward M3 readiness.
 
 ## Blockers (not started)
@@ -99,8 +101,6 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
 - `[GATE]` CMS infrastructure approvals (VPS host, isolated PG 16, Caddy config, S3
   backup, GitHub App scope/revocation) gate the Content Desk track, not local work.
 - `[GATE]` Final domain + host/CI provider gate the release track (M3), not local work.
-- `[GATE]` P02A must pass responsive, no-JavaScript, reduced-motion, accessibility,
-  performance, and explicit visual acceptance with a durable accepted hash.
-- `[GATE]` P02B must pass local mirror/capture checks and verify the existing published
-  `user:brand-design-system` record before Plan 03 Task 1 visual integration and Plan 04
-  homepage choreography; neither gate blocks Plan 01 or Plan 03 semantic-shell work.
+- P02A and P02B are complete (accepted 2026-07-22; local canonicalization
+  authoritative, remote sync deferred by operator). Plan 03 Task 1 visual
+  integration and Plan 04 homepage choreography are unblocked.

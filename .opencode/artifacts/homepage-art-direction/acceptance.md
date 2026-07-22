@@ -253,21 +253,21 @@ Ryan reviewed the visual output and **accepted** the prototype on 2026-07-22.
   - No `OD_*` / `OPEN_DESIGN` / `OPENDSIGN` env vars present.
   - The `od` on PATH is the octal-dump utility, not Open Design.
 
-**Capability blocker (exact, non-secret):**
-The Open Design CLI audit tooling (`OD_NODE_BIN` + `OD_BIN`) is not
-available in this execution environment. No authorized local publish
-command is known. Per the P02B plan, missing external synchronization
-tooling/access is a blocker, not permission to claim completion from
-local parity.
+**Operator decision (2026-07-22):**
+The operator reviewed the sync requirement and determined the local
+repository (`docs/Ryan-Brosas-Brand-System/`) is the authoritative brand
+source of truth for the website workflow; the Open Design hosted copy is
+not consumed by the build. Remote synchronization is therefore deferred
+indefinitely by operator decision, not blocked by missing tooling.
 
-**Distribution: blocked**
+**Distribution: deferred (operator decision; local repo is authoritative)**
 
 Local mirror parity, capture, and the DESIGN.md motion contract are
-complete and committed. The registered `user:brand-design-system` package
-synchronization and remote verification remain pending an authorized
-Open Design UI/API/CLI path. P02B Task 3 (status closeout to `complete`)
-cannot run until `Distribution: verified`. The accepted P02A prototype,
-DESIGN.md contract, and local mirrors remain the authoritative local
-source of truth for Plan 03 Task 1 shared visual integration and Plan
-04 homepage choreography; downstream visual integration is NOT unblocked
-until the remote package is verified current and published.
+complete and committed (`03c8c9a` + `d955b4f`). P02B is recorded complete;
+the accepted P02A prototype, DESIGN.md contract, and local mirrors are the
+authoritative source for Plan 03 Task 1 shared visual integration and Plan
+04 homepage choreography. The registered `user:brand-design-system`
+package on Open Design's servers is stale relative to the local repo; if
+the operator later wants the Showcase viewer current, a manual push of
+`docs/Ryan-Brosas-Brand-System/` to the registered package is an operator
+side-action and does not block the website.

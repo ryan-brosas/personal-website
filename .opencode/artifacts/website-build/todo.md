@@ -49,9 +49,9 @@
 
 - [x] P01 - Policy-kernel tracer (Astro baseline + publishing contracts + discovery output) — M1 (complete `9fd70ce`)
 - [ ] P02 - Pages CMS mobile tracer (one directory-entry form + validation action + authenticated responsive acceptance) — Content Desk track
-- [ ] P02A - Signal Path prototype and visual acceptance (canonical proof + no-JS mobile-nav repair + durable responsive/accessibility/performance decision) — gates P02B
-- [ ] P02B - Signal Path canonicalization and distribution (motion contract + local mirrors/capture + verified published `user:brand-design-system`) — gates P03 Task 1 visual integration and P04 choreography
-- [ ] P03 - Brand shell and core pages (asset boundary + semantic shell + dynamic core routes + About/Services/Contact/404 + minimal `/` noindex shell) — M2 (active; decomposed into child plans)
+- [x] P02A - Signal Path prototype and visual acceptance (canonical proof + no-JS mobile-nav repair + durable responsive/accessibility/performance decision) — accepted 2026-07-22 (`214f66e8ef16...`)
+- [x] P02B - Signal Path canonicalization and distribution (motion contract + local mirrors/capture + `user:brand-design-system`) — complete 2026-07-22 (local canonicalization authoritative; remote sync deferred by operator) — unblocks P03 Task 1 and P04
+- [ ] P03 - Brand shell and core pages (asset boundary + semantic shell + dynamic core routes + About/Services/Contact/404 + minimal `/` noindex shell) — M2 (active; decomposed into child plans; 3 of 6 children complete — brand-shell now unblocked by P02B)
 - [ ] P04 - Project proof and homepage (one project + evidence primitives + evidence/curation homepage) — M3
 - [ ] P05 - Blog, relationships, and RSS (hub/entry + related links + excerpt-only RSS) — M4
 - [ ] P06 - Agent Workflow Tools directory (methodology + records + hubs + freshness) — M5

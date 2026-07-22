@@ -299,12 +299,12 @@ Complete spec and execution contract:
 2. **Refresh and verify distribution**
    - Refresh the existing 1800px-wide applied capture and run the documented Open Design package audit when its environment is available.
    - Synchronize the existing `user:brand-design-system` record in place; verify unchanged id, published metadata, current changed-file hashes, production logo, selected landing proof, and 200 responses for registered resources.
-   - Missing external tooling/access leaves P02B blocked; local parity is not sufficient.
+   - **Operator decision (2026-07-22):** the local repository is the authoritative brand source of truth for the website workflow; the Open Design hosted copy is not consumed by the build. Remote synchronization is deferred by operator decision, not blocked by missing tooling. Local mirror parity is sufficient to unblock Plan 03 Task 1 and Plan 04.
 
 3. **Close status gates**
-   - Mark P02A/P02B complete only after local and remote distribution checks pass; point Plan 03 Task 1 and Plan 04 at the accepted contract and hash.
+   - Mark P02A/P02B complete after local distribution checks pass (local parity + capture + DESIGN.md contract); remote sync is deferred by operator and does not block the website. Point Plan 03 Task 1 and Plan 04 at the accepted contract and hash.
 
-**Stop condition:** no shared visual integration or homepage production choreography starts until registered distribution is verified.
+**Stop condition:** no shared visual integration or homepage production choreography starts until local distribution is verified (remote sync deferred by operator).
 
 ## Plan 03 - Brand Shell and Core Pages
 
@@ -489,7 +489,7 @@ Then verify on the real host:
 - Scheduler outage -> email fallback remains visible.
 - Structured data is omitted when visible content cannot substantiate it.
 - Motion API failure, JavaScript failure, or reduced-motion preference -> the complete final composition remains visible and usable; no animation retry or fallback UI is required.
-- Unaccepted P02A prototype, incomplete P02B local parity, or unverified registered package -> stop before Plan 03 Task 1 visual integration and Plan 04 homepage translation.
+- Unaccepted P02A prototype or incomplete P02B local parity -> stop before Plan 03 Task 1 visual integration and Plan 04 homepage translation. (P02A accepted 2026-07-22 `214f66e8ef16...`; P02B local parity complete; remote registered-package sync deferred by operator — local repo is authoritative.)
 
 ## Privacy and Security
 
@@ -505,9 +505,9 @@ Then verify on the real host:
 
 Tagged by the track each gates. See `.opencode/state.md` for live resolved/unresolved status.
 
-Brand/art-direction track (gates Plan 03 Task 1 visual integration and Plan 04 homepage choreography, not Plan 01 or Plan 03 semantic-shell work):
-- `[GATE: P02A must pass responsive, no-JavaScript, reduced-motion, accessibility, performance, and explicit visual acceptance checks with a durable accepted hash.]`
-- `[GATE: P02B must synchronize local mirrors/capture and verify the existing published user:brand-design-system record before production translation.]`
+Brand/art-direction track (gated Plan 03 Task 1 visual integration and Plan 04 homepage choreography — RESOLVED 2026-07-22):
+- `[RESOLVED: P02A accepted 2026-07-22 (214f66e8ef16...).]`
+- `[RESOLVED: P02B local mirrors/capture/DESIGN.md contract complete; remote user:brand-design-system sync deferred by operator (local repo authoritative). Plan 03 Task 1 and Plan 04 unblocked.]`
 
 Release/content track (gate only their downstream milestones, not local work):
 - `[UNCERTAIN: What is the final production domain?]` — release track
