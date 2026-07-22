@@ -10,12 +10,15 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { verifyBuild } from "../scripts/verify-build.mjs";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
 const SITE = "https://example.com";
+const LOGO_SOURCE = path.join(repoRoot, "docs/Ryan-Brosas-Brand-System/logos/Logo---Ryan-1.svg");
+const LOGO_SOURCE_SHA256 = "a5e1589808b8c2a27a021bceef787ca7198e968273fe6a567c58e68515aa8cf8";
 
 // Build the real root into an isolated repo-local dist. Asserts the outDir stays
 // inside the repo before spawning Astro. Returns { distDir, cleanup }.
@@ -416,6 +419,12 @@ describe("C2 noindex variant (copied production)", () => {
     );
     fs.copyFileSync(path.join(repoRoot, "tsconfig.json"), path.join(tempRoot, "tsconfig.json"));
     fs.copyFileSync(path.join(repoRoot, "package.json"), path.join(tempRoot, "package.json"));
+    // Copy public/ (favicon + future static assets) when it exists. Guarded so the
+    // variant build stays green before the favicon lands (RED phase of D1).
+    const publicDir = path.join(repoRoot, "public");
+    if (fs.existsSync(publicDir)) {
+      fs.cpSync(publicDir, path.join(tempRoot, "public"), { recursive: true });
+    }
 
     // Rewrite the COPIED about visibility to noindex (never the tracked file).
     const aboutPath = path.join(tempRoot, "src", "content", "pages", "about.md");
@@ -474,6 +483,22 @@ describe("C2 noindex variant (copied production)", () => {
     assert.ok(
       variantLocs.includes("https://example.com/services/"),
       "variant services is in the sitemap (stays public)",
+    );
+
+    // Favicon parity: the variant build ships the same favicon as the real root.
+    const variantFav = path.join(variantDist, "favicon.svg");
+    assert.ok(fs.existsSync(variantFav), "variant dist/favicon.svg must exist");
+    assert.equal(
+      sha256OfFile(variantFav),
+      LOGO_SOURCE_SHA256,
+      "variant favicon matches the approved charcoal mark",
+    );
+    const variantAboutHtml = readHtml(variantDist, "/about/");
+    assert.ok(variantAboutHtml, "variant dist/about/index.html must exist");
+    assert.equal(
+      faviconLinksOf(variantAboutHtml).length,
+      1,
+      "variant about links the favicon once",
     );
   });
 });
@@ -568,5 +593,108 @@ describe("C3 services route", () => {
     );
 
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
+  });
+});
+
+// Extract favicon link tags (order/quote-independent), ignoring comments.
+const faviconLinksOf = (html) => {
+  const stripped = html.replace(/<!--[\s\S]*?-->/g, "");
+  const out = [];
+  for (const m of stripped.matchAll(/<link\s[^>]*>/gi)) {
+    const tag = m[0];
+    if (!/(?<=\s)rel\s*=\s*["']icon["']/i.test(tag)) continue;
+    if (!/(?<=\s)href\s*=\s*["']\/favicon\.svg["']/i.test(tag)) continue;
+    out.push(tag);
+  }
+  return out;
+};
+
+const sha256OfFile = (file) =>
+  crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+
+describe("D1 favicon", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("favicon endpoint exists, matches the approved charcoal mark", () => {
+    // The verifier must reject while favicon is absent (missing-endpoint), an
+    // assertion failure rather than a filesystem exception.
+    const result = verifyBuild({
+      distDir,
+      site: SITE,
+      expectedHtmlRoutes: ["/", "/about/", "/services/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      allowEmptySitemap: false,
+    });
+    assert.equal(
+      result.ok,
+      false,
+      `verifier must reject while favicon endpoint is absent: ${JSON.stringify(result.errors)}`,
+    );
+    assert.ok(
+      result.errors.some((e) => e.includes("missing-endpoint") && e.includes("favicon.svg")),
+      `verifier reports missing-endpoint: favicon.svg (got ${JSON.stringify(result.errors)})`,
+    );
+
+    // Existence guards before reading (assertion, not ENOENT).
+    const favPath = path.join(distDir, "favicon.svg");
+    assert.ok(fs.existsSync(favPath), "dist/favicon.svg must exist");
+
+    assert.ok(fs.existsSync(LOGO_SOURCE), "approved logo source must exist");
+    const publicPath = path.join(repoRoot, "public", "favicon.svg");
+    assert.ok(fs.existsSync(publicPath), "public/favicon.svg must exist");
+
+    // Byte-identical across source, public copy, and generated file.
+    const sourceHash = sha256OfFile(LOGO_SOURCE);
+    assert.equal(
+      sourceHash,
+      LOGO_SOURCE_SHA256,
+      "source is the approved charcoal R/lightning mark",
+    );
+    assert.equal(
+      sha256OfFile(publicPath),
+      sourceHash,
+      "public/favicon.svg matches the source bytes",
+    );
+    assert.equal(sha256OfFile(favPath), sourceHash, "dist/favicon.svg matches the source bytes");
+  });
+
+  test("every built page links the favicon once with type and sizes", () => {
+    const routes = ["/", "/about/", "/services/"];
+    for (const route of routes) {
+      const html = readHtml(distDir, route);
+      assert.ok(html, `dist/${route.replace(/^\/+/, "")}index.html must exist`);
+      const links = faviconLinksOf(html);
+      assert.equal(links.length, 1, `exactly one favicon link on ${route}`);
+      assert.ok(
+        /type\s*=\s*["']image\/svg\+xml["']/i.test(links[0]),
+        `favicon link has type=image/svg+xml on ${route}`,
+      );
+      assert.ok(
+        /sizes\s*=\s*["']any["']/i.test(links[0]),
+        `favicon link has sizes=any on ${route}`,
+      );
+    }
+
+    const file404 = path.join(distDir, "404.html");
+    assert.ok(fs.existsSync(file404), "dist/404.html must exist");
+    const html404 = fs.readFileSync(file404, "utf-8");
+    const links404 = faviconLinksOf(html404);
+    assert.equal(links404.length, 1, "exactly one favicon link on 404.html");
+    assert.ok(
+      /type\s*=\s*["']image\/svg\+xml["']/i.test(links404[0]),
+      "favicon link has type=image/svg+xml on 404.html",
+    );
   });
 });
