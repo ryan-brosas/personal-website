@@ -18,6 +18,7 @@ import path from "node:path";
 import os from "node:os";
 import { verifyBuild } from "../scripts/verify-build.mjs";
 import { PageSchema, SettingsDataSchema } from "../src/lib/content-schemas.ts";
+import { resolveRoutes } from "../src/lib/site-routes.ts";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -233,6 +234,58 @@ describe("M2 content schemas (A1)", () => {
     assert.ok(Object.hasOwn(settingsFile, "site"), "envelope has 'site' key (entry ID)");
     const parsed = SettingsDataSchema.safeParse(settingsFile.site);
     assert.ok(parsed.success, "inner SettingsData validates against schema");
+  });
+});
+
+describe("M2 route-visibility pipeline (A2)", () => {
+  test("draft record produces no route", () => {
+    const routes = resolveRoutes({ about: "draft" });
+    assert.equal(
+      routes.find((r) => r.path === "/about/"),
+      undefined,
+      "draft must not route",
+    );
+  });
+
+  test("noindex record is routable but not discoverable", () => {
+    const routes = resolveRoutes({ about: "noindex" });
+    const about = routes.find((r) => r.path === "/about/");
+    assert.ok(about, "noindex is routable");
+    assert.equal(isDiscoverable(about.visibility), false, "noindex is not discoverable");
+  });
+
+  test("public record is routable and discoverable", () => {
+    const routes = resolveRoutes({ about: "public" });
+    const about = routes.find((r) => r.path === "/about/");
+    assert.ok(about, "public is routable");
+    assert.equal(isDiscoverable(about.visibility), true, "public is discoverable");
+  });
+
+  test("empty visibility map returns no routes", () => {
+    const routes = resolveRoutes({});
+    assert.equal(routes.length, 0, "no records = no routes");
+  });
+
+  test("mixed visibilities: only routable records appear (draft excluded)", () => {
+    const routes = resolveRoutes({
+      about: "public",
+      services: "draft",
+      contact: "noindex",
+    });
+    const paths = routes.map((r) => r.path).sort();
+    assert.deepEqual(paths, ["/about/", "/contact/"], "draft excluded, public+noindex included");
+  });
+
+  test("sitemap from resolved routes includes only public (noindex excluded)", () => {
+    const routes = resolveRoutes({
+      about: "public",
+      services: "draft",
+      contact: "noindex",
+    });
+    const xml = renderSitemap(routes, "https://example.com");
+    assert.ok(xml.includes("https://example.com/about/"), "public route in sitemap");
+    assert.ok(!xml.includes("services"), "draft route not in sitemap");
+    assert.ok(!xml.includes("contact"), "noindex route not in sitemap");
   });
 });
 

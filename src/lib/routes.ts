@@ -8,6 +8,10 @@
 
 export const ROUTES: string[] = [];
 
+// Code-owned root route. Activated as noindex in Child 2 (m2-semantic-shell);
+// promoted to public by Plan 04. Kept here so the route contract is centralized.
+export const ROOT_ROUTE = "/" as const;
+
 // File endpoints carry a file extension: /sitemap.xml, /robots.txt, /404.html,
 // /rss.xml. /404.html is slashless even though it is HTML.
 export const isFileEndpoint = (path: string): boolean => {
