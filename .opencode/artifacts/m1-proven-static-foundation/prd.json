@@ -1,0 +1,119 @@
+{
+  "bead": "m1-proven-static-foundation",
+  "title": "M1 Proven Static Foundation (Plan 01 — Policy-Kernel Tracer)",
+  "created": "2026-07-22",
+  "status": "in-progress",
+  "depends_on": ["m0-execution-ready-baseline"],
+  "blocks": ["m2-accessible-core-shell"],
+  "related_tracks": [
+    {
+      "id": "p02a-homepage-prototype",
+      "spec": ".opencode/artifacts/homepage-art-direction/",
+      "parallel_with": ["m1"],
+      "note": "Signal Path prototype + no-JS mobile-nav repair + visual acceptance; disjoint files, runs in parallel"
+    },
+    {
+      "id": "p02b-homepage-canonicalization",
+      "spec": ".opencode/artifacts/homepage-art-direction-canonicalization/",
+      "gates": ["plan-03-task-1-visual-integration", "plan-04-choreography"],
+      "note": "Does not gate M1"
+    }
+  ],
+  "success_criteria": [
+    {
+      "id": "sc-1",
+      "description": "Pinned Astro 5.18.2 / TS 6.0.3 / @astrojs/check 0.9.9 baseline installs and builds an empty static site with strict TypeScript and trailing-slash always",
+      "verify": "npm ci && npm run check && npm run build; dist/ exists; astro.config.mjs has output 'static', trailingSlash 'always', placeholder site"
+    },
+    {
+      "id": "sc-2",
+      "description": "Publishing contracts compile: collection schemas, draft|public|noindex enum defaulting to draft, evidence variants (Verified requires sourceId, Proposed requires a trade-off, Open requires missing proof + blocked decision), and typed relationships",
+      "verify": "npm run check exits 0 on src/content.config.ts, src/lib/publishing.ts, src/lib/routes.ts"
+    },
+    {
+      "id": "sc-3",
+      "description": "Policy tests pass against public/draft/noindex fixtures: no draft route, correct visibility enum, evidence-variant invariants, relationship target validation",
+      "verify": "npm test exits 0; tests/policy.test.mjs asserts the invariants"
+    },
+    {
+      "id": "sc-4",
+      "description": "Discovery output excludes draft and noindex; one self-canonical per indexable page; correct trailing slashes; robots from configured origin; verifier is read-only and passes against the placeholder site",
+      "verify": "npm run build && npm run verify exits 0; sitemap has no draft/noindex; one canonical per public page; verify-build.mjs read-only"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "title": "Pinned Astro 5 baseline skeleton",
+      "category": "scaffold",
+      "end_state": "A pinned, strict-TS Astro static project installs and builds an empty site with placeholder site and trailing-slash always.",
+      "depends_on": [],
+      "parallel": false,
+      "conflicts_with": [],
+      "files": [
+        "package.json",
+        "astro.config.mjs",
+        "tsconfig.json",
+        "src/env.d.ts",
+        "package-lock.json"
+      ],
+      "files_authored": ["package.json", "astro.config.mjs", "tsconfig.json", "src/env.d.ts"],
+      "files_generated": ["package-lock.json"],
+      "verification": [
+        "npm ci exits 0",
+        "npm run check exits 0 (strict TS, no errors)",
+        "npm run build exits 0 and dist/ exists",
+        "rg -n '\"static\"|trailingSlash|example.com' astro.config.mjs confirms static output, trailing-slash always, placeholder site"
+      ]
+    },
+    {
+      "id": "t2",
+      "title": "Publishing-kernel types and routes",
+      "category": "contracts",
+      "end_state": "Collection schemas, the draft|public|noindex enum, evidence variants, publish/updated/reviewed semantics, and the public-route inventory are encoded and type-check clean.",
+      "depends_on": ["t1"],
+      "parallel": false,
+      "conflicts_with": [],
+      "files": ["src/content.config.ts", "src/lib/publishing.ts", "src/lib/routes.ts"],
+      "verification": [
+        "npm run check exits 0",
+        "rg -n 'draft.*public.*noindex|Visibility' src/content.config.ts confirms the enum defaulting to draft",
+        "rg -n 'Verified|Proposed|Open' src/lib/publishing.ts confirms evidence variants with their invariants",
+        "rg -n 'published|updated|reviewedAt|lastVerified' src/lib/publishing.ts confirms date semantics"
+      ]
+    },
+    {
+      "id": "t3",
+      "title": "Policy fixtures and tests",
+      "category": "tests",
+      "end_state": "Representative public/draft/noindex fixtures and policy assertions prove the kernel invariants.",
+      "depends_on": ["t2"],
+      "parallel": false,
+      "conflicts_with": [],
+      "files": ["src/data/sources.json", "tests/policy.test.mjs"],
+      "verification": [
+        "npm test exits 0",
+        "tests assert: no draft route, correct visibility enum, Verified requires sourceId, Proposed requires a trade-off, Open requires missing proof + blocked decision, relationship targets resolve",
+        "src/data/sources.json contains at least one public, one draft, and one noindex fixture"
+      ]
+    },
+    {
+      "id": "t4",
+      "title": "Discovery output and generated-output verifier",
+      "category": "discovery",
+      "end_state": "Sitemap and robots are generated from the public-route inventory; the verifier is read-only and passes against the placeholder site, asserting no draft/noindex in discovery, one self-canonical per indexable page, and correct slashes.",
+      "depends_on": ["t3"],
+      "parallel": false,
+      "conflicts_with": [],
+      "files": ["src/pages/sitemap.xml.ts", "src/pages/robots.txt.ts", "scripts/verify-build.mjs"],
+      "verification": [
+        "npm run build exits 0 and generates dist/sitemap-index.xml (or dist/sitemap.xml) and dist/robots.txt",
+        "npm run verify exits 0 (read-only; never writes/deletes build output)",
+        "sitemap contains no draft or noindex routes",
+        "every public page has exactly one self-canonical with a trailing slash",
+        "robots.txt references the configured placeholder site origin",
+        "@astrojs/sitemap is NOT in package.json dependencies"
+      ]
+    }
+  ]
+}
