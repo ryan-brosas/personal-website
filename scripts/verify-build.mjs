@@ -24,11 +24,25 @@ const listFiles = (dir) => {
   return result;
 };
 
+// Extract canonical hrefs from HTML, order-independent (rel before or after
+// href), single or double quoted, case-insensitive.
+const extractCanonicals = (html) => {
+  const canonicals = [];
+  for (const m of html.matchAll(/<link\s[^>]*>/gi)) {
+    const tag = m[0];
+    if (!/rel=["']canonical["']/i.test(tag)) continue;
+    const hrefMatch = tag.match(/href=["']([^"']+)["']/i);
+    if (hrefMatch) canonicals.push(hrefMatch[1]);
+  }
+  return canonicals;
+};
+
 export const verifyBuild = (manifest) => {
   const {
     distDir,
     site,
     expectedHtmlRoutes = [],
+    expectedDiscoverableRoutes = expectedHtmlRoutes,
     expectedFileEndpoints = [],
     allowEmptySitemap = false,
   } = manifest;
@@ -49,9 +63,7 @@ export const verifyBuild = (manifest) => {
       continue;
     }
     const html = fs.readFileSync(htmlFile, "utf-8");
-    const canonicals = [...html.matchAll(/<link\s+rel="canonical"\s+href="([^"]+)"/g)].map(
-      (m) => m[1],
-    );
+    const canonicals = extractCanonicals(html);
     if (canonicals.length === 0) {
       errors.push(`missing-canonical: ${route}`);
     } else if (canonicals.length > 1) {
@@ -60,13 +72,18 @@ export const verifyBuild = (manifest) => {
       const href = canonicals[0];
       const expected = canonicalHref(route, site);
       if (href !== expected) {
-        const origin = site.replace(/\/+$/, "");
-        if (!href.startsWith(origin)) {
-          errors.push(`wrong-origin-canonical: ${route} (got ${href})`);
-        } else if (!href.endsWith("/")) {
-          errors.push(`slash-mismatch-canonical: ${route} (got ${href})`);
-        } else {
-          errors.push(`wrong-canonical: ${route} (expected ${expected}, got ${href})`);
+        try {
+          const hrefOrigin = new URL(href).origin;
+          const siteOrigin = new URL(site).origin;
+          if (hrefOrigin !== siteOrigin) {
+            errors.push(`wrong-origin-canonical: ${route} (got ${href})`);
+          } else if (!href.endsWith("/")) {
+            errors.push(`slash-mismatch-canonical: ${route} (got ${href})`);
+          } else {
+            errors.push(`wrong-canonical: ${route} (expected ${expected}, got ${href})`);
+          }
+        } catch {
+          errors.push(`wrong-canonical: ${route} (invalid href ${href})`);
         }
       }
     }
@@ -76,6 +93,26 @@ export const verifyBuild = (manifest) => {
   for (const endpoint of expectedFileEndpoints) {
     if (!fs.existsSync(path.join(distDir, endpoint))) {
       errors.push(`missing-endpoint: ${endpoint}`);
+    }
+  }
+
+  // 2b. If robots.txt is expected, verify its content: User-agent: *, no
+  //     Disallow, and the correct absolute slashless Sitemap line.
+  if (expectedFileEndpoints.includes("robots.txt")) {
+    const robotsPath = path.join(distDir, "robots.txt");
+    if (fs.existsSync(robotsPath)) {
+      const content = fs.readFileSync(robotsPath, "utf-8");
+      if (!/User-agent:\s*\*/i.test(content)) {
+        errors.push("robots-missing-user-agent: robots.txt has no User-agent: *");
+      }
+      if (/Disallow:/i.test(content)) {
+        errors.push("robots-has-disallow: robots.txt must not Disallow any route");
+      }
+      const siteOrigin = site.replace(/\/+$/, "");
+      const expectedSitemapLine = `Sitemap: ${siteOrigin}/sitemap.xml`;
+      if (!content.includes(expectedSitemapLine)) {
+        errors.push(`robots-wrong-sitemap: expected ${expectedSitemapLine}`);
+      }
     }
   }
 
@@ -103,7 +140,7 @@ export const verifyBuild = (manifest) => {
       if (urls.length === 0 && !allowEmptySitemap) {
         errors.push("empty-sitemap: sitemap has no URLs and allowEmptySitemap is false");
       }
-      const expectedUrls = new Set(expectedHtmlRoutes.map((r) => canonicalHref(r, site)));
+      const expectedUrls = new Set(expectedDiscoverableRoutes.map((r) => canonicalHref(r, site)));
       for (const url of urls) {
         if (!expectedUrls.has(url)) {
           errors.push(`sitemap-leak: ${url} is not in expected public routes`);

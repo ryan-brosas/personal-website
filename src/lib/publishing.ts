@@ -31,7 +31,7 @@ export const ProposedEvidence = z.object({
 export const OpenEvidence = z.object({
   kind: z.literal("open"),
   missingProof: z.string().min(1),
-  blocked: z.boolean(),
+  blocked: z.literal(true),
 });
 
 export const EvidenceSchema = z.discriminatedUnion("kind", [
@@ -49,14 +49,13 @@ export const validateEvidence = (e: unknown, registry: SourceRegistry): Validate
   if (!parsed.success) return { ok: false, error: parsed.error.message };
   const data = parsed.data;
   if (data.kind === "verified") {
-    if (!(data.sourceId in registry)) return { ok: false, error: "unknown-source" };
+    if (!Object.hasOwn(registry, data.sourceId)) return { ok: false, error: "unknown-source" };
     return { ok: true };
   }
   if (data.kind === "proposed") {
     return { ok: true };
   }
-  // Open: blocked must be true (missingProof already enforced by schema).
-  if (!data.blocked) return { ok: false, error: "open-not-blocked" };
+  // Open: blocked is enforced as z.literal(true) at the schema boundary.
   return { ok: true };
 };
 
