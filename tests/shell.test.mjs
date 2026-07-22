@@ -802,3 +802,122 @@ describe("D2 token shell", () => {
     );
   });
 });
+
+// Extract the single marked nav-enhancement script tag, if present.
+const navEnhancementScript = (html) => {
+  const matches = [...html.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
+  return matches.filter((tag) => /data-nav-enhancement/i.test(tag));
+};
+
+describe("D3 progressive navigation", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("DOM order: brand anchor, then toggle, then primary nav", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    const brandIdx = html.indexOf('class="brand"');
+    const toggleIdx = html.indexOf('class="nav-toggle"');
+    const navIdx = html.indexOf('id="primary-navigation"');
+    assert.ok(brandIdx > -1, "brand anchor exists");
+    assert.ok(toggleIdx > -1, "toggle button exists");
+    assert.ok(navIdx > -1, "primary nav has id");
+    assert.ok(brandIdx < toggleIdx && toggleIdx < navIdx, "DOM order is brand -> toggle -> nav");
+  });
+
+  test("toggle button has stable name, aria-expanded, aria-controls, 44px target", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    const toggleMatch = html.match(/<button[^>]*class="nav-toggle"[^>]*>([\s\S]*?)<\/button>/i);
+    assert.ok(toggleMatch, "toggle button exists");
+    const tag = html.match(/<button[^>]*class="nav-toggle"[^>]*>/i)[0];
+    assert.ok(/type="button"/i.test(tag), "toggle is type=button");
+    assert.ok(/aria-expanded="false"/i.test(tag), "toggle has aria-expanded=false");
+    assert.ok(
+      /aria-controls="primary-navigation"/i.test(tag),
+      "toggle controls primary-navigation",
+    );
+    // Stable accessible name "Menu".
+    assert.ok(
+      /<span[^>]*>\s*Menu\s*<\/span>/i.test(toggleMatch[1]) ||
+        toggleMatch[1].replace(/<[^>]+>/g, "").trim() === "Menu" ||
+        /aria-label="Menu"/i.test(tag),
+      "toggle has a stable 'Menu' name",
+    );
+    // Decorative menu/close icons from the approved sprite.
+    assert.ok(/href="#icon-menu"/i.test(toggleMatch[1]), "toggle uses the menu icon");
+    assert.ok(/href="#icon-close"/i.test(toggleMatch[1]), "toggle uses the close icon");
+    assert.ok(
+      /aria-hidden="true"/i.test(toggleMatch[1]),
+      "toggle icons are decorative to assistive technology",
+    );
+  });
+
+  test("approved sprite is injected once with the menu/close symbols", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    const spriteMatches = [...html.matchAll(/<svg[^>]*class="icon-sprite"[^>]*>/gi)];
+    assert.ok(spriteMatches.length === 1, "exactly one icon-sprite definition block");
+    assert.ok(/<symbol[^>]*id="icon-menu"/i.test(html), "sprite defines icon-menu");
+    assert.ok(/<symbol[^>]*id="icon-close"/i.test(html), "sprite defines icon-close");
+  });
+
+  test("exactly one marked nav-enhancement script and no generated _astro JS", () => {
+    const html = readHtml(distDir, "/");
+    assert.ok(html, "dist/index.html must exist");
+    const scripts = navEnhancementScript(html);
+    assert.equal(scripts.length, 1, "exactly one data-nav-enhancement script");
+    // No generated JS asset under _astro/.
+    const astroDir = path.join(distDir, "_astro");
+    if (fs.existsSync(astroDir)) {
+      const jsFiles = fs.readdirSync(astroDir).filter((f) => f.endsWith(".js"));
+      assert.deepEqual(jsFiles, [], "no generated _astro/*.js assets");
+    }
+  });
+
+  test("global.css defines the progressive disclosure CSS contract", () => {
+    const globalCssPath = path.join(repoRoot, "src", "styles", "global.css");
+    assert.ok(fs.existsSync(globalCssPath), "src/styles/global.css must exist");
+    const css = fs.readFileSync(globalCssPath, "utf-8");
+    // Base/unready: toggle hidden, nav visible.
+    assert.ok(/\.nav-toggle\s*\{[^}]*display:\s*none/i.test(css), "toggle hidden by default");
+    // Ready: toggle revealed.
+    assert.ok(/data-nav-ready/i.test(css), "data-nav-ready gates the enhanced state");
+    // Mobile disclosure collapse under the ready state.
+    assert.ok(/max-width:\s*820px/i.test(css), "820px breakpoint for mobile disclosure");
+    // data-open reveals the nav.
+    assert.ok(/data-open/i.test(css), "data-open reveals the navigation");
+    // Reduced motion removes spatial panel transition.
+    assert.ok(/prefers-reduced-motion/i.test(css), "reduced-motion media query present");
+  });
+
+  test("approved sprite asset is byte-identical and contains no script/external refs", () => {
+    const spritePath = path.join(repoRoot, "src", "assets", "brand", "icons.svg");
+    assert.ok(fs.existsSync(spritePath), "src/assets/brand/icons.svg must exist");
+    const sourceSprite = path.join(
+      repoRoot,
+      "docs",
+      "Ryan-Brosas-Brand-System",
+      "assets",
+      "icons.svg",
+    );
+    assert.equal(
+      sha256OfFile(spritePath),
+      sha256OfFile(sourceSprite),
+      "production sprite matches the approved sprite bytes",
+    );
+    const sprite = fs.readFileSync(spritePath, "utf-8");
+    assert.ok(!/<script/i.test(sprite), "sprite has no <script>");
+    assert.ok(!/\bhref\s*=\s*["']https?:/i.test(sprite), "sprite has no external references");
+  });
+});
