@@ -1,0 +1,66 @@
+---
+// M2 (Plan 03, Child 2) — no-JavaScript primary navigation. One always-visible
+// <nav aria-label="Primary"> tree (no details/summary, no JS toggle). Loads
+// settings labels (missing record fails the build), resolves page visibilities
+// through the single resolveRoutes pipeline, keeps only routable routes in
+// NAV_ORDER, and prepends the code-owned root link. aria-current="page" marks
+// the active route. No links to absent or draft routes.
+import { getEntry, getCollection } from "astro:content";
+import { ROOT_ROUTE, ROOT_ROUTE_POLICY } from "../lib/routes.ts";
+import { resolveRoutes } from "../lib/site-routes.ts";
+import { PAGES, NAV_ORDER } from "../config/site.ts";
+import type { Visibility } from "../lib/publishing.ts";
+
+const settings = await getEntry("settings", "site");
+if (!settings) {
+  throw new Error('settings entry "site" is missing; cannot render navigation');
+}
+
+const pages = await getCollection("pages");
+const visibilities: Record<string, Visibility> = {};
+for (const page of pages) {
+  visibilities[page.id] = page.data.visibility;
+}
+const resolved = resolveRoutes(visibilities);
+const resolvedByPath = new Map(resolved.map((r) => [r.path, r]));
+
+// Nav items: root first, then routable pages in NAV_ORDER. A page is included
+// only if resolveRoutes returned its path (public or noindex); draft/absent
+// pages are omitted.
+interface NavItem {
+  href: string;
+  label: string;
+}
+const navItems: NavItem[] = [{ href: ROOT_ROUTE, label: settings.data.siteTitle }];
+for (const id of NAV_ORDER) {
+  const pageConfig = PAGES.find((p) => p.id === id);
+  if (!pageConfig) continue;
+  if (!resolvedByPath.has(pageConfig.path)) continue;
+  navItems.push({
+    href: pageConfig.path,
+    label: settings.data.navLabels[pageConfig.navLabelKey],
+  });
+}
+
+const current = Astro.url.pathname;
+const isCurrent = (href: string) =>
+  href === ROOT_ROUTE ? current === "/" : current === href;
+---
+<header>
+  <nav aria-label="Primary">
+    <ul>
+      {
+        navItems.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              aria-current={isCurrent(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>

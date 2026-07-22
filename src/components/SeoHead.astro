@@ -1,0 +1,33 @@
+---
+// M2 (Plan 03, Child 2) — shared SEO head. Renders canonical, robots, description,
+// title, and basic OG metadata. canonical always goes through canonicalHref() so
+// HTML routes get a trailing slash and file endpoints (e.g. /404.html) stay
+// slashless. canonicalPath overrides Astro.url.pathname for special routes.
+import { canonicalHref } from "../lib/routes.ts";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Override the canonical path (defaults to Astro.url.pathname). */
+  canonicalPath?: string;
+  /** Emit <meta name="robots" content="noindex,follow">. */
+  noindex?: boolean;
+}
+
+const { title, description, canonicalPath, noindex = false } = Astro.props;
+
+if (!Astro.site) {
+  throw new Error("Astro.site is not configured; cannot emit a canonical URL");
+}
+const canonical = canonicalHref(canonicalPath ?? Astro.url.pathname, Astro.site.href);
+---
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex,follow" />}
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={canonical} />
