@@ -21,7 +21,7 @@
     },
     {
       "slug": "m2-core-pages",
-      "status": "in-progress",
+      "status": "complete",
       "tasks": 3,
       "gates": ["m2-semantic-shell"]
     },
