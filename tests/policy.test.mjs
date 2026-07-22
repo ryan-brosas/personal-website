@@ -179,53 +179,90 @@ describe("M2 content schemas (A1)", () => {
     assert.ok(parsed.success, "public page parses");
   });
 
-  test("SettingsDataSchema rejects missing navLabels", () => {
-    const parsed = SettingsDataSchema.safeParse({ siteTitle: "Ryan Brosas" });
+  // E1 fixtures — locked operator inputs (spec.md:25-28).
+  const lockedContact = {
+    schedulerUrl: "https://calendly.com/ryanjoserbrosas/30min",
+    emailFallback: "ryanjoserbrosas@gmail.com",
+    privacyRequired: false,
+  };
+
+  const validSettings = (contact = lockedContact) => ({
+    siteTitle: "Ryan Brosas",
+    navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+    contact: { ...contact },
+  });
+
+  test("E1 contact settings: rejects missing navLabels", () => {
+    const parsed = SettingsDataSchema.safeParse({ ...validSettings(), navLabels: undefined });
     assert.equal(parsed.success, false, "missing navLabels must fail");
   });
 
-  test("SettingsDataSchema rejects missing siteTitle", () => {
-    const parsed = SettingsDataSchema.safeParse({
-      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
-    });
+  test("E1 contact settings: rejects missing siteTitle", () => {
+    const parsed = SettingsDataSchema.safeParse({ ...validSettings(), siteTitle: undefined });
     assert.equal(parsed.success, false, "missing siteTitle must fail");
   });
 
-  test("SettingsDataSchema accepts valid settings without contact block", () => {
+  test("E1 contact settings: accepts the exact locked values", () => {
+    const parsed = SettingsDataSchema.safeParse(validSettings());
+    assert.ok(parsed.success, "locked contact values parse");
+  });
+
+  test("E1 contact settings: rejects an absent contact block", () => {
     const parsed = SettingsDataSchema.safeParse({
       siteTitle: "Ryan Brosas",
       navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
     });
-    assert.ok(parsed.success, "valid settings without contact parse");
+    assert.equal(parsed.success, false, "absent contact block must fail (contact is required)");
   });
 
-  test("SettingsDataSchema rejects a partial contact block (all-or-none)", () => {
+  test("E1 contact settings: rejects a partial contact block", () => {
     const parsed = SettingsDataSchema.safeParse({
-      siteTitle: "Ryan Brosas",
-      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+      ...validSettings(),
       contact: {
-        schedulerUrl: "https://cal.com/ryan",
-        emailFallback: "ryan@example.com",
+        schedulerUrl: lockedContact.schedulerUrl,
+        emailFallback: lockedContact.emailFallback,
         // privacyRequired missing
       },
     });
-    assert.equal(parsed.success, false, "partial contact must fail (all-or-none)");
+    assert.equal(parsed.success, false, "partial contact block must fail");
   });
 
-  test("SettingsDataSchema accepts a full contact block", () => {
-    const parsed = SettingsDataSchema.safeParse({
-      siteTitle: "Ryan Brosas",
-      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
-      contact: {
-        schedulerUrl: "https://cal.com/ryan",
-        emailFallback: "ryan@example.com",
-        privacyRequired: true,
-      },
-    });
-    assert.ok(parsed.success, "full contact block parses");
+  test("E1 contact settings: rejects privacyRequired: true (M2 has no privacy route)", () => {
+    const parsed = SettingsDataSchema.safeParse(
+      validSettings({ ...lockedContact, privacyRequired: true }),
+    );
+    assert.equal(parsed.success, false, "privacyRequired: true must fail");
   });
 
-  test('settings file envelope {"site": <SettingsData>} validates', () => {
+  test("E1 contact settings: rejects unsafe scheduler URLs without throwing", () => {
+    const unsafe = [
+      "http://calendly.com/ryanjoserbrosas/30min",
+      "ftp://calendly.com/ryanjoserbrosas/30min",
+      "mailto:ryanjoserbrosas@gmail.com",
+      "https://cal.com/ryanjoserbrosas/30min",
+      "https://www.calendly.com/ryanjoserbrosas/30min",
+      "https://calendly.com.evil.example/ryanjoserbrosas/30min",
+      "not-a-url",
+    ];
+    for (const schedulerUrl of unsafe) {
+      assert.doesNotThrow(
+        () => {
+          const parsed = SettingsDataSchema.safeParse(
+            validSettings({ ...lockedContact, schedulerUrl }),
+          );
+          assert.equal(
+            parsed.success,
+            false,
+            `unsafe scheduler URL must fail validation: ${schedulerUrl}`,
+          );
+        },
+        undefined,
+        `refine must not throw on malformed URL: ${schedulerUrl}`,
+      );
+    }
+  });
+
+  test("E1 contact settings: site.json envelope contains the locked contact and validates", () => {
     const settingsFile = JSON.parse(
       fs.readFileSync(
         path.resolve(import.meta.dirname, "..", "src", "content", "settings", "site.json"),
@@ -233,6 +270,11 @@ describe("M2 content schemas (A1)", () => {
       ),
     );
     assert.ok(Object.hasOwn(settingsFile, "site"), "envelope has 'site' key (entry ID)");
+    assert.deepEqual(
+      settingsFile.site.contact,
+      lockedContact,
+      "site.json has the exact locked contact block",
+    );
     const parsed = SettingsDataSchema.safeParse(settingsFile.site);
     assert.ok(parsed.success, "inner SettingsData validates against schema");
   });
