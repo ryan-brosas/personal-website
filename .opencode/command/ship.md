@@ -459,7 +459,7 @@ Update `.opencode/artifacts/todo.md` to mark all tasks complete and append summa
 4. Push the current branch: `git push origin HEAD`.
 5. Record the close commit hash and pushed remote in the close report.
 
-The harness `ask` permission gates each commit and push for confirmation — this is the standard close routine, not an extra request.
+Commits and pushes proceed without a confirmation prompt (`git commit *` and `git push *` are `allow` in `.opencode/opencode.json`) — surgical staging is the control, not a per-action prompt.
 
 Record significant learnings with `/compound` after closing.
 
