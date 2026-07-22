@@ -1,12 +1,12 @@
 ---
-// M2 (Plan 03, Child 2) — shared document shell. Standards-mode HTML, head via
-// SeoHead, skip link, SiteHeader, one <main id="main"><slot /></main>. Structural
-// CSS only (no brand tokens, no motion, no client script). The :focus-visible
-// rule uses :global so it applies to links inside SiteHeader and slotted page
-// content.
+// M2 (Plan 03, Child 4) — shared document shell. Standards-mode HTML, head via
+// SeoHead, skip link, SiteHeader, one <main id="main"><slot /></main>. Brand
+// tokens flow from the canonical tokens.css through global.css; the :focus-visible
+// rule comes from tokens.css. No motion, no client script.
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import "../styles/global.css";
 
 interface Props {
   title: string;
@@ -34,68 +34,5 @@ const { title, description, canonicalPath, noindex } = Astro.props;
       <slot />
     </main>
     <SiteFooter />
-    <style is:global>
-      /* Structural shell CSS — no brand tokens, no motion. */
-      * {
-        box-sizing: border-box;
-      }
-      html {
-        -webkit-text-size-adjust: 100%;
-      }
-      body {
-        margin: 0;
-        font-family: system-ui, sans-serif;
-        line-height: 1.5;
-      }
-      /* Skip link: visually hidden until focused, then visible. */
-      .skip-link {
-        position: absolute;
-        inset-block-start: 0;
-        inset-inline-start: 0;
-        transform: translateY(-120%);
-        z-index: 1;
-      }
-      .skip-link:focus-visible {
-        transform: translateY(0);
-      }
-      /* Visible focus for all interactive elements, across component boundaries. */
-      :focus-visible {
-        outline: 2px solid currentColor;
-        outline-offset: 3px;
-      }
-      /* Responsive navigation: one always-visible tree that reflows. */
-      header nav ul {
-        list-style: none;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin: 0;
-        padding: 0.75rem 1rem;
-      }
-      header nav a {
-        text-decoration: underline;
-      }
-      main {
-        padding: 1rem;
-        max-width: 64rem;
-        margin-inline: auto;
-      }
-      footer {
-        padding: 1rem;
-        max-width: 64rem;
-        margin-inline: auto;
-      }
-      footer nav ul {
-        list-style: none;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin: 0;
-        padding: 0;
-      }
-      footer nav a {
-        text-decoration: underline;
-      }
-    </style>
   </body>
 </html>

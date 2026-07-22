@@ -425,6 +425,15 @@ describe("C2 noindex variant (copied production)", () => {
     if (fs.existsSync(publicDir)) {
       fs.cpSync(publicDir, path.join(tempRoot, "public"), { recursive: true });
     }
+    // Copy the canonical token sheet so the copied global.css @import resolves
+    // inside the temp root (D2 dependency: src/styles/global.css imports
+    // ../../docs/Ryan-Brosas-Brand-System/tokens.css).
+    const tokensDest = path.join(tempRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css");
+    fs.mkdirSync(path.dirname(tokensDest), { recursive: true });
+    fs.copyFileSync(
+      path.join(repoRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css"),
+      tokensDest,
+    );
 
     // Rewrite the COPIED about visibility to noindex (never the tracked file).
     const aboutPath = path.join(tempRoot, "src", "content", "pages", "about.md");

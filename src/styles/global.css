@@ -1,0 +1,93 @@
+/* M2 (Plan 03, Child 4) — canonical brand token channel + structural shell CSS.
+   The full token sheet ships intentionally (Vite does not tree-shake unused CSS
+   custom properties); consume SEMANTIC roles (--canvas/--text-1/--font-*),
+   not raw --color-* pigments. tokens.css also defines :focus-visible, ::selection,
+   and a reduced-motion reset globally. */
+@import "../../docs/Ryan-Brosas-Brand-System/tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  line-height: var(--leading-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+/* Skip link: visually hidden until focused, then visible. */
+.skip-link {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform: translateY(-120%);
+  z-index: 1;
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* Brand lockup + responsive navigation: one always-visible tree that reflows. */
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+.site-header .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-family: var(--font-display);
+}
+.site-header .brand svg {
+  width: 1.5rem;
+  height: 1.25rem;
+}
+.site-header nav ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+.site-header nav a {
+  text-decoration: underline;
+}
+
+main {
+  padding: 1rem;
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+footer {
+  padding: 1rem;
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+footer nav ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+footer nav a {
+  text-decoration: underline;
+}

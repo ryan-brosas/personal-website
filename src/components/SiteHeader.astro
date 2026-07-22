@@ -1,15 +1,17 @@
 ---
-// M2 (Plan 03, Child 2) — no-JavaScript primary navigation. One always-visible
-// <nav aria-label="Primary"> tree (no details/summary, no JS toggle). Loads
-// settings labels (missing record fails the build), resolves page visibilities
-// through the single resolveRoutes pipeline, keeps only routable routes in
-// NAV_ORDER, and prepends the code-owned root link. aria-current="page" marks
+// M2 (Plan 03, Child 4) — no-JavaScript primary navigation. A root brand lockup
+// (decorative R/lightning mark beside the visible site title) sits OUTSIDE the
+// Primary nav and owns the root current-page state; the nav holds only the
+// visibility-filtered page routes. Loads settings labels (missing record fails
+// the build), resolves page visibilities through the single resolveRoutes
+// pipeline, keeps only routable routes in NAV_ORDER. aria-current="page" marks
 // the active route. No links to absent or draft routes.
 import { getEntry, getCollection } from "astro:content";
-import { ROOT_ROUTE, ROOT_ROUTE_POLICY } from "../lib/routes.ts";
+import { ROOT_ROUTE } from "../lib/routes.ts";
 import { resolveRoutes } from "../lib/site-routes.ts";
 import { PAGES, NAV_ORDER } from "../config/site.ts";
 import type { Visibility } from "../lib/publishing.ts";
+import Logo from "../assets/brand/logo-charcoal.svg";
 
 const settings = await getEntry("settings", "site");
 if (!settings) {
@@ -24,14 +26,14 @@ for (const page of pages) {
 const resolved = resolveRoutes(visibilities);
 const resolvedByPath = new Map(resolved.map((r) => [r.path, r]));
 
-// Nav items: root first, then routable pages in NAV_ORDER. A page is included
-// only if resolveRoutes returned its path (public or noindex); draft/absent
-// pages are omitted.
+// Page nav items: only routable pages in NAV_ORDER (root lives in the brand
+// lockup, not the nav). A page is included only if resolveRoutes returned its
+// path (public or noindex); draft/absent pages are omitted.
 interface NavItem {
   href: string;
   label: string;
 }
-const navItems: NavItem[] = [{ href: ROOT_ROUTE, label: settings.data.siteTitle }];
+const navItems: NavItem[] = [];
 for (const id of NAV_ORDER) {
   const pageConfig = PAGES.find((p) => p.id === id);
   if (!pageConfig) continue;
@@ -46,7 +48,15 @@ const current = Astro.url.pathname;
 const isCurrent = (href: string) =>
   href === ROOT_ROUTE ? current === "/" : current === href;
 ---
-<header>
+<header class="site-header">
+  <a
+    class="brand"
+    href={ROOT_ROUTE}
+    aria-current={isCurrent(ROOT_ROUTE) ? "page" : undefined}
+  >
+    <Logo aria-hidden="true" focusable="false" />
+    <span>{settings.data.siteTitle}</span>
+  </a>
   <nav aria-label="Primary">
     <ul>
       {
