@@ -789,13 +789,25 @@ describe("D2 token shell", () => {
     selectorConsumes(".site-header", "var(--nav-border)");
     selectorConsumes(".site-header nav a", "var(--nav-fg)");
     selectorConsumes(".site-header nav a", "var(--link-decoration)");
+    selectorConsumes(".skip-link", "var(--link-fg)");
+    selectorConsumes("main a", "var(--link-fg)");
     selectorConsumes("footer nav a", "var(--link-fg)");
-    // Spacing uses the 8px rhythm, not hardcoded rem/px.
-    assert.ok(/var\(--space-/.test(css), "spacing consumes --space-* tokens");
-    assert.ok(
-      !/padding:\s*0\.75rem|gap:\s*0\.75rem|padding:\s*1rem\b/i.test(css),
-      "no hardcoded rem spacing remains (use --space-* tokens)",
+    selectorConsumes("footer nav a", "var(--link-decoration)");
+    selectorConsumes(".nav-toggle", "var(--control-bg)");
+    selectorConsumes(".nav-toggle", "var(--control-fg)");
+    // Every nonzero padding/gap declaration must consume --space-* (no
+    // arbitrary hardcoded rem/px values that bypass the 8px rhythm).
+    const nonzeroPaddingGap = [...css.matchAll(/(?:padding|gap)\s*:\s*([^;}\n]+)/gi)].map((m) =>
+      m[1].trim(),
     );
+    assert.ok(nonzeroPaddingGap.length > 0, "CSS has padding/gap declarations");
+    for (const value of nonzeroPaddingGap) {
+      if (value === "0" || /^0\s/) continue;
+      assert.ok(
+        /var\(--space-/.test(value),
+        `padding/gap value "${value}" must consume --space-* (no hardcoded rem/px)`,
+      );
+    }
   });
 
   test("header brand lockup: decorative mark beside visible site title, root current on /", () => {

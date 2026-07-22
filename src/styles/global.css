@@ -34,9 +34,20 @@ h3 {
   inset-inline-start: 0;
   transform: translateY(-120%);
   z-index: 1;
+  color: var(--link-fg);
+  text-decoration: underline;
+  text-decoration-color: var(--link-decoration);
 }
 .skip-link:focus-visible {
   transform: translateY(0);
+}
+
+/* Content links (recovery link in 404, in-body links in pages) consume the
+   semantic link roles so they never fall back to browser-default colors. */
+main a {
+  color: var(--link-fg);
+  text-decoration: underline;
+  text-decoration-color: var(--link-decoration);
 }
 
 /* Brand lockup + responsive navigation: one always-visible tree that reflows.
