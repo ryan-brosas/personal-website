@@ -46,17 +46,25 @@ There is no remaining blocker for M1.
 1. Pinned Astro 5 baseline: `package.json`, `package-lock.json`, `astro.config.mjs`,
    `tsconfig.json`, `src/env.d.ts`. Static output, strict TypeScript, placeholder
    `site`, `trailingSlash: "always"`.
-2. Publishing contracts: `src/content.config.ts` (collection schemas + singleton
-   records + `draft | public | noindex` enum), `src/lib/publishing.ts` (evidence
-   variants Verified/Proposed/Open, publish/updated/reviewed semantics),
-   `src/lib/routes.ts` (public-route inventory from the policy),
-   `src/data/sources.json` (representative `public`/`draft`/`noindex` fixtures),
-   `tests/policy.test.mjs` (policy assertions).
-3. Discovery output + verifier: `src/pages/sitemap.xml.ts`, `src/pages/robots.txt.ts`,
-   `scripts/verify-build.mjs`. One sitemap from the public-route inventory (NOT
-   `@astrojs/sitemap`); robots from the configured origin; verifier is read-only
-   and fails on route/canonical/visibility/origin mismatch (placeholder allowed
-   locally).
+2. Publishing contracts (policy kernel): `src/lib/publishing.ts` (shared Zod
+   schemas — visibility `draft | public | noindex` defaulting to `draft`, evidence
+   variants Verified/Proposed/Open with their invariants, publish/updated/reviewed
+   semantics, relationship-target resolution — pure and Node-importable via
+   `astro/zod`), `src/lib/routes.ts` (public-route inventory + canonical helpers
+   from the policy), `src/content.config.ts` (thin adapter importing the shared
+   schemas; registers launch collections via `glob()` and the `settings`
+   singleton via `file()`), `src/data/sources.json` (the empty public-safe
+   evidence registry `{}` — NOT content fixtures), `src/content/settings/site.json`
+   (empty `{}` container; Plan 03 owns the first substantive record),
+   `tests/policy.test.mjs` (policy assertions against injected synthetic state).
+3. Discovery output + verifier: `src/lib/discovery.ts` (pure `renderSitemap` /
+   `renderRobots`), `src/pages/sitemap.xml.ts` + `src/pages/robots.txt.ts` (thin
+   endpoint wrappers), `tests/fixtures/policy-site/{astro.config.mjs,src/pages/probe.astro}`
+   (test-only canonical tracer — NOT a production page), `scripts/verify-build.mjs`
+   (read-only, parameterized for root vs fixture build). One sitemap emitted at
+   exactly `dist/sitemap.xml` (NOT `@astrojs/sitemap`, NOT a sitemap index); robots
+   from the configured origin; verifier fails on route/canonical/visibility/
+   origin mismatch (placeholder allowed locally).
 
 **Non-goals:**
 
@@ -70,7 +78,8 @@ There is no remaining blocker for M1.
 
 ## Success Criteria (M1 exit — `roadmap.md:79-81`)
 
-Representative `public`, `draft`, and `noindex` fixtures pass
+Synthetic `public`, `draft`, and `noindex` state (asserted in
+`tests/policy.test.mjs`) plus the test-only canonical fixture pass
 `npm run check && npm test && npm run build && npm run verify`:
 
 1. **No draft output:** no `draft` route generates a page or appears in discovery.
@@ -89,6 +98,10 @@ Representative `public`, `draft`, and `noindex` fixtures pass
 
 - Semantic HTML + plain CSS; no UI framework. (No UI is produced in M1.)
 - Strict TypeScript (`astro: strict`); no `as any` / `@ts-ignore`.
+- Node-native TS for the test runner: `package.json` `"type": "module"`;
+  `tsconfig.json` `erasableSyntaxOnly: true` + `verbatimModuleSyntax: true`;
+  explicit `.ts` extensions on relative imports; JSON imported via
+  `with { type: "json" }`. (Node 24.16.0 strips erasable types only.)
 - Static output; no SSR.
 - One canonical visibility policy across routes, sitemap, robots, and verifier.
 - `trailingSlash: "always"` on HTML routes.
@@ -97,6 +110,24 @@ Representative `public`, `draft`, and `noindex` fixtures pass
 - Placeholder `site` (e.g. `https://example.com`) allowed during M1–M2; release
   rejection of placeholders is Plan 10's job.
 - No `git add .`; stage explicit paths only. No `--force` push, no hook bypass.
+
+---
+
+## Testing scope boundary
+
+- M1 proves the policy **kernel** (Zod schemas + pure functions in
+  `publishing.ts` / `routes.ts` / `discovery.ts`) via Node `safeParse` and
+  pure-function tests against **injected synthetic state**, and proves the
+  **adapter** (`content.config.ts`) loads and type-checks via `astro check` +
+  `astro build` (both execute its module load).
+- Behavioral schema-enforcement on actual content records is **vacuous in M1**
+  (no records exist; collections register empty and emit known warnings). It is
+  first exercised when Plan 03 adds the first real record; the shared schemas it
+  will use are already tested. A dedicated bad-record build-failure fixture is
+  deferred to Plan 03 unless review requires it.
+- The test-only `tests/fixtures/policy-site/` Astro build (not the root build)
+  provides the non-vacuous canonical/trailing-slash proof, because the root M1
+  build has no production HTML routes.
 
 ---
 

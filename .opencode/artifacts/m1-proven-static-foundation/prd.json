@@ -27,8 +27,8 @@
     },
     {
       "id": "sc-2",
-      "description": "Publishing contracts compile: collection schemas, draft|public|noindex enum defaulting to draft, evidence variants (Verified requires sourceId, Proposed requires a trade-off, Open requires missing proof + blocked decision), and typed relationships",
-      "verify": "npm run check exits 0 on src/content.config.ts, src/lib/publishing.ts, src/lib/routes.ts"
+      "description": "Publishing contracts compile and pass policy tests: shared Zod schemas (visibility draft|public|noindex defaulting to draft, evidence variants Verified requires sourceId, Proposed requires a trade-off, Open requires missing proof + blocked decision), typed relationships, and the content adapter importing those schemas",
+      "verify": "npm run check exits 0 on src/lib/publishing.ts, src/lib/routes.ts, src/lib/discovery.ts, src/content.config.ts; npm test asserts the invariants against injected synthetic state"
     },
     {
       "id": "sc-3",
@@ -37,8 +37,8 @@
     },
     {
       "id": "sc-4",
-      "description": "Discovery output excludes draft and noindex; one self-canonical per indexable page; correct trailing slashes; robots from configured origin; verifier is read-only and passes against the placeholder site",
-      "verify": "npm run build && npm run verify exits 0; sitemap has no draft/noindex; one canonical per public page; verify-build.mjs read-only"
+      "description": "Discovery output excludes draft and noindex; one self-canonical per indexable page (proved by the test-only fixture); correct trailing slashes; robots is visibility-independent and references the configured origin; verifier is read-only, parameterized for root vs fixture build, and passes against the placeholder site",
+      "verify": "npm run build && npm run verify exit 0; dist/sitemap.xml + dist/robots.txt only (no index); sitemap has no draft/noindex; fixture build emits one self-canonical https://example.com/probe/; robots has no Disallow; verify-build.mjs read-only (no mutation)"
     }
   ],
   "tasks": [
@@ -68,50 +68,66 @@
     },
     {
       "id": "t2",
-      "title": "Publishing-kernel types and routes",
+      "title": "Publishing policy (TDD: tests first)",
       "category": "contracts",
-      "end_state": "Collection schemas, the draft|public|noindex enum, evidence variants, publish/updated/reviewed semantics, and the public-route inventory are encoded and type-check clean.",
+      "end_state": "Shared Zod schemas and pure functions for visibility (default draft), evidence variants, date semantics, and relationship-target resolution are encoded and pass policy tests; the empty evidence registry is committed.",
       "depends_on": ["t1"],
       "parallel": false,
       "conflicts_with": [],
-      "files": ["src/content.config.ts", "src/lib/publishing.ts", "src/lib/routes.ts"],
+      "files": ["tests/policy.test.mjs", "src/lib/publishing.ts", "src/data/sources.json"],
       "verification": [
-        "npm run check exits 0",
-        "rg -n 'draft.*public.*noindex|Visibility' src/content.config.ts confirms the enum defaulting to draft",
-        "rg -n 'Verified|Proposed|Open' src/lib/publishing.ts confirms evidence variants with their invariants",
-        "rg -n 'published|updated|reviewedAt|lastVerified' src/lib/publishing.ts confirms date semantics"
+        "npm test exits 0 (policy tests written RED first, then GREEN)",
+        "tests assert: default visibility draft; routable public/noindex vs discoverable public-only; Verified requires sourceId, Proposed requires a trade-off, Open requires missing proof + blocked decision; unknown sourceId rejected against an injected synthetic registry; distinct publish/updated/reviewed date fields; relationship-target resolver rejects hidden/missing/draft/noindex targets against an injected synthetic collection map",
+        "npm run check exits 0 (publishing.ts has no astro:* import, no any, no throw for domain)",
+        "src/data/sources.json is exactly {} (empty public-safe evidence registry, NOT content fixtures)"
       ]
     },
     {
       "id": "t3",
-      "title": "Policy fixtures and tests",
-      "category": "tests",
-      "end_state": "Representative public/draft/noindex fixtures and policy assertions prove the kernel invariants.",
+      "title": "Routes and content adapter (TDD: tests first)",
+      "category": "contracts",
+      "end_state": "The public-route inventory and canonical helpers are encoded, and the content adapter registers launch collections (empty) plus the settings singleton against the shared schemas; the adapter loads and type-checks clean.",
       "depends_on": ["t2"],
       "parallel": false,
       "conflicts_with": [],
-      "files": ["src/data/sources.json", "tests/policy.test.mjs"],
+      "files": [
+        "tests/policy.test.mjs",
+        "src/lib/routes.ts",
+        "src/content.config.ts",
+        "src/content/settings/site.json"
+      ],
       "verification": [
-        "npm test exits 0",
-        "tests assert: no draft route, correct visibility enum, Verified requires sourceId, Proposed requires a trade-off, Open requires missing proof + blocked decision, relationship targets resolve",
-        "src/data/sources.json contains at least one public, one draft, and one noindex fixture"
+        "npm test exits 0 (route tests written RED first, then GREEN)",
+        "tests assert: route-contract invariants and canonicalHref(path, site) produces absolute trailing-slash URLs from the configured site",
+        "npm run check exits 0 on src/content.config.ts (imports shared schemas from publishing.ts; does not restate them)",
+        "npm run build exits 0 (adapter module load; empty-glob warnings are expected and documented)",
+        "src/content/settings/site.json is exactly {} (empty container; Plan 03 owns the first substantive record)"
       ]
     },
     {
       "id": "t4",
-      "title": "Discovery output and generated-output verifier",
+      "title": "Discovery, canonical proof, and read-only verifier (TDD: tests first)",
       "category": "discovery",
-      "end_state": "Sitemap and robots are generated from the public-route inventory; the verifier is read-only and passes against the placeholder site, asserting no draft/noindex in discovery, one self-canonical per indexable page, and correct slashes.",
+      "end_state": "Sitemap and robots render from the public-route inventory; a test-only Astro fixture proves one self-canonical per indexable page with trailing slash; the verifier is read-only, parameterized for root vs fixture build, and passes against the placeholder site.",
       "depends_on": ["t3"],
       "parallel": false,
       "conflicts_with": [],
-      "files": ["src/pages/sitemap.xml.ts", "src/pages/robots.txt.ts", "scripts/verify-build.mjs"],
+      "files": [
+        "tests/policy.test.mjs",
+        "src/lib/discovery.ts",
+        "src/pages/sitemap.xml.ts",
+        "src/pages/robots.txt.ts",
+        "tests/fixtures/policy-site/astro.config.mjs",
+        "tests/fixtures/policy-site/src/pages/probe.astro",
+        "scripts/verify-build.mjs"
+      ],
       "verification": [
-        "npm run build exits 0 and generates dist/sitemap-index.xml (or dist/sitemap.xml) and dist/robots.txt",
-        "npm run verify exits 0 (read-only; never writes/deletes build output)",
-        "sitemap contains no draft or noindex routes",
-        "every public page has exactly one self-canonical with a trailing slash",
-        "robots.txt references the configured placeholder site origin",
+        "npm test exits 0 (renderSitemap/renderRobots + fixture canonical + verifier cases written RED first, then GREEN)",
+        "npm run build exits 0 and generates exactly dist/sitemap.xml and dist/robots.txt (NOT a sitemap index)",
+        "renderSitemap: deterministic XML, public-only, draft/noindex excluded, empty input emits a well-formed <urlset> (local placeholder; NOT release-valid)",
+        "renderRobots: visibility-independent, no Disallow for any route, emits an absolute slashless Sitemap: <site>/sitemap.xml line",
+        "fixture build (tests/fixtures/policy-site copied to temp) emits dist/probe/index.html with exactly one <link rel=\"canonical\" href=\"https://example.com/probe/\">",
+        "npm run verify exits 0 read-only (snapshot output tree before/after to prove no mutation); fails on missing/duplicate/wrong-origin canonical, HTML slash mismatch, draft/noindex sitemap leak, unexpected/missing route, endpoint mismatch",
         "@astrojs/sitemap is NOT in package.json dependencies"
       ]
     }
