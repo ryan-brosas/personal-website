@@ -80,11 +80,16 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
    (`333c074`; 106/106 tests, first public content routes `/about/` + `/services/`
    shipped, markdown body safety guard landed) → Contact → brand → accessibility.
    The M2 parent is a non-executable aggregate; `/ship` only on the active child.
-2. Run P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
-   and stop for the durable visual decision. Run P02B only after acceptance to
-   synchronize/verify local and registered package surfaces. Use the standalone plans'
-   scoped build-agent handoffs; do not switch `.active` or use `/ship` for these
-   pre-scaffold static-package slices.
+2. P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
+   — **accepted 2026-07-22** (prototype `214f66e8ef16...`, 16 viewport captures,
+   progressive enhancement byte-identical, failure injections safe,
+   keyboard/console/performance pass, screen-reader smoke BLOCKED on unavailable
+   reader — gates the later accessibility child, not P02A). Run P02B to
+   synchronize/verify local and registered package surfaces. Use the standalone
+   plans' scoped build-agent handoffs; do not switch `.active` or use `/ship` for
+   these pre-scaffold static-package slices.
+   - **P02A status:** accepted 2026-07-22 (`214f66e8ef16...`)
+   - **P02B status:** pending distribution
 3. In parallel, work the Content Desk and release tracks toward M3 readiness.
 
 ## Blockers (not started)
