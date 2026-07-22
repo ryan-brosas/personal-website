@@ -39,44 +39,58 @@ h3 {
   transform: translateY(0);
 }
 
-/* Brand lockup + responsive navigation: one always-visible tree that reflows. */
+/* Brand lockup + responsive navigation: one always-visible tree that reflows.
+   Spacing uses the 8px rhythm (--space-*); nav surfaces and links consume the
+   semantic nav/link token roles, never raw pigments. */
 .site-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
 }
 .site-header .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
+  color: var(--text-1);
   text-decoration: none;
   font-family: var(--font-display);
 }
 .site-header .brand svg {
-  width: 1.5rem;
-  height: 1.25rem;
+  width: var(--space-6);
+  height: var(--space-5);
 }
 .site-header nav ul {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
 }
 .site-header nav a {
+  color: var(--nav-fg);
   text-decoration: underline;
+  text-decoration-color: var(--link-decoration);
+}
+.site-header nav a:hover {
+  color: var(--nav-hover-fg);
+  background: var(--nav-hover-bg);
+}
+.site-header nav a[aria-current="page"] {
+  color: var(--nav-current-fg);
 }
 
 main {
-  padding: 1rem;
+  padding: var(--space-3);
   max-width: var(--content-max);
   margin-inline: auto;
 }
 footer {
-  padding: 1rem;
+  padding: var(--space-3);
   max-width: var(--content-max);
   margin-inline: auto;
 }
@@ -84,12 +98,14 @@ footer nav ul {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
 }
 footer nav a {
+  color: var(--link-fg);
   text-decoration: underline;
+  text-decoration-color: var(--link-decoration);
 }
 
 /* Progressive navigation disclosure (D3). Base/no-JS: the toggle is hidden and
@@ -101,17 +117,19 @@ footer nav a {
   display: none;
   align-items: center;
   justify-content: center;
+  gap: var(--space-1);
   min-width: 44px;
   min-height: 44px;
-  border: 1px solid var(--nav-border, currentColor);
-  background: var(--canvas);
-  color: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--nav-border);
+  background: var(--control-bg);
+  color: var(--control-fg);
   font: inherit;
   cursor: pointer;
 }
 .nav-toggle svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--space-5);
+  height: var(--space-5);
 }
 .nav-toggle .icon-close {
   display: none;

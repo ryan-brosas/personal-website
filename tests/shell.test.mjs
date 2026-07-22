@@ -18,14 +18,18 @@ const repoRoot = path.resolve(import.meta.dirname, "..");
 const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
 const SITE = "https://example.com";
 
-// Assert exactly one script exists and it is the marked nav enhancement
-// (no other client scripts; no generated _astro/*.js bundles).
+// Assert exactly one script exists and it is the marked inline nav enhancement
+// (no external src, no other client scripts, no generated _astro/*.js bundles).
 const assertOneNavScript = (html) => {
   const scripts = [...html.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
   assert.equal(scripts.length, 1, `expected exactly one script (got ${scripts.length})`);
   assert.ok(
     /data-nav-enhancement/i.test(scripts[0]),
     "the single script must be the nav enhancement",
+  );
+  assert.ok(
+    !/\bsrc\s*=/i.test(scripts[0]),
+    "the nav enhancement script must be inline (no src attribute)",
   );
 };
 const LOGO_SOURCE = path.join(repoRoot, "docs/Ryan-Brosas-Brand-System/logos/Logo---Ryan-1.svg");
@@ -745,7 +749,7 @@ describe("D2 token shell", () => {
     assert.ok(html, "dist/index.html must exist");
     const css = collectCss(html, distDir);
     assert.ok(css.length > 0, "some CSS is present (inline or linked)");
-    // Semantic token consumption, not raw pigments or system-ui.
+    // Global semantic token consumption, not raw pigments or system-ui.
     for (const token of [
       "var(--canvas)",
       "var(--text-1)",
@@ -757,6 +761,41 @@ describe("D2 token shell", () => {
       assert.ok(css.includes(token), `built CSS consumes ${token}`);
     }
     assert.ok(!/system-ui/i.test(css), "built CSS no longer uses system-ui");
+  });
+
+  test("selectors consume their semantic token roles, not raw pigments", () => {
+    const globalCssPath = path.join(repoRoot, "src", "styles", "global.css");
+    assert.ok(fs.existsSync(globalCssPath), "src/styles/global.css must exist");
+    const css = fs.readFileSync(globalCssPath, "utf-8");
+    // Per-selector token consumption (closes the false-green where a token is
+    // declared but never applied to the selector that needs it).
+    const selectorConsumes = (selector, token) => {
+      const block = css.match(
+        new RegExp(
+          String.raw`(^|\})\s*${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\s*\{([^}]*)\}`,
+          "m",
+        ),
+      );
+      assert.ok(block, `CSS has a ${selector} rule`);
+      assert.ok(
+        new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(block[2]),
+        `${selector} consumes ${token}`,
+      );
+    };
+    selectorConsumes("body", "var(--canvas)");
+    selectorConsumes("body", "var(--text-1)");
+    selectorConsumes("body", "var(--font-body)");
+    selectorConsumes(".site-header", "var(--nav-bg)");
+    selectorConsumes(".site-header", "var(--nav-border)");
+    selectorConsumes(".site-header nav a", "var(--nav-fg)");
+    selectorConsumes(".site-header nav a", "var(--link-decoration)");
+    selectorConsumes("footer nav a", "var(--link-fg)");
+    // Spacing uses the 8px rhythm, not hardcoded rem/px.
+    assert.ok(/var\(--space-/.test(css), "spacing consumes --space-* tokens");
+    assert.ok(
+      !/padding:\s*0\.75rem|gap:\s*0\.75rem|padding:\s*1rem\b/i.test(css),
+      "no hardcoded rem spacing remains (use --space-* tokens)",
+    );
   });
 
   test("header brand lockup: decorative mark beside visible site title, root current on /", () => {
