@@ -129,7 +129,14 @@ describe("B1 root shell", () => {
 
   test("root / is excluded from the sitemap while noindex", () => {
     const sitemap = fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf-8");
-    assert.ok(!sitemap.includes("https://example.com/"), "root / is not in the sitemap");
+    // Parse <loc> URLs and assert the exact root canonical is not among them.
+    // Substring matching would false-positive once /about/ exists (it contains
+    // the root origin).
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    assert.ok(
+      !locs.includes("https://example.com/"),
+      "root canonical is not among the sitemap <loc> URLs",
+    );
   });
 });
 
@@ -189,12 +196,19 @@ describe("B2 shared shell", () => {
     assert.ok(html, "dist/index.html must exist");
     const css = collectCss(html, distDir);
     assert.ok(css.length > 0, "some CSS is present (inline or linked)");
-    assert.ok(/:focus-visible/i.test(css), "CSS targets :focus-visible");
-    // A non-none, nonzero outline declaration exists somewhere in the CSS.
-    assert.ok(/outline\s*:\s*(?!none|0\b)\S+/i.test(css), "a :focus-visible outline is not none/0");
+    // A :focus-visible rule must exist with a non-none/nonzero outline and a
+    // nonzero outline-offset within the SAME rule (not just anywhere in the CSS,
+    // which would pass `:focus-visible { outline: none }` next to an unrelated
+    // nonzero outline).
+    const focusRules = [...css.matchAll(/:focus-visible\s*\{([^}]*)\}/gi)].map((m) => m[1]);
+    assert.ok(focusRules.length > 0, "CSS has a :focus-visible rule");
+    const hasFocusOutline = focusRules.some(
+      (body) =>
+        /outline\s*:\s*(?!none\b|0\b)/i.test(body) && /outline-offset\s*:\s*(?!0\b)/i.test(body),
+    );
     assert.ok(
-      /outline-offset\s*:\s*(?!0\b)\S+/i.test(css),
-      "a :focus-visible outline-offset is nonzero",
+      hasFocusOutline,
+      "a :focus-visible rule has a non-none/nonzero outline and nonzero offset",
     );
   });
 });
