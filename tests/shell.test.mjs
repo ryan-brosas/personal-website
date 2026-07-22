@@ -351,11 +351,41 @@ describe("C2 about route", () => {
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     assert.ok(locs.includes("https://example.com/about/"), "about is in the sitemap");
 
-    // About link appears in navigation.
+    // About link appears in navigation with the exact settings-derived label.
     assert.ok(/href="\/about\/"/i.test(html), "about link appears in nav");
+    assert.ok(
+      /<a[^>]+href="\/about\/"[^>]*>\s*About\s*<\/a>/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/about\/"[^>]*>\s*About\s*<\/a>/i.test(html),
+      "about nav link has the exact 'About' label",
+    );
+    // The about link is current on /about/.
+    assert.ok(
+      /<a[^>]+href="\/about\/"[^>]*aria-current="page"/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/about\/"/i.test(html),
+      "about link has aria-current=page on /about/",
+    );
     // Services is present (public); Contact still absent (no record).
     assert.ok(/href="\/services\/"/i.test(html), "services link present (public record)");
     assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+
+    // Exactly one h1 with the approved About title.
+    assert.equal(html.match(/<h1/gi).length, 1, "exactly one h1 on /about/");
+    const aboutH1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    assert.ok(aboutH1, "about has an h1");
+    assert.ok(
+      aboutH1[1]
+        .replace(/<[^>]+>/g, "")
+        .trim()
+        .includes("About Ryan Brosas"),
+      "about h1 includes the approved title",
+    );
+
+    // The approved body paragraph renders — proves <Content/> is wired, not blank.
+    assert.ok(
+      html.includes("I build agent systems so repetitive work stops coming back to you"),
+      "about body paragraph renders the approved copy",
+    );
+
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
   });
 });
@@ -501,10 +531,42 @@ describe("C3 services route", () => {
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     assert.ok(locs.includes("https://example.com/services/"), "services is in the sitemap");
 
-    // Work With Me nav label appears.
+    // Work With Me nav label appears with the exact settings-derived text.
     assert.ok(/href="\/services\/"/i.test(html), "services link appears in nav");
+    assert.ok(
+      /<a[^>]+href="\/services\/"[^>]*>\s*Work With Me\s*<\/a>/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/services\/"[^>]*>\s*Work With Me\s*<\/a>/i.test(
+          html,
+        ),
+      "services nav link has the exact 'Work With Me' label",
+    );
+    // The services link is current on /services/.
+    assert.ok(
+      /<a[^>]+href="\/services\/"[^>]*aria-current="page"/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/services\/"/i.test(html),
+      "services link has aria-current=page on /services/",
+    );
     // Contact still absent (no record yet).
     assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
+
+    // Exactly one h1 with the approved Services title.
+    assert.equal(html.match(/<h1/gi).length, 1, "exactly one h1 on /services/");
+    const servicesH1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    assert.ok(servicesH1, "services has an h1");
+    assert.ok(
+      servicesH1[1]
+        .replace(/<[^>]+>/g, "")
+        .trim()
+        .includes("Work With Me"),
+      "services h1 includes the approved title",
+    );
+
+    // The approved body paragraph renders — proves <Content/> is wired, not blank.
+    assert.ok(
+      html.includes("I start with the recurring work and make its context, checks, handoffs"),
+      "services body paragraph renders the approved copy",
+    );
+
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
   });
 });
