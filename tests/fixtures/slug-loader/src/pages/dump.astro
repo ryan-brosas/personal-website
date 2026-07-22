@@ -1,0 +1,10 @@
+---
+import { getCollection } from "astro:content";
+const pages = await getCollection("pages");
+---
+<html lang="en">
+  <head><title>IDs</title></head>
+  <body>
+    <ul>{pages.map((p) => <li data-id={p.id}>{p.id}</li>)}</ul>
+  </body>
+</html>

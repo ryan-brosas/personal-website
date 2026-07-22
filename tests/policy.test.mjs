@@ -1053,3 +1053,30 @@ describe("M2 phase-aware verifier (A3)", () => {
     }
   });
 });
+
+describe("M2 slug override regression (real glob loader)", () => {
+  const repoRoot = path.resolve(import.meta.dirname, "..");
+  const fixtureRoot = path.resolve(import.meta.dirname, "fixtures", "slug-loader");
+  const fixtureDist = path.join(fixtureRoot, "dist");
+  const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
+
+  test("about.md with frontmatter slug:bio loads as ID about, not bio", () => {
+    fs.rmSync(fixtureDist, { recursive: true, force: true });
+    try {
+      const result = spawnSync(astroBin, ["build", "--root", fixtureRoot], {
+        cwd: repoRoot,
+        encoding: "utf-8",
+      });
+      assert.equal(result.status, 0, `astro build failed: ${result.stderr}`);
+      const html = fs.readFileSync(path.join(fixtureDist, "dump", "index.html"), "utf-8");
+      // Custom generateId derives ID from filename; frontmatter slug is ignored.
+      assert.ok(html.includes('data-id="about"'), "entry ID must be filename-derived 'about'");
+      assert.ok(
+        !html.includes('data-id="bio"'),
+        "frontmatter slug 'bio' must not become the entry ID",
+      );
+    } finally {
+      fs.rmSync(fixtureDist, { recursive: true, force: true });
+    }
+  });
+});
