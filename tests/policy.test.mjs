@@ -856,3 +856,178 @@ describe("T6 read-only build verifier", () => {
     }
   });
 });
+
+describe("M2 phase-aware verifier (A3)", () => {
+  const site = "https://example.com";
+  const emptyUrlset = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>';
+  const robots = "User-agent: *\n\nSitemap: https://example.com/sitemap.xml\n";
+
+  const makeTempDist = (files) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "verify-a3-"));
+    for (const [relPath, content] of Object.entries(files)) {
+      const fullPath = path.join(dir, relPath);
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, content);
+    }
+    return dir;
+  };
+
+  const htmlWithCanonicals = (...hrefs) => {
+    const links = hrefs.map((h) => `<link rel="canonical" href="${h}">`).join("");
+    return `<!DOCTYPE html><html><head>${links}</head><body></body></html>`;
+  };
+
+  const snapshotTree = (dir) => {
+    const result = {};
+    const walk = (d) => {
+      for (const name of fs.readdirSync(d, { withFileTypes: true })) {
+        const full = path.join(d, name.name);
+        if (name.isDirectory()) walk(full);
+        else result[path.relative(dir, full)] = fs.readFileSync(full, "utf-8");
+      }
+    };
+    walk(dir);
+    return result;
+  };
+
+  const rootManifest = (distDir) => ({
+    distDir,
+    site,
+    expectedHtmlRoutes: [],
+    expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+    allowEmptySitemap: true,
+  });
+
+  test("missing expected public route in sitemap fails (bidirectional)", () => {
+    const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.com/about/</loc></url></urlset>`;
+    const dir = makeTempDist({
+      "sitemap.xml": sitemap,
+      "robots.txt": robots,
+      "about/index.html": htmlWithCanonicals("https://example.com/about/"),
+      "services/index.html": htmlWithCanonicals("https://example.com/services/"),
+    });
+    try {
+      const result = verifyBuild({
+        distDir: dir,
+        site,
+        expectedHtmlRoutes: ["/about/", "/services/"],
+        expectedDiscoverableRoutes: ["/about/", "/services/"],
+        expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+        allowEmptySitemap: false,
+      });
+      assert.equal(result.ok, false, "missing /services/ in sitemap must fail");
+      assert.ok(
+        result.errors.some((e) => e.includes("missing") && e.includes("sitemap")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("duplicate <loc> in sitemap fails", () => {
+    const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.com/about/</loc></url><url><loc>https://example.com/about/</loc></url></urlset>`;
+    const dir = makeTempDist({
+      "sitemap.xml": sitemap,
+      "robots.txt": robots,
+      "about/index.html": htmlWithCanonicals("https://example.com/about/"),
+    });
+    try {
+      const result = verifyBuild({
+        distDir: dir,
+        site,
+        expectedHtmlRoutes: ["/about/"],
+        expectedDiscoverableRoutes: ["/about/"],
+        expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+        allowEmptySitemap: false,
+      });
+      assert.equal(result.ok, false, "duplicate <loc> must fail");
+      assert.ok(
+        result.errors.some((e) => e.includes("duplicate")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("allowed _astro/ CSS asset is accepted (not unexpected-file)", () => {
+    const dir = makeTempDist({
+      "sitemap.xml": emptyUrlset,
+      "robots.txt": robots,
+      "_astro/styles.abc123.css": "body { color: red; }",
+    });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("allowed _astro/ SVG asset is accepted", () => {
+    const dir = makeTempDist({
+      "sitemap.xml": emptyUrlset,
+      "robots.txt": robots,
+      "_astro/icon.abc.svg": "<svg></svg>",
+    });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("unexpected _astro/ HTML asset is rejected", () => {
+    const dir = makeTempDist({
+      "sitemap.xml": emptyUrlset,
+      "robots.txt": robots,
+      "_astro/sneaky.html": "<html></html>",
+    });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("_astro") || e.includes("unexpected")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("unexpected _astro/ JS asset is rejected", () => {
+    const dir = makeTempDist({
+      "sitemap.xml": emptyUrlset,
+      "robots.txt": robots,
+      "_astro/bundle.js": "console.log(1)",
+    });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("_astro") || e.includes("unexpected")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("verifier is read-only with _astro/ assets present", () => {
+    const dir = makeTempDist({
+      "sitemap.xml": emptyUrlset,
+      "robots.txt": robots,
+      "_astro/styles.css": "body {}",
+    });
+    try {
+      const before = snapshotTree(dir);
+      verifyBuild(rootManifest(dir));
+      const after = snapshotTree(dir);
+      assert.deepEqual(after, before, "dist unchanged after verify");
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
