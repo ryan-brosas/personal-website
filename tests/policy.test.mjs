@@ -8,6 +8,7 @@ import {
   validateEvidence,
   resolveRelationship,
   DateFieldsSchema,
+  EvidenceSchema,
 } from "../src/lib/publishing.ts";
 import { ROUTES, canonicalHref, isHtmlRoute, isFileEndpoint } from "../src/lib/routes.ts";
 import { renderSitemap, renderRobots } from "../src/lib/discovery.ts";
@@ -67,6 +68,16 @@ describe("T2 publishing policy", () => {
 
     test("unknown evidence kind is rejected", () => {
       assert.equal(validateEvidence({ kind: "bogus" }, {}).ok, false);
+    });
+
+    test("Open evidence schema rejects blocked: false at the schema boundary", () => {
+      const parsed = EvidenceSchema.safeParse({ kind: "open", missingProof: "x", blocked: false });
+      assert.equal(parsed.success, false, "blocked: false must fail schema parse");
+    });
+
+    test("Verified rejects inherited-property sourceId (toString, constructor)", () => {
+      assert.equal(validateEvidence({ kind: "verified", sourceId: "toString" }, {}).ok, false);
+      assert.equal(validateEvidence({ kind: "verified", sourceId: "constructor" }, {}).ok, false);
     });
   });
 
@@ -499,6 +510,86 @@ describe("T6 read-only build verifier", () => {
       verifyBuild(rootManifest(dir));
       const after = snapshotTree(dir);
       assert.deepEqual(after, before, "dist tree unchanged after verify");
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("noindex route in sitemap fails even when in expectedHtmlRoutes", () => {
+    const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.com/secret/</loc></url></urlset>`;
+    const dir = makeTempDist({ "sitemap.xml": sitemap, "robots.txt": robots });
+    try {
+      const result = verifyBuild({
+        distDir: dir,
+        site,
+        expectedHtmlRoutes: ["/public/", "/secret/"],
+        expectedDiscoverableRoutes: ["/public/"],
+        expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+        allowEmptySitemap: false,
+      });
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("leak") || e.includes("sitemap")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("robots.txt with Disallow: / fails", () => {
+    const badRobots = "User-agent: *\nDisallow: /\n\nSitemap: https://example.com/sitemap.xml\n";
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": badRobots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("robots")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("robots.txt with wrong-origin Sitemap fails", () => {
+    const badRobots = "User-agent: *\n\nSitemap: https://wrong.com/sitemap.xml\n";
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": badRobots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("robots")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("canonical with href before rel is detected", () => {
+    const dir = makeTempDist({
+      "probe/index.html": `<!DOCTYPE html><html><head><link href="https://example.com/probe/" rel="canonical"></head><body></body></html>`,
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("wrong-origin canonical with similar prefix fails as wrong-origin", () => {
+    const dir = makeTempDist({
+      "probe/index.html": htmlWithCanonicals("https://example.com.evil/probe/"),
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("wrong-origin")),
+        `errors: ${result.errors.join(", ")}`,
+      );
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
