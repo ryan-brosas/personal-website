@@ -229,7 +229,8 @@ if (process.argv[1] === __filename) {
   const result = verifyBuild({
     distDir: "dist",
     site: "https://example.com",
-    expectedHtmlRoutes: [],
+    expectedHtmlRoutes: ["/"],
+    expectedDiscoverableRoutes: [],
     expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
     allowEmptySitemap: true,
   });

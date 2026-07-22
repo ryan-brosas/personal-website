@@ -1,0 +1,39 @@
+---
+// M2 (Plan 03, Child 2) — minimal code-owned noindex root shell.
+// Renders approved identity copy only (DESIGN.md:478-481,
+// ryan-brosas-landing-page.html:6-7). No Home Markdown record, no brand tokens,
+// no client script. B2 extracts this into SeoHead/BaseLayout; until then this
+// is the complete document.
+import { ROOT_ROUTE_POLICY, canonicalHref } from "../lib/routes.ts";
+
+if (!Astro.site) {
+  throw new Error("Astro.site is not configured; cannot emit a canonical URL for /");
+}
+const canonical = canonicalHref(ROOT_ROUTE_POLICY.path, Astro.site.href);
+const title = "Ryan Brosas — Agent Systems Builder";
+const description =
+  "Ryan Brosas builds practical agent systems with clear context, checks, handoffs, and recovery paths.";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content="noindex,follow" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <main id="main">
+      <h1>Ryan Brosas</h1>
+      <p><strong>Agent Systems Builder</strong></p>
+      <p>I build agent systems so repetitive work stops coming back to you.</p>
+    </main>
+  </body>
+</html>
