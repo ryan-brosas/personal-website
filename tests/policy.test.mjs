@@ -17,6 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { verifyBuild } from "../scripts/verify-build.mjs";
+import { PageSchema, SettingsDataSchema } from "../src/lib/content-schemas.ts";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -145,6 +146,93 @@ describe("T2 publishing policy", () => {
 
   test("sources.json is the empty public-safe evidence registry", () => {
     assert.deepEqual(sourcesRegistry, {});
+  });
+});
+
+describe("M2 content schemas (A1)", () => {
+  test("PageSchema rejects missing title", () => {
+    const parsed = PageSchema.safeParse({ description: "About Ryan" });
+    assert.equal(parsed.success, false, "missing title must fail");
+  });
+
+  test("PageSchema rejects missing description", () => {
+    const parsed = PageSchema.safeParse({ title: "About" });
+    assert.equal(parsed.success, false, "missing description must fail");
+  });
+
+  test("PageSchema accepts a valid page with default draft visibility", () => {
+    const parsed = PageSchema.safeParse({ title: "About", description: "About Ryan" });
+    assert.ok(parsed.success, "valid page parses");
+    if (parsed.success) {
+      assert.equal(parsed.data.visibility, "draft", "default visibility is draft");
+    }
+  });
+
+  test("PageSchema accepts a public page", () => {
+    const parsed = PageSchema.safeParse({
+      title: "Services",
+      description: "Work with me",
+      visibility: "public",
+    });
+    assert.ok(parsed.success, "public page parses");
+  });
+
+  test("SettingsDataSchema rejects missing navLabels", () => {
+    const parsed = SettingsDataSchema.safeParse({ siteTitle: "Ryan Brosas" });
+    assert.equal(parsed.success, false, "missing navLabels must fail");
+  });
+
+  test("SettingsDataSchema rejects missing siteTitle", () => {
+    const parsed = SettingsDataSchema.safeParse({
+      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+    });
+    assert.equal(parsed.success, false, "missing siteTitle must fail");
+  });
+
+  test("SettingsDataSchema accepts valid settings without contact block", () => {
+    const parsed = SettingsDataSchema.safeParse({
+      siteTitle: "Ryan Brosas",
+      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+    });
+    assert.ok(parsed.success, "valid settings without contact parse");
+  });
+
+  test("SettingsDataSchema rejects a partial contact block (all-or-none)", () => {
+    const parsed = SettingsDataSchema.safeParse({
+      siteTitle: "Ryan Brosas",
+      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+      contact: {
+        schedulerUrl: "https://cal.com/ryan",
+        emailFallback: "ryan@example.com",
+        // privacyRequired missing
+      },
+    });
+    assert.equal(parsed.success, false, "partial contact must fail (all-or-none)");
+  });
+
+  test("SettingsDataSchema accepts a full contact block", () => {
+    const parsed = SettingsDataSchema.safeParse({
+      siteTitle: "Ryan Brosas",
+      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+      contact: {
+        schedulerUrl: "https://cal.com/ryan",
+        emailFallback: "ryan@example.com",
+        privacyRequired: true,
+      },
+    });
+    assert.ok(parsed.success, "full contact block parses");
+  });
+
+  test('settings file envelope {"site": <SettingsData>} validates', () => {
+    const settingsFile = JSON.parse(
+      fs.readFileSync(
+        path.resolve(import.meta.dirname, "..", "src", "content", "settings", "site.json"),
+        "utf-8",
+      ),
+    );
+    assert.ok(Object.hasOwn(settingsFile, "site"), "envelope has 'site' key (entry ID)");
+    const parsed = SettingsDataSchema.safeParse(settingsFile.site);
+    assert.ok(parsed.success, "inner SettingsData validates against schema");
   });
 });
 
