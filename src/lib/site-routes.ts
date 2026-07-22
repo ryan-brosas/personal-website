@@ -3,9 +3,11 @@
 // Astro-runtime caller) to {path, visibility} tuples filtered by isRoutable.
 // Consumed by getStaticPaths(), the sitemap endpoint, and the verifier.
 //
-// RED STUB — resolver ignores the injected visibility map and returns all
-// configured pages as public. Route-visibility tests must fail before the
-// GREEN implementation filters by isRoutable.
+// Visibility contract:
+//   draft   -> no route (filtered out, no nav link, no sitemap entry)
+//   noindex -> route + no sitemap (routable but not discoverable)
+//   public  -> route + sitemap (routable and discoverable)
+import { isRoutable } from "./publishing.ts";
 import { PAGES } from "../config/site.ts";
 import type { Visibility } from "./publishing.ts";
 
@@ -16,7 +18,17 @@ export interface ResolvedRoute {
 
 export type PageVisibilityMap = Record<string, Visibility>;
 
-export const resolveRoutes = (_pageVisibilities: PageVisibilityMap): ResolvedRoute[] => {
-  // BUG: ignores visibility, returns all configured pages as public.
-  return PAGES.map((p) => ({ path: p.path, visibility: "public" as const }));
+// Resolve the active route inventory from injected page visibilities. A page
+// ID absent from the map means the record does not exist (no route). A present
+// record is included iff isRoutable (public or noindex); draft is excluded.
+export const resolveRoutes = (pageVisibilities: PageVisibilityMap): ResolvedRoute[] => {
+  const routes: ResolvedRoute[] = [];
+  for (const page of PAGES) {
+    if (!Object.hasOwn(pageVisibilities, page.id)) continue;
+    const visibility = pageVisibilities[page.id];
+    if (isRoutable(visibility)) {
+      routes.push({ path: page.path, visibility });
+    }
+  }
+  return routes;
 };
