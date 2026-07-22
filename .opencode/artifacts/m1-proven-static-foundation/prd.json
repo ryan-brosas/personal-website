@@ -2,7 +2,8 @@
   "bead": "m1-proven-static-foundation",
   "title": "M1 Proven Static Foundation (Plan 01 — Policy-Kernel Tracer)",
   "created": "2026-07-22",
-  "status": "in-progress",
+  "status": "complete",
+  "completed_at": "2026-07-22",
   "depends_on": ["m0-execution-ready-baseline"],
   "blocks": ["m2-accessible-core-shell"],
   "related_tracks": [
