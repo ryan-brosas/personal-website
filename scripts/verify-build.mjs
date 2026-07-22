@@ -39,6 +39,24 @@ const extractCanonicals = (html) => {
   return canonicals;
 };
 
+// Narrow _astro/ asset allowlist: only bundled CSS/SVG/image/font extensions are
+// accepted. HTML and JS are rejected (M2 has no client scripts; a later plan
+// that adds them must explicitly extend this set).
+const ALLOWED_ASTRO_EXTENSIONS = new Set([
+  ".css",
+  ".svg",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".gif",
+  ".ico",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+]);
+
 export const verifyBuild = (manifest) => {
   const {
     distDir,
@@ -147,6 +165,12 @@ export const verifyBuild = (manifest) => {
       if (!expectedHtmlRoutes.includes(route)) {
         errors.push(`unexpected-route: ${route}`);
       }
+    } else if (normalized.startsWith("_astro/")) {
+      const ext = path.extname(normalized).toLowerCase();
+      if (!ALLOWED_ASTRO_EXTENSIONS.has(ext)) {
+        errors.push(`unexpected-asset: ${normalized} (disallowed _astro/ extension ${ext})`);
+      }
+      // Allowed _astro/ extensions are silently accepted (bundled CSS/SVG/image).
     } else if (!expectedFileEndpoints.includes(normalized)) {
       errors.push(`unexpected-file: ${normalized}`);
     }
@@ -168,9 +192,21 @@ export const verifyBuild = (manifest) => {
         errors.push("empty-sitemap: sitemap has no URLs and allowEmptySitemap is false");
       }
       const expectedUrls = new Set(expectedDiscoverableRoutes.map((r) => canonicalHref(r, site)));
+      const seen = new Set();
       for (const url of urls) {
+        if (seen.has(url)) {
+          errors.push(`sitemap-duplicate: ${url} appears more than once`);
+        }
+        seen.add(url);
         if (!expectedUrls.has(url)) {
           errors.push(`sitemap-leak: ${url} is not in expected public routes`);
+        }
+      }
+      // Bidirectional: every expected discoverable route must appear in the sitemap.
+      for (const expected of expectedDiscoverableRoutes) {
+        const expectedUrl = canonicalHref(expected, site);
+        if (!seen.has(expectedUrl)) {
+          errors.push(`sitemap-missing: ${expectedUrl} expected but not in sitemap`);
         }
       }
     }
