@@ -33,9 +33,9 @@
     },
     {
       "slug": "m2-brand-shell",
-      "status": "pending",
-      "tasks": 0,
-      "gates": ["p02b-verified-distribution", "asset-allowlist", "favicon-derivation"]
+      "status": "in-progress",
+      "tasks": 3,
+      "gates": []
     },
     {
       "slug": "m2-accessibility-acceptance",

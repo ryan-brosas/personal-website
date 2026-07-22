@@ -90,6 +90,13 @@ Updated: 2026-07-22
 - **Rationale:** Avoids shipping filler or unverified claims while letting the user iterate copy post-ship. Keeps the safety guard as a build-time technical gate inside the child rather than blocking it externally.
 - **Consequences:** Parent ledger for `m2-core-pages` is `in-progress`, `tasks: 3`, gates `["m2-semantic-shell"]` only. State.md no longer says "Do NOT start." Astro 5.18.2 hardcodes `allowDangerousHtml: true` and runs custom rehype plugins before `rehypeRaw`, so the guard throws on `raw` nodes + `javascript:`/`data:` protocols; `allowDangerousHtml: false` is rejected (silently strips instead of failing). `assertMarkdownRendered(entry)` makes Astro's swallowed glob-render errors fatal. See `.opencode/artifacts/m2-core-pages/{spec,plan}.md`.
 
+### [2026-07-22] Brand Shell — Local Repo Authoritative, Favicon + Asset Decisions
+
+- **Context:** `m2-brand-shell` (M2 Child 4) integrates the approved local brand system into the production shell: favicon, semantic tokens, header identity, and a progressively enhanced mobile-nav toggle using the approved menu/close sprite icons. Its parent ledger listed `p02b-verified-distribution`, `asset-allowlist`, and `favicon-derivation` as external gates.
+- **Decision:** The local `docs/Ryan-Brosas-Brand-System/` repository is the authoritative brand source of truth for the website build; remote Open Design hosted synchronization is deferred by the operator and does not block implementation. Favicon derives from the approved charcoal R/lightning mark (`Logo---Ryan-1.svg`, byte-identical copy to `public/favicon.svg`). Selected assets = charcoal logo + utility icon sprite; the hero and 11 illustrations defer to Plan 04. The mobile-nav toggle is user-approved and ships now (not deferred); it uses one `<script is:inline data-nav-enhancement>` IIFE so the verifier's `_astro/*.js` rejection stays intact.
+- **Rationale:** Distinguishes local build inputs from optional hosted distribution. Uses the existing approved inventory rather than inventing identity or another icon family. The inline marker preserves the no-JS asset allowlist and enables exact one-script assertions.
+- **Consequences:** Parent ledger for `m2-brand-shell` is `in-progress`, `tasks: 3`, gates `[]` (P02B locally complete, asset/favicon decisions resolved). State.md no longer says brand/P02B are pending. The approved sprite has no root width/height/viewBox, so it must be imported via Vite `?raw` + trusted `set:html` (not as an Astro SVG component). See `.opencode/artifacts/m2-brand-shell/{spec,plan}.md`.
+
 ---
 
 ## Patterns

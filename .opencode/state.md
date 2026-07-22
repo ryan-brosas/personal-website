@@ -42,7 +42,9 @@ Completed init artifacts: `AGENTS.md`, `.opencode/tech-stack.md`,
 - **Signal Path — Editorial Cut** is the approved homepage art direction: one finite
   System Conductor signal trace plus editorial type/mask/rule choreography on `/` only;
   internal routes remain functionally restrained. P02A owns prototype acceptance; P02B
-  owns contract/local mirrors/capture and registered-package verification. Both are pending.
+  owns contract/local mirrors/capture and registered-package verification. P02A is
+  accepted and P02B is locally complete; remote hosted sync is deferred by the
+  operator (local repo is authoritative) and does not block website work.
 
 ## Build Gate (what blocks starting local implementation)
 
@@ -60,9 +62,12 @@ M1 (Astro policy-kernel tracer) is complete. M2 (accessible core shell) is activ
 
 These do not block M0/M1. Task-level and milestone-exit effects are named explicitly:
 
-- **M2 (core shell):** brand token/asset allowlist and Contact inputs (scheduler URL +
-  email fallback + privacy-route decision). Plan 03 semantic-shell work may start after
-  M1; its Task 1 visual integration and M2 completion additionally require P02B.
+- **M2 (core shell):** Contact inputs (scheduler URL + email fallback +
+  privacy-route decision) gate the Contact child. Brand token/asset allowlist and
+  favicon derivation are resolved (operator 2026-07-22: local repo authoritative,
+  favicon from the charcoal R/lightning mark, selected assets = charcoal logo +
+  utility sprite). P02B is locally complete; Plan 03 Task 1 visual integration and
+  Plan 04 are unblocked.
 - **M3 (first public release):** one approved/redacted real-work project artifact; the
   self-hosted Pages CMS core workflow (VPS deployment, isolated PostgreSQL, Caddy,
   GitHub App, backup) verified; release operations (domain, host, CI provider).
