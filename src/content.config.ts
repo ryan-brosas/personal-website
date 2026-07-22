@@ -10,7 +10,15 @@ import { z } from "astro/zod";
 import { RecordBase, PageSchema, SettingsDataSchema } from "./lib/content-schemas.ts";
 
 const pages = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/pages" }),
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/pages",
+    // Always derive the ID from the filename, ignoring any frontmatter `slug`.
+    // Astro's default generateId uses data.slug if present, which would break the
+    // fixed ID mapping in src/config/site.ts (about/services/contact). This
+    // ensures the entry ID always matches the filename without extension.
+    generateId: ({ entry }) => entry.replace(/\.[^.]+$/, ""),
+  }),
   schema: PageSchema,
 });
 

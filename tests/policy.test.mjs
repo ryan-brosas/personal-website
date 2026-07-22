@@ -1015,6 +1015,28 @@ describe("M2 phase-aware verifier (A3)", () => {
     }
   });
 
+  test("discoverable route without corresponding HTML route fails (orphan)", () => {
+    const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.com/ghost/</loc></url></urlset>`;
+    const dir = makeTempDist({ "sitemap.xml": sitemap, "robots.txt": robots });
+    try {
+      const result = verifyBuild({
+        distDir: dir,
+        site,
+        expectedHtmlRoutes: [],
+        expectedDiscoverableRoutes: ["/ghost/"],
+        expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+        allowEmptySitemap: false,
+      });
+      assert.equal(result.ok, false, "orphan discoverable route must fail");
+      assert.ok(
+        result.errors.some((e) => e.includes("ghost")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("verifier is read-only with _astro/ assets present", () => {
     const dir = makeTempDist({
       "sitemap.xml": emptyUrlset,

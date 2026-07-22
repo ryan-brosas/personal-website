@@ -176,6 +176,14 @@ export const verifyBuild = (manifest) => {
     }
   }
 
+  // 3b. Every discoverable route must also be an expected HTML route — the
+  //     sitemap must not advertise a URL whose HTML output is not verified.
+  for (const discoverable of expectedDiscoverableRoutes) {
+    if (!expectedHtmlRoutes.includes(discoverable)) {
+      errors.push(`sitemap-orphan: ${discoverable} is discoverable but not an expected HTML route`);
+    }
+  }
+
   // 4. If sitemap.xml is expected, check its content: no non-public route leaks,
   //    and empty sitemap is only allowed when allowEmptySitemap is true.
   if (expectedFileEndpoints.includes("sitemap.xml")) {
