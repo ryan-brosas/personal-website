@@ -797,20 +797,54 @@ describe("D2 token shell", () => {
     selectorConsumes(".nav-toggle", "var(--control-fg)");
     // Every nonzero padding/gap component must consume --space-* (no
     // arbitrary hardcoded rem/px values that bypass the 8px rhythm). Handles
-    // shorthand values like "var(--space-2) 13px" by checking each component.
-    const nonzeroPaddingGap = [...css.matchAll(/(?:padding|gap)\s*:\s*([^;}\n]+)/gi)].map((m) =>
+    // shorthand values like "var(--space-2) 13px" by checking each component
+    // independently, including across multiline declarations.
+    const nonzeroPaddingGap = [...css.matchAll(/(?:padding|gap)\s*:\s*([^;}]+)/gis)].map((m) =>
       m[1].trim(),
     );
     assert.ok(nonzeroPaddingGap.length > 0, "CSS has padding/gap declarations");
     for (const value of nonzeroPaddingGap) {
       for (const component of value.split(/\s+/)) {
-        if (component === "0" || /^0[a-z]*$/i.test(component)) continue;
+        if (component === "0") continue;
         assert.ok(
-          /var\(--space-/.test(component),
-          `padding/gap component "${component}" in "${value}" must consume --space-* (no hardcoded rem/px)`,
+          /^var\(--space-[a-z0-9-]+\)$/i.test(component),
+          `padding/gap component "${component}" in "${value}" must be exactly 0 or var(--space-*) (no hardcoded rem/px, no mixed shorthand)`,
         );
       }
     }
+
+    // Negative regression: the guard rejects multiline mixed shorthand and
+    // non-exact component matches (suffixed zeros and token-containing
+    // hardcoded expressions).
+    const multilineMixed = ".x { padding: var(--space-2)\n  13px; }";
+    const multilineMixedValues = [
+      ...multilineMixed.matchAll(/(?:padding|gap)\s*:\s*([^;}]+)/gis),
+    ].map((m) => m[1].trim());
+    let multilineMixedCaught = false;
+    for (const value of multilineMixedValues) {
+      for (const component of value.split(/\s+/)) {
+        if (component === "0") continue;
+        if (!/^var\(--space-[a-z0-9-]+\)$/i.test(component)) {
+          multilineMixedCaught = true;
+        }
+      }
+    }
+    assert.ok(multilineMixedCaught, "guard rejects multiline mixed shorthand");
+
+    const suffixedZero = ".x { padding: 0bogus; }";
+    const suffixedZeroValues = [...suffixedZero.matchAll(/(?:padding|gap)\s*:\s*([^;}]+)/gis)].map(
+      (m) => m[1].trim(),
+    );
+    let suffixedZeroCaught = false;
+    for (const value of suffixedZeroValues) {
+      for (const component of value.split(/\s+/)) {
+        if (component === "0") continue;
+        if (!/^var\(--space-[a-z0-9-]+\)$/i.test(component)) {
+          suffixedZeroCaught = true;
+        }
+      }
+    }
+    assert.ok(suffixedZeroCaught, "guard rejects suffixed-zero component (0bogus)");
   });
 
   test("header brand lockup: decorative mark beside visible site title, root current on /", () => {
