@@ -902,7 +902,11 @@ describe("D3 progressive navigation", () => {
     const css = fs.readFileSync(globalCssPath, "utf-8");
     // Base/unready: toggle hidden, nav visible.
     assert.ok(/\.nav-toggle\s*\{[^}]*display:\s*none/i.test(css), "toggle hidden by default");
-    // Ready: toggle revealed.
+    // Ready: toggle revealed on mobile.
+    assert.ok(
+      /\.site-header\[data-nav-ready\]\s*\.nav-toggle\s*\{[^}]*display:\s*inline-flex/i.test(css),
+      "data-nav-ready reveals the toggle on mobile",
+    );
     assert.ok(/data-nav-ready/i.test(css), "data-nav-ready gates the enhanced state");
     // Mobile disclosure collapse under the ready state.
     assert.ok(/max-width:\s*820px/i.test(css), "820px breakpoint for mobile disclosure");

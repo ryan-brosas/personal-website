@@ -116,10 +116,10 @@ footer nav a {
 .nav-toggle .icon-close {
   display: none;
 }
-.site-header[data-open] .nav-toggle .icon-close {
+.site-header[data-open="true"] .nav-toggle .icon-close {
   display: block;
 }
-.site-header[data-open] .nav-toggle .icon-menu {
+.site-header[data-open="true"] .nav-toggle .icon-menu {
   display: none;
 }
 .icon-sprite {
@@ -130,10 +130,13 @@ footer nav a {
 }
 
 @media (max-width: 820px) {
+  .site-header[data-nav-ready] .nav-toggle {
+    display: inline-flex;
+  }
   .site-header[data-nav-ready] nav[aria-label="Primary"] {
     display: none;
   }
-  .site-header[data-nav-ready][data-open] nav[aria-label="Primary"] {
+  .site-header[data-nav-ready][data-open="true"] nav[aria-label="Primary"] {
     display: block;
   }
 }
