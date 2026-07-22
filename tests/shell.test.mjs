@@ -81,7 +81,7 @@ describe("B1 root shell", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/"],
+      expectedHtmlRoutes: ["/", "/about/"],
       expectedDiscoverableRoutes: [],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
       allowEmptySitemap: true,
@@ -186,7 +186,7 @@ describe("B2 shared shell", () => {
       "root link has aria-current=page",
     );
     // No links to page routes while no page records exist.
-    assert.ok(!/href="\/about\/"/i.test(html), "no /about/ link without a routable record");
+    assert.ok(/href="\/about\/"/i.test(html), "about link present (routable noindex record)");
     assert.ok(!/href="\/services\/"/i.test(html), "no /services/ link without a routable record");
     assert.ok(!/href="\/contact\/"/i.test(html), "no /contact/ link without a routable record");
     assert.ok(!/<script[\s>]/i.test(html), "no client script");
@@ -251,7 +251,7 @@ describe("B3 footer and 404", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/"],
+      expectedHtmlRoutes: ["/", "/about/"],
       expectedDiscoverableRoutes: [],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
       allowEmptySitemap: true,

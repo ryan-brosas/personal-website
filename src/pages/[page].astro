@@ -1,0 +1,60 @@
+---
+// M2 (Plan 03, Child 3) — visibility-constrained dynamic content route.
+// Handles configured PAGES (about/services/contact) only. Root / and /404.html
+// stay code-owned fixed files. getStaticPaths loads every page entry, asserts
+// every one rendered (catches glob-swallowed markdown-safety errors), resolves
+// visibilities through the single pipeline, joins through PAGES, validates a
+// one-segment path, and returns one route per public/noindex record. Draft and
+// unconfigured records produce no route.
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { PAGES } from "../config/site.ts";
+import { resolveRoutes } from "../lib/site-routes.ts";
+import { assertMarkdownRendered } from "../lib/markdown-safety.ts";
+
+export const getStaticPaths = (async () => {
+  const entries = await getCollection("pages");
+  // Assert every entry rendered before filtering — makes glob-swallowed
+  // markdown-safety errors fatal rather than emitting blank content.
+  for (const entry of entries) {
+    assertMarkdownRendered(entry);
+  }
+  const entriesById = new Map(entries.map((e) => [e.id, e]));
+  const visibilities = Object.fromEntries(
+    entries.map((e) => [e.id, e.data.visibility]),
+  );
+  const routes = resolveRoutes(visibilities);
+  return routes.map((route) => {
+    const pageConfig = PAGES.find((p) => p.path === route.path);
+    if (!pageConfig) {
+      throw new Error(`No PAGES config for resolved route ${route.path}`);
+    }
+    const entry = entriesById.get(pageConfig.id);
+    if (!entry) {
+      throw new Error(`No content entry for page id ${pageConfig.id}`);
+    }
+    const match = route.path.match(/^\/([^/?#]+)\/$/);
+    if (!match) {
+      throw new Error(`Route ${route.path} is not a single-segment HTML path`);
+    }
+    return {
+      params: { page: match[1] },
+      props: { entry, route },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { entry, route } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  canonicalPath={route.path}
+  noindex={route.visibility === "noindex"}
+>
+  <h1>{entry.data.title}</h1>
+  <Content />
+</BaseLayout>
