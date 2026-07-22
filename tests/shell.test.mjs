@@ -620,6 +620,130 @@ describe("C3 services route", () => {
   });
 });
 
+describe("C4 contact route", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  test("/contact/ is public, discoverable, and wired to settings-driven actions", () => {
+    // The verifier is the gate: it fails with `missing-route: /contact/` until
+    // contact.md exists with visibility public.
+    const result = verifyBuild({
+      distDir,
+      site: SITE,
+      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
+      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
+      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      allowEmptySitemap: false,
+    });
+    assert.equal(
+      result.ok,
+      true,
+      `verifier must accept /contact/: ${JSON.stringify(result.errors)}`,
+    );
+
+    const html = readHtml(distDir, "/contact/");
+    assert.ok(html, "dist/contact/index.html must exist");
+
+    const canonicals = canonicalsOf(html);
+    assert.equal(canonicals.length, 1, "exactly one canonical");
+    assert.equal(
+      canonicals[0],
+      "https://example.com/contact/",
+      "canonical is the /contact/ self-URL",
+    );
+
+    // Public page has NO noindex meta.
+    assert.ok(
+      !/<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
+      "public contact has no noindex meta",
+    );
+
+    // Contact IS in the sitemap (discoverable).
+    const sitemap = fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf-8");
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    assert.ok(locs.includes("https://example.com/contact/"), "contact is in the sitemap");
+
+    // Contact link appears in navigation with the exact settings-derived label.
+    assert.ok(/href="\/contact\/"/i.test(html), "contact link appears in nav");
+    assert.ok(
+      /<a[^>]+href="\/contact\/"[^>]*>\s*Contact\s*<\/a>/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/contact\/"[^>]*>\s*Contact\s*<\/a>/i.test(html),
+      "contact nav link has the exact 'Contact' label",
+    );
+    // The contact link is current on /contact/.
+    assert.ok(
+      /<a[^>]+href="\/contact\/"[^>]*aria-current="page"/i.test(html) ||
+        /<a[^>]+aria-current="page"[^>]*href="\/contact\/"/i.test(html),
+      "contact link has aria-current=page on /contact/",
+    );
+
+    // Exactly one h1 with the approved Contact title.
+    assert.equal(html.match(/<h1/gi).length, 1, "exactly one h1 on /contact/");
+    const contactH1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    assert.ok(contactH1, "contact has an h1");
+    assert.ok(
+      contactH1[1]
+        .replace(/<[^>]+>/g, "")
+        .trim()
+        .includes("Contact"),
+      "contact h1 includes the approved title",
+    );
+
+    // The approved body paragraph renders — proves <Content/> is wired, not blank.
+    assert.ok(
+      html.includes(
+        "If you have recurring work that needs clearer context, checks, handoffs, or recovery paths",
+      ),
+      "contact body paragraph renders the approved copy",
+    );
+
+    // Settings-driven scheduler link: HTTPS Calendly URL from settings, exact
+    // label, and the locked rel tokens. Rendered by the template, not markdown.
+    const schedulerMatch = html.match(
+      /<a[^>]*href="https:\/\/calendly\.com\/ryanjoserbrosas\/30min"[^>]*>([\s\S]*?)<\/a>/i,
+    );
+    assert.ok(schedulerMatch, "scheduler link uses the locked HTTPS Calendly URL from settings");
+    assert.equal(
+      schedulerMatch[1].replace(/<[^>]+>/g, "").trim(),
+      "Schedule a conversation",
+      "scheduler link has the exact label",
+    );
+    assert.ok(
+      /rel="[^"]*\bnoopener\b[^"]*\bnoreferrer\b[^"]*"/i.test(schedulerMatch[0]) ||
+        /rel="[^"]*\bnoreferrer\b[^"]*\bnoopener\b[^"]*"/i.test(schedulerMatch[0]),
+      "scheduler link has rel noopener noreferrer",
+    );
+
+    // Settings-driven email fallback link: mailto with the visible address.
+    const emailMatch = html.match(
+      /<a[^>]*href="mailto:ryanjoserbrosas@gmail\.com"[^>]*>([\s\S]*?)<\/a>/i,
+    );
+    assert.ok(emailMatch, "email fallback link uses the locked mailto from settings");
+    assert.equal(
+      emailMatch[1].replace(/<[^>]+>/g, "").trim(),
+      "ryanjoserbrosas@gmail.com",
+      "email link visible text is the address",
+    );
+
+    // No Contact form, iframe, or /privacy/ link.
+    assert.ok(!/<form[\s>]/i.test(html), "no Contact form");
+    assert.ok(!/<iframe[\s>]/i.test(html), "no iframe");
+    assert.ok(!/href="\/privacy\/"/i.test(html), "no /privacy/ link (privacyRequired is false)");
+
+    assertOneNavScript(html);
+  });
+});
+
 // Extract favicon link tags (order/quote-independent), ignoring comments.
 const faviconLinksOf = (html) => {
   const stripped = html.replace(/<!--[\s\S]*?-->/g, "");
