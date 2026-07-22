@@ -82,9 +82,9 @@ describe("B1 root shell", () => {
       distDir,
       site: SITE,
       expectedHtmlRoutes: ["/", "/about/"],
-      expectedDiscoverableRoutes: [],
+      expectedDiscoverableRoutes: ["/about/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
-      allowEmptySitemap: true,
+      allowEmptySitemap: false,
     });
     assert.equal(
       result.ok,
@@ -252,9 +252,9 @@ describe("B3 footer and 404", () => {
       distDir,
       site: SITE,
       expectedHtmlRoutes: ["/", "/about/"],
-      expectedDiscoverableRoutes: [],
+      expectedDiscoverableRoutes: ["/about/"],
       expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
-      allowEmptySitemap: true,
+      allowEmptySitemap: false,
     });
     assert.equal(
       result.ok,

@@ -230,9 +230,9 @@ if (process.argv[1] === __filename) {
     distDir: "dist",
     site: "https://example.com",
     expectedHtmlRoutes: ["/", "/about/"],
-    expectedDiscoverableRoutes: [],
+    expectedDiscoverableRoutes: ["/about/"],
     expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html"],
-    allowEmptySitemap: true,
+    allowEmptySitemap: false,
   });
   if (!result.ok) {
     console.error(result.errors.join("\n"));
