@@ -1,0 +1,64 @@
+{
+  "slug": "m2-contact-page",
+  "title": "M2 Contact Page (Child 5 of Plan 03)",
+  "created": "2026-07-22",
+  "status": "in-progress",
+  "parent": "m2-accessible-core-shell",
+  "depends_on": ["m2-brand-shell"],
+  "blocks": ["m2-accessibility-acceptance"],
+  "success_criteria": [
+    {
+      "id": "sc-1",
+      "description": "Contact settings are secure and validated: SettingsDataSchema.contact is required; schedulerUrl enforces HTTPS + exact calendly.com hostname; privacyRequired is z.literal(false); site.json contains the locked values; schema tests reject HTTP, wrong host, lookalike, absent block, and privacyRequired: true",
+      "verify": "npm test exit 0 (policy.test.mjs settings security tests)"
+    },
+    {
+      "id": "sc-2",
+      "description": "Contact route is public and wired: /contact/ renders with one self-canonical, no noindex, appears in sitemap, appears in header nav (Contact label, aria-current on /contact/), shows scheduler link + email fallback from settings, verifier accepts it",
+      "verify": "npm run build && npm run verify exit 0; tests/shell.test.mjs C4 block"
+    },
+    {
+      "id": "sc-3",
+      "description": "Existing routes and shell are unchanged: /, /about/, /services/, /404.html, sitemap, robots, nav, favicon, tokens, progressive nav all remain green with contact added",
+      "verify": "npm run check && npm test && npm run build && npm run verify all exit 0"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "e1",
+      "title": "Contact settings security contract",
+      "category": "safety",
+      "end_state": "SettingsDataSchema.contact is required (not optional). schedulerUrl uses z.string().url().refine() enforcing HTTPS protocol + exact calendly.com hostname via parsed URL (rejects http:, ftp:, mailto:, wrong host, lookalike). emailFallback uses z.string().email() (unchanged). privacyRequired uses z.literal(false) (M2 has no privacy route). site.json is populated with the locked values: schedulerUrl https://calendly.com/ryanjoserbrosas/30min, emailFallback ryanjoserbrosas@gmail.com, privacyRequired false. Policy tests reject: absent contact block, privacyRequired: true, http: URL, wrong host, lookalike host (calendly.com.evil.example). Tests accept the exact locked values.",
+      "depends_on": [],
+      "parallel": false,
+      "files": [
+        "tests/policy.test.mjs",
+        "src/lib/content-schemas.ts",
+        "src/content/settings/site.json"
+      ],
+      "verification": [
+        "RED: node --test --test-name-pattern='E1 contact settings' tests/policy.test.mjs — security tests fail (schema still optional, accepts http/wrong-host/privacyRequired:true; site.json has no contact block so required check fails). Commit: test(m2): define contact settings security contract",
+        "GREEN: npm run check exit 0; npm test exit 0 — schema rejects all invalid inputs, accepts the locked values, site.json validates. Commit: feat(m2): enforce contact settings security contract"
+      ]
+    },
+    {
+      "id": "e2",
+      "title": "Public Contact activation",
+      "category": "routes",
+      "end_state": "contact.md is created (public, honest positioning copy: title Contact, description, body paragraph). [page].astro has a small entry.id === 'contact' branch that reads settings.data.contact (throws if missing) and renders the scheduler link (Schedule a conversation, rel=noopener noreferrer) + email link (mailto:) after <Content/>. Verifier CLI manifest adds /contact/ to expectedHtmlRoutes + expectedDiscoverableRoutes. All 5 real-root shell-test manifests (B1/B3/C2/C3/D1) add /contact/ + allowEmptySitemap:false. B2/C2/C3/D2 contact-absent assertions flip to present. D1 favicon route loop adds /contact/. New C4 Contact test block asserts: canonical https://example.com/contact/, no noindex, in sitemap, nav Contact label + aria-current on /contact/, body paragraph renders, scheduler link href + label, email mailto link, no form/iframe, no /privacy/ link. No Contact, no Home record, no SiteHeader/sitemap/index/404/footer changes.",
+      "depends_on": ["e1"],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "src/content/pages/contact.md",
+        "src/pages/[page].astro",
+        "scripts/verify-build.mjs"
+      ],
+      "files_note": "Declared 4-file cohesive exception: the public Contact record + dynamic-route special-case + verifier manifest + inherited-test updates are one atomic activation unit. Approved per .opencode/command/plan.md:340-373.",
+      "verification": [
+        "RED: node --test --test-name-pattern='C4 contact' tests/shell.test.mjs — C4 assertions fail (no /contact/ route; verifyBuild with /contact/ returns missing-route: /contact/). Commit: test(m2): define Contact route contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; dist/contact/index.html has one self-canonical https://example.com/contact/, no noindex, one h1 Contact, scheduler link + email link, no script; sitemap includes /contact/; header nav has Contact link; all inherited tests pass with updated manifests/assertions. Commit: feat(m2): publish Contact page"
+      ]
+    }
+  ]
+}
