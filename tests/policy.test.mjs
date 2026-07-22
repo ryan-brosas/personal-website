@@ -594,4 +594,67 @@ describe("T6 read-only build verifier", () => {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  test("expectedDiscoverableRoutes defaults to empty (fail-closed)", () => {
+    const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.com/public/</loc></url></urlset>`;
+    const dir = makeTempDist({ "sitemap.xml": sitemap, "robots.txt": robots });
+    try {
+      const result = verifyBuild({
+        distDir: dir,
+        site,
+        expectedHtmlRoutes: ["/public/"],
+        expectedFileEndpoints: ["sitemap.xml", "robots.txt"],
+        allowEmptySitemap: false,
+      });
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("leak")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("robots.txt with commented Disallow passes (comment not a directive)", () => {
+    const goodRobots = "User-agent: *\n# Disallow: /\n\nSitemap: https://example.com/sitemap.xml\n";
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": goodRobots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("robots.txt with spoofed Sitemap suffix fails", () => {
+    const badRobots = "User-agent: *\n\nSitemap: https://example.com/sitemap.xml.evil\n";
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": badRobots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("robots")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("canonical with data-rel attribute is NOT detected", () => {
+    const dir = makeTempDist({
+      "probe/index.html": `<!DOCTYPE html><html><head><link data-rel="canonical" data-href="https://example.com/probe/"></head><body></body></html>`,
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((e) => e.includes("missing-canonical")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

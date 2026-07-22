@@ -25,13 +25,14 @@ const listFiles = (dir) => {
 };
 
 // Extract canonical hrefs from HTML, order-independent (rel before or after
-// href), single or double quoted, case-insensitive.
+// href), single or double quoted, case-insensitive. Whitespace lookbehind
+// prevents matching data-rel/data-href attributes.
 const extractCanonicals = (html) => {
   const canonicals = [];
   for (const m of html.matchAll(/<link\s[^>]*>/gi)) {
     const tag = m[0];
-    if (!/rel=["']canonical["']/i.test(tag)) continue;
-    const hrefMatch = tag.match(/href=["']([^"']+)["']/i);
+    if (!/(?<=\s)rel\s*=\s*["']canonical["']/i.test(tag)) continue;
+    const hrefMatch = tag.match(/(?<=\s)href\s*=\s*["']([^"']+)["']/i);
     if (hrefMatch) canonicals.push(hrefMatch[1]);
   }
   return canonicals;
@@ -42,7 +43,7 @@ export const verifyBuild = (manifest) => {
     distDir,
     site,
     expectedHtmlRoutes = [],
-    expectedDiscoverableRoutes = expectedHtmlRoutes,
+    expectedDiscoverableRoutes = [],
     expectedFileEndpoints = [],
     allowEmptySitemap = false,
   } = manifest;
@@ -97,21 +98,38 @@ export const verifyBuild = (manifest) => {
   }
 
   // 2b. If robots.txt is expected, verify its content: User-agent: *, no
-  //     Disallow, and the correct absolute slashless Sitemap line.
+  //     Disallow, and the correct absolute slashless Sitemap line. Parse
+  //     directives line-by-line (strip comments, exact value match).
   if (expectedFileEndpoints.includes("robots.txt")) {
     const robotsPath = path.join(distDir, "robots.txt");
     if (fs.existsSync(robotsPath)) {
       const content = fs.readFileSync(robotsPath, "utf-8");
-      if (!/User-agent:\s*\*/i.test(content)) {
+      const lines = content
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l && !l.startsWith("#"));
+      let hasUserAgent = false;
+      let hasCorrectSitemap = false;
+      const siteOrigin = site.replace(/\/+$/, "");
+      const expectedSitemapValue = `${siteOrigin}/sitemap.xml`;
+      for (const line of lines) {
+        const colonIdx = line.indexOf(":");
+        if (colonIdx === -1) continue;
+        const directive = line.slice(0, colonIdx).trim().toLowerCase();
+        const value = line.slice(colonIdx + 1).trim();
+        if (directive === "user-agent" && value === "*") hasUserAgent = true;
+        if (directive === "disallow") {
+          errors.push("robots-has-disallow: robots.txt must not Disallow any route");
+        }
+        if (directive === "sitemap" && value === expectedSitemapValue) {
+          hasCorrectSitemap = true;
+        }
+      }
+      if (!hasUserAgent) {
         errors.push("robots-missing-user-agent: robots.txt has no User-agent: *");
       }
-      if (/Disallow:/i.test(content)) {
-        errors.push("robots-has-disallow: robots.txt must not Disallow any route");
-      }
-      const siteOrigin = site.replace(/\/+$/, "");
-      const expectedSitemapLine = `Sitemap: ${siteOrigin}/sitemap.xml`;
-      if (!content.includes(expectedSitemapLine)) {
-        errors.push(`robots-wrong-sitemap: expected ${expectedSitemapLine}`);
+      if (!hasCorrectSitemap) {
+        errors.push(`robots-wrong-sitemap: expected Sitemap: ${expectedSitemapValue}`);
       }
     }
   }
