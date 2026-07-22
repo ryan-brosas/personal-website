@@ -1,0 +1,90 @@
+{
+  "slug": "m2-brand-shell",
+  "title": "M2 Brand Shell (Child 4 of Plan 03)",
+  "created": "2026-07-22",
+  "status": "in-progress",
+  "parent": "m2-accessible-core-shell",
+  "depends_on": ["m2-core-pages", "p02a", "p02b"],
+  "blocks": ["m2-accessibility-acceptance"],
+  "success_criteria": [
+    {
+      "id": "sc-1",
+      "description": "Tokens flow into the shell: global.css imports tokens.css; built pages consume brand tokens (--font-body/--color-paper/--color-charcoal/--space-*) not system-ui/hardcoded; bundled CSS emitted under _astro/ and verifier accepts it",
+      "verify": "npm run build && npm run verify exit 0; tests/shell.test.mjs asserts built CSS uses brand tokens"
+    },
+    {
+      "id": "sc-2",
+      "description": "Favicon serves the R/lightning mark: dist/favicon.svg exists; every built page <head> has <link rel=icon href=/favicon.svg type=image/svg+xml>; SVG is the charcoal R/lightning geometry",
+      "verify": "npm run build exit 0; tests/shell.test.mjs asserts the favicon link + file presence"
+    },
+    {
+      "id": "sc-3",
+      "description": "Brand mark + no-JS mobile nav toggle: SiteHeader renders R/lightning logo in brand lockup; toggle uses icon-menu/icon-close from sprite; no-JS build shows links visible + no toggle; JS build shows toggle revealed + disclosure works + Escape closes + focus returns to toggle; reduced-motion respected",
+      "verify": "tests/shell.test.mjs no-JS + normal + reduced captures + nav-init failure injection"
+    },
+    {
+      "id": "sc-4",
+      "description": "No regression: 106+ tests pass; check/build/verify green; /, /about/, /services/, /404.html, sitemap, robots unchanged in behavior",
+      "verify": "npm test && npm run check && npm run build && npm run verify all exit 0"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "d1",
+      "title": "Token channel, favicon, and brand assets",
+      "category": "assets",
+      "end_state": "src/styles/global.css imports the canonical tokens.css once. public/favicon.svg is the charcoal R/lightning mark (derived from docs/Ryan-Brosas-Brand-System/logos/Logo---Ryan-1.svg). src/assets/brand/logo-charcoal.svg and src/assets/brand/icons.svg are byte-identical copies of the approved brand assets. SeoHead emits <link rel=icon href=/favicon.svg type=image/svg+xml> on every page. BaseLayout imports global.css so tokens reach every page (but the structural CSS replacement is D2). No behavior change yet; the favicon link + asset files + token import land first. Verifier accepts the new _astro CSS bundle + favicon.svg endpoint.",
+      "depends_on": [],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "src/styles/global.css",
+        "public/favicon.svg",
+        "src/assets/brand/logo-charcoal.svg",
+        "src/assets/brand/icons.svg"
+      ],
+      "files_note": "Declared 5-file cohesive exception: the token channel + favicon + asset boundary are one cohesive foundation unit (the approved production asset set + the token entry + the favicon derivation). Approved per .opencode/command/plan.md:340-373.",
+      "verification": [
+        "RED: node --test --test-name-pattern='D1 token' tests/shell.test.mjs — D1 assertions fail (no favicon link in <head>; no /favicon.svg; no global.css bundle / brand tokens in built CSS; logo/icon assets absent). Commit: test(m2): define brand token and favicon contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; dist/favicon.svg exists; every built page has the favicon link; built CSS references brand tokens (--color-paper/--font-body etc.); _astro/ CSS bundle accepted by verifier. Commit: feat(m2): add brand token channel, favicon, and asset boundary"
+      ]
+    },
+    {
+      "id": "d2",
+      "title": "Token-driven BaseLayout CSS and SiteHeader brand mark",
+      "category": "shell",
+      "end_state": "BaseLayout's structural <style is:global> block is replaced with token-driven CSS consumed from global.css: --font-body/--font-display/--font-mono, --color-paper/--color-charcoal/--color-coral, --space-* 8px rhythm, --radius-*, --duration-fast for focus/hover. Skip-link, focus-visible, landmark, and responsive behavior preserved. SiteHeader renders the R/lightning logo (logo-charcoal.svg) in the brand lockup next to the siteTitle. No expressive motion on internal routes (functional 150ms hover/focus only). Reduced-motion respected. The 106-test suite stays green (B2's no-script assertion updated if needed — but D2 adds no script yet).",
+      "depends_on": ["d1"],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "src/layouts/BaseLayout.astro",
+        "src/components/SiteHeader.astro",
+        "src/components/SiteFooter.astro"
+      ],
+      "files_note": "Declared 4-file cohesive exception: BaseLayout + the three shell components that consume tokens together (one shared visual integration unit). Approved per .opencode/command/plan.md:340-373.",
+      "verification": [
+        "RED: node --test --test-name-pattern='D2 token shell' tests/shell.test.mjs — D2 assertions fail (built pages still use system-ui; no R/lightning logo in header). Commit: test(m2): define token-driven shell contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; built HTML/CSS uses --font-body and brand colors (not system-ui); header has the R/lightning logo img/svg; focus-visible + skip-link + landmarks preserved; reduced-motion media query present. Commit: feat(m2): apply brand tokens to shell and add header mark"
+      ]
+    },
+    {
+      "id": "d3",
+      "title": "Progressive no-JS mobile nav toggle with menu/close icons",
+      "category": "shell",
+      "end_state": "SiteHeader has a progressively-enhanced mobile nav disclosure toggle (the P02A-proved pattern): base CSS (no data-nav-ready) → links visible inline, trigger hidden; enhanced ([data-nav-ready]) → trigger revealed with icon-menu, links collapse into a disclosure that opens/closes, icon-close when open; JS binds handlers FIRST (click toggle, link close, Escape+focus-return), THEN sets data-nav-ready on the header. aria-expanded/aria-controls on the toggle. The only client script is this nav-toggle IIFE (progressively enhanced; base works without it). No-JS build: links visible, no toggle. JS build: toggle works. Reduced-motion respected. B2's no-script assertion updated atomically to permit only the nav-toggle IIFE. Failure injection: nav-init failure (addEventListener throws) → data-nav-ready absent → links visible, trigger hidden.",
+      "depends_on": ["d2"],
+      "parallel": false,
+      "files": [
+        "tests/shell.test.mjs",
+        "src/components/SiteHeader.astro",
+        "src/layouts/BaseLayout.astro",
+        "scripts/verify-build.mjs"
+      ],
+      "verification": [
+        "RED: node --test --test-name-pattern='D3 nav toggle' tests/shell.test.mjs — D3 assertions fail (no toggle button; no menu/close icons; no nav-init failure injection). Commit: test(m2): define progressive nav toggle contract",
+        "GREEN: npm run check exit 0; npm test exit 0; npm run build exit 0; npm run verify exit 0; no-JS build shows links visible + no toggle; JS build shows toggle revealed + disclosure opens/closes + Escape closes + focus returns to toggle; nav-init failure injection leaves links visible; reduced-motion respected; only the nav-toggle IIFE is present. Commit: feat(m2): add progressive no-JS mobile nav toggle"
+      ]
+    }
+  ]
+}
