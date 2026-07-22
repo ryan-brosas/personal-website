@@ -63,7 +63,8 @@ M1 (Astro policy-kernel tracer) is complete. M2 (accessible core shell) is activ
 These do not block M0/M1. Task-level and milestone-exit effects are named explicitly:
 
 - **M2 (core shell):** Contact inputs (scheduler URL + email fallback +
-  privacy-route decision) gate the Contact child. Brand token/asset allowlist and
+  privacy-route decision) are resolved (2026-07-22; `m2-contact-page` complete at
+  `c6dfdf7`, 122/122 tests, `/contact/` shipped). Brand token/asset allowlist and
   favicon derivation are resolved (operator 2026-07-22: local repo authoritative,
   favicon from the charcoal R/lightning mark, selected assets = charcoal logo +
   utility sprite). P02B is locally complete; Plan 03 Task 1 visual integration and
@@ -85,8 +86,9 @@ These do not block M0/M1. Task-level and milestone-exit effects are named explic
    (`333c074`; 106/106 tests, first public content routes `/about/` + `/services/`
    shipped, markdown body safety guard landed) → `m2-brand-shell` complete
    (`1f305f4`; 119/119 tests, favicon + brand tokens + progressive mobile nav
-   shipped) → accessibility acceptance → Contact (input-gated). The M2 parent is
-   a non-executable aggregate; `/ship` only on the active child.
+   shipped) → Contact complete (`c6dfdf7`; 122/122 tests, `/contact/` shipped) →
+   accessibility acceptance. The M2 parent is a non-executable aggregate;
+   `/ship` only on the active child.
 2. P02A (Signal Path prototype + no-JavaScript mobile-nav repair + visual acceptance)
    — **accepted 2026-07-22** (prototype `214f66e8ef16...`, 16 viewport captures,
    progressive enhancement byte-identical, failure injections safe,
