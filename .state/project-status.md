@@ -7,10 +7,10 @@ updated: 2026-07-24
 
 ## Active Work
 
-| Slug | Phase | Title | Status | Lifecycle | Updated |
-|---|---|---|---|---|---|
-| `m2-accessible-core-shell-closeout` | P3 | M2 aggregate close (doc-only ledger sync) | open | verified | 2026-07-24 |
-| `m3-launch-inputs` | P4 | Resolve credible-core launch inputs | open | blocked | 2026-07-24 |
+| Slug | Phase | Title | Status | Lifecycle | PR | Updated |
+|---|---|---|---|---|---|---|
+| `m2-accessible-core-shell-closeout` | P3 | M2 aggregate close (doc-only ledger sync) | open | pr-open | #2 | 2026-07-24 |
+| `m3-launch-inputs` | P4 | Resolve credible-core launch inputs | open | blocked | — | 2026-07-24 |
 
 ## Lifecycle Vocabulary
 

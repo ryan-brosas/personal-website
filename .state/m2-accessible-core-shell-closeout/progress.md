@@ -74,3 +74,8 @@ M2 (P3 — Accessible Core Shell) is **complete**: all six children closed with 
 verified ledgers, full gate green at `ad15146`, zero production-code changes from this
 closeout. P3 tracking updated in `.state/roadmap.md`, `.state/state.md`, and
 `.state/project-status.md`.
+
+## 2026-07-24 — PR opened
+
+PR #2 opened on `docs/m2-accessible-core-shell-closeout` → `main`.
+URL: https://github.com/ryan-brosas/personal-website/pull/2
