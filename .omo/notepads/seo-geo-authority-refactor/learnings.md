@@ -119,3 +119,35 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
   concurrent builds intermittently fail shell.test.mjs's D1/D2/D3 (~13 fails). Re-running,
   or running `node --test tests/shell.test.mjs` in isolation, is green (24/24). Not a
   logic bug — a build-output/timing race. Full clean run: 157/157.
+
+## [2026-07-25] Task: T8 — evidence/freshness/relationship policy kernel
+
+- **getRelatedList reuses, never weakens, resolveRelationship.** The UI-safety
+  helper `getRelatedList(refs, collections)` is just
+  `refs.filter(r => resolveRelationship(r, collections).ok)`. Non-public/unresolvable
+  refs are DROPPED (empty list), so a partially-published graph (a still-`noindex`
+  case study) builds green instead of failing — the "sequencing/empty" fix. The
+  kernel's public->public-only rejection is untouched; a T8 test re-asserts it still
+  returns `{ok:false}` for a noindex target. A public page thus never links a
+  non-public target.
+- **Evidence = errors-as-data core + one throwing build gate.** `resolveClaim`/
+  `resolvePublicClaim` return a discriminated `{ok:true;sources}|{ok:false;error}`.
+  Only `assertClaimResolvable` throws (the build block). Fail-closed: non-approved
+  claim (`claim-blocked`/`claim-retired`), zero sources (`no-sources`), or a source
+  id absent from the registry (`missing-source`). `Object.hasOwn(registry,id)` guards
+  inherited-property ids ("constructor") exactly like resolveRelationship.
+- **internal-only sources can't back a PUBLIC claim.** `resolvePublicClaim` rejects
+  any source with `permission:"internal-only"` (design §12.5 "no public link/exposed
+  path"), while `resolveClaim` still resolves it for internal drafts.
+- **Freshness `now` is INJECTED, never Date.now().** Pure logic uses `Date.parse(now)`
+  vs `Date.parse(dates.expiresAt/reviewedAt)`. INV-13 encoded as a closed `ChangeKind`
+  union with a module-level `SUBSTANTIVE_CHANGES` readonly array
+  (body-text/heading/data-value/new-section substantive; formatting/frontmatter-meta/
+  typo-fix NOT). `nextModifiedAt` returns `{modifiedAt, changed}` — trivial edits keep
+  the prior `modifiedAt` (or leave it `undefined`), never fabricating freshness.
+- **T7 type reconciliation is documented in-file, not fought over.** evidence.ts
+  carries minimal local ClaimRecord/SourceRecord mirroring §12.5; T7's
+  `src/config/entities.ts` owns the canonical shapes. Registry is `Record<string,
+  SourceRecord>` to match the `src/data/sources.json` object (`{}` today).
+- **Full gate green:** check 0 errors (508 files) · test 182/182 · build 5 pages ·
+  verify ok. No shell.test.mjs race this run (ran cleanly).

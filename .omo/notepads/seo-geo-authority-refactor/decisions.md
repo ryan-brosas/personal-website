@@ -25,3 +25,18 @@ shim derived from the registry, and corrected the case-study path rule to
 Verification:
 - `grep -r "/projects/\|/blog/\|/directories/" docs/sitemap.md` returned no matches.
 - `NODE_ENV=test npm test` passed 142/142.
+
+## [2026-07-25] T8 — evidence/freshness/relationship policy kernel
+
+- **DECISION: getRelatedList filters, never relaxes.** Chose a filter over the
+  unchanged `resolveRelationship` (drop non-public refs -> empty list) instead of
+  adding a "soft" resolve mode. Keeps the public->public invariant single-sourced in
+  publishing.ts; the helper is purely additive.
+- **DECISION: Result core + one throwing gate for evidence.** Pure resolvers return
+  data errors; `assertClaimResolvable` is the only throw (build-time block). Satisfies
+  both the "errors as data" standard and the plan's "blocks build on missing/blocked
+  refs".
+- **DECISION: freshness `now` injected.** No Date.now() in policy logic — keeps the
+  kernel pure/testable and deterministic.
+- **DECISION: local §12.5 types in evidence.ts, reconcile with T7.** Avoids a merge
+  fight over entities.ts; documented the hand-off in the module header.

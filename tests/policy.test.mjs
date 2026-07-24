@@ -29,6 +29,16 @@ import {
 } from "../src/lib/content-schemas.ts";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
 import markdownSafety, { assertMarkdownRendered } from "../src/lib/markdown-safety.ts";
+import { getRelatedList } from "../src/lib/relationships.ts";
+import { resolveClaim, resolvePublicClaim, assertClaimResolvable } from "../src/lib/evidence.ts";
+import {
+  isSubstantiveChange,
+  nextModifiedAt,
+  isExpired,
+  isReviewStale,
+  reviewStateFor,
+} from "../src/lib/freshness.ts";
+import { PERSON_ENTITY, SELF_PROJECT_CLAIMS, resolveClaimSources } from "../src/config/entities.ts";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -155,8 +165,81 @@ describe("T2 publishing policy", () => {
     });
   });
 
-  test("sources.json is the empty public-safe evidence registry", () => {
-    assert.deepEqual(sourcesRegistry, {});
+  test("sources.json holds the seeded public-safe self-project source", () => {
+    const ids = Object.keys(sourcesRegistry);
+    assert.ok(ids.length >= 1, "at least one seeded source");
+    for (const id of ids) {
+      const record = sourcesRegistry[id];
+      assert.equal(record.id, id, "record id matches its key");
+      assert.ok(record.title.length > 0, "non-empty title");
+      assert.equal(record.permission, "public", "seeded sources are public-safe");
+    }
+  });
+});
+
+describe("T7 person entity + source/claim registry", () => {
+  const anySourceId = Object.keys(sourcesRegistry)[0];
+
+  test("PERSON_ENTITY carries the fixed identity and topic pillars", () => {
+    assert.equal(PERSON_ENTITY.id, "ryan-brosas");
+    assert.deepEqual(PERSON_ENTITY.sameAs, [], "no unverified sameAs profiles (D-15 deferred)");
+    assert.ok(
+      PERSON_ENTITY.knowsAbout.includes("ai-workflow-systems"),
+      "knowsAbout seeds from the topic pillars",
+    );
+  });
+
+  test("approved claim resolves when every sourceId is present in sources.json", () => {
+    const claim = {
+      id: "claim-ok",
+      statement: "The site ships as a static build from a public source repository.",
+      kind: "fact",
+      sourceIds: [anySourceId],
+      status: "approved",
+    };
+    assert.equal(resolveClaimSources(claim, sourcesRegistry).ok, true);
+  });
+
+  test("approved claim with an unknown sourceId fails validation", () => {
+    const claim = {
+      id: "claim-bad",
+      statement: "Unbacked claim.",
+      kind: "fact",
+      sourceIds: ["source-does-not-exist-999"],
+      status: "approved",
+    };
+    const result = resolveClaimSources(claim, sourcesRegistry);
+    assert.equal(result.ok, false);
+    assert.equal(result.error, "unknown-source");
+  });
+
+  test("approved claim with no sourceIds fails validation", () => {
+    const claim = {
+      id: "claim-empty",
+      statement: "Approved but unsourced.",
+      kind: "fact",
+      sourceIds: [],
+      status: "approved",
+    };
+    assert.equal(resolveClaimSources(claim, sourcesRegistry).ok, false);
+  });
+
+  test("a non-approved (blocked) claim is not gated on source presence", () => {
+    const claim = {
+      id: "claim-blocked",
+      statement: "Blocked claim, no sources yet.",
+      kind: "testimonial",
+      sourceIds: [],
+      status: "blocked",
+    };
+    assert.equal(resolveClaimSources(claim, sourcesRegistry).ok, true);
+  });
+
+  test("every seeded self-project claim resolves against sources.json", () => {
+    for (const claim of SELF_PROJECT_CLAIMS) {
+      assert.equal(claim.status, "approved");
+      assert.equal(resolveClaimSources(claim, sourcesRegistry).ok, true);
+    }
   });
 });
 
@@ -1510,5 +1593,205 @@ describe("T6 content data models", () => {
   test("TopicFields requires a known pillar", () => {
     assert.equal(TopicFieldsSchema.safeParse({ pillar: "unknown" }).success, false);
     assert.equal(TopicFieldsSchema.safeParse({ pillar: "agent-reliability" }).success, true);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// T8 — Evidence, freshness, and relationship policy (design §12/§13, INV-09/11/13).
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("T8 relationship helper (getRelatedList)", () => {
+  const collections = {
+    "case-studies": [
+      { id: "public-cs", visibility: "public" },
+      { id: "draft-cs", visibility: "draft" },
+      { id: "noindex-cs", visibility: "noindex" },
+    ],
+  };
+
+  test("resolveRelationship is UNCHANGED: still rejects a noindex target", () => {
+    // Guard against weakening the public->public-only kernel constraint.
+    assert.equal(
+      resolveRelationship({ collection: "case-studies", id: "noindex-cs" }, collections).ok,
+      false,
+    );
+    assert.equal(
+      resolveRelationship({ collection: "case-studies", id: "public-cs" }, collections).ok,
+      true,
+    );
+  });
+
+  test("keeps only public targets in the related list", () => {
+    const related = getRelatedList(
+      [
+        { collection: "case-studies", id: "public-cs" },
+        { collection: "case-studies", id: "draft-cs" },
+        { collection: "case-studies", id: "noindex-cs" },
+      ],
+      collections,
+    );
+    assert.deepEqual(related, [{ collection: "case-studies", id: "public-cs" }]);
+  });
+
+  test("returns [] (no throw) when the only target is not yet public (noindex)", () => {
+    assert.deepEqual(
+      getRelatedList([{ collection: "case-studies", id: "noindex-cs" }], collections),
+      [],
+    );
+  });
+
+  test("returns [] for a missing collection or missing target (no throw)", () => {
+    assert.deepEqual(getRelatedList([{ collection: "nope", id: "x" }], collections), []);
+    assert.deepEqual(
+      getRelatedList([{ collection: "case-studies", id: "ghost" }], collections),
+      [],
+    );
+  });
+});
+
+describe("T8 evidence policy (claim -> source resolution)", () => {
+  const source = (over = {}) => ({
+    id: "s1",
+    title: "Self-project repo",
+    type: "public-url",
+    owner: "ryan",
+    permission: "public",
+    reviewedAt: "2026-07-01T00:00:00Z",
+    ...over,
+  });
+  const claim = (over = {}) => ({
+    id: "c1",
+    statement: "Static Astro site with a policy kernel.",
+    kind: "fact",
+    sourceIds: ["s1"],
+    status: "approved",
+    ...over,
+  });
+
+  test("resolves an approved claim to its source records", () => {
+    const registry = { s1: source() };
+    const r = resolveClaim(claim(), registry);
+    assert.equal(r.ok, true);
+    assert.equal(r.ok ? r.sources.length : 0, 1);
+    assert.equal(r.ok ? r.sources[0].id : "", "s1");
+  });
+
+  test("blocks a claim referencing a missing source id", () => {
+    const r = resolveClaim(claim({ sourceIds: ["ghost"] }), { s1: source() });
+    assert.equal(r.ok, false);
+    assert.equal(r.ok ? "" : r.error, "missing-source");
+  });
+
+  test("blocks a claim whose status is not approved (blocked/retired)", () => {
+    const registry = { s1: source() };
+    assert.equal(resolveClaim(claim({ status: "blocked" }), registry).ok, false);
+    assert.equal(resolveClaim(claim({ status: "retired" }), registry).ok, false);
+  });
+
+  test("blocks a claim with no sources", () => {
+    assert.equal(resolveClaim(claim({ sourceIds: [] }), {}).ok, false);
+  });
+
+  test("does not resolve inherited-property source ids (constructor)", () => {
+    const r = resolveClaim(claim({ sourceIds: ["constructor"] }), {});
+    assert.equal(r.ok, false);
+    assert.equal(r.ok ? "" : r.error, "missing-source");
+  });
+
+  test("resolvePublicClaim rejects an internal-only source backing a public claim", () => {
+    const registry = { s1: source({ permission: "internal-only" }) };
+    assert.equal(resolvePublicClaim(claim(), registry).ok, false);
+    assert.equal(resolveClaim(claim(), registry).ok, true); // internal draft still resolves
+  });
+
+  test("resolvePublicClaim accepts public and redacted sources", () => {
+    assert.equal(resolvePublicClaim(claim(), { s1: source({ permission: "public" }) }).ok, true);
+    assert.equal(resolvePublicClaim(claim(), { s1: source({ permission: "redacted" }) }).ok, true);
+  });
+
+  test("assertClaimResolvable throws on an unresolvable claim (build gate)", () => {
+    assert.throws(
+      () => assertClaimResolvable(claim({ sourceIds: ["ghost"] }), {}),
+      /missing-source/,
+    );
+    assert.deepEqual(
+      assertClaimResolvable(claim(), { s1: source() }).map((s) => s.id),
+      ["s1"],
+    );
+  });
+});
+
+describe("T8 freshness policy (INV-13 + stale detection)", () => {
+  test("substantive change kinds bump freshness; formatting/frontmatter do not", () => {
+    assert.equal(isSubstantiveChange("body-text"), true);
+    assert.equal(isSubstantiveChange("heading"), true);
+    assert.equal(isSubstantiveChange("data-value"), true);
+    assert.equal(isSubstantiveChange("formatting"), false);
+    assert.equal(isSubstantiveChange("frontmatter-meta"), false);
+    assert.equal(isSubstantiveChange("typo-fix"), false);
+  });
+
+  test("nextModifiedAt sets modifiedAt=now ONLY for a substantive change", () => {
+    const dates = { publishedAt: "2026-01-01T00:00:00Z", modifiedAt: "2026-02-01T00:00:00Z" };
+    const now = "2026-07-25T00:00:00Z";
+    const bumped = nextModifiedAt(dates, "body-text", now);
+    assert.equal(bumped.changed, true);
+    assert.equal(bumped.modifiedAt, now);
+  });
+
+  test("nextModifiedAt does NOT manufacture freshness for a trivial edit (INV-13)", () => {
+    const dates = { publishedAt: "2026-01-01T00:00:00Z", modifiedAt: "2026-02-01T00:00:00Z" };
+    const kept = nextModifiedAt(dates, "formatting", "2026-07-25T00:00:00Z");
+    assert.equal(kept.changed, false);
+    assert.equal(kept.modifiedAt, "2026-02-01T00:00:00Z");
+  });
+
+  test("nextModifiedAt leaves modifiedAt undefined for a trivial edit with no prior date", () => {
+    const kept = nextModifiedAt(
+      { publishedAt: "2026-01-01T00:00:00Z" },
+      "typo-fix",
+      "2026-07-25T00:00:00Z",
+    );
+    assert.equal(kept.changed, false);
+    assert.equal(kept.modifiedAt, undefined);
+  });
+
+  test("isExpired flags a record past expiresAt", () => {
+    const dates = { expiresAt: "2026-06-01T00:00:00Z" };
+    assert.equal(isExpired(dates, "2026-07-25T00:00:00Z"), true);
+    assert.equal(isExpired(dates, "2026-05-01T00:00:00Z"), false);
+    assert.equal(isExpired({}, "2026-07-25T00:00:00Z"), false);
+  });
+
+  test("isReviewStale flags an unreviewed record and one past its review interval", () => {
+    assert.equal(isReviewStale({}, "2026-07-25T00:00:00Z", 180), true);
+    assert.equal(
+      isReviewStale({ reviewedAt: "2026-01-01T00:00:00Z" }, "2026-07-25T00:00:00Z", 90),
+      true,
+    );
+    assert.equal(
+      isReviewStale({ reviewedAt: "2026-07-01T00:00:00Z" }, "2026-07-25T00:00:00Z", 90),
+      false,
+    );
+  });
+
+  test("reviewStateFor reports unreviewed / reviewed / stale", () => {
+    assert.equal(reviewStateFor({}, "2026-07-25T00:00:00Z", 90), "unreviewed");
+    assert.equal(
+      reviewStateFor({ reviewedAt: "2026-07-01T00:00:00Z" }, "2026-07-25T00:00:00Z", 90),
+      "reviewed",
+    );
+    assert.equal(
+      reviewStateFor({ reviewedAt: "2026-01-01T00:00:00Z" }, "2026-07-25T00:00:00Z", 90),
+      "stale",
+    );
+    assert.equal(
+      reviewStateFor(
+        { reviewedAt: "2026-07-01T00:00:00Z", expiresAt: "2026-06-01T00:00:00Z" },
+        "2026-07-25T00:00:00Z",
+        90,
+      ),
+      "stale",
+    );
   });
 });
