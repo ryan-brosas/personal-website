@@ -13,6 +13,11 @@
 import { canonicalHref, isHtmlRoute, isFileEndpoint } from "./routes.ts";
 import type { Visibility } from "./publishing.ts";
 
+// Minimal ambient declaration so TypeScript accepts `process.env` without
+// requiring @types/node. Astro/Vite and the Node test runner both provide
+// `process` at runtime; this declaration is type-only and has no runtime cost.
+declare const process: { env: Record<string, string | undefined> };
+
 export type RouteKind = "singleton" | "hub" | "collection" | "file" | "utility";
 export type NavPlacement = "primary" | "footer" | "secondary" | "none";
 
@@ -70,7 +75,7 @@ export interface RouteRegistry {
   byId(id: string): RouteDefinition | undefined;
   navItems(): NavItem[];
   pathFor(id: string, params?: Record<string, string>): string;
-  canonicalFor(id: string, params: Record<string, string> | undefined, origin: string): string;
+  canonicalFor(id: string, params: Record<string, string> | undefined, origin?: string): string;
   parentFor(id: string): RouteDefinition | undefined;
   breadcrumbsFor(id: string, params?: Record<string, string>): Breadcrumb[];
   discoverableRoutes(): RouteDefinition[];
@@ -209,7 +214,15 @@ export const defineRoutes = (defs: readonly RouteDefinition[]): RouteRegistry =>
     byId,
     navItems,
     pathFor,
-    canonicalFor: (id, params, origin) => canonicalHref(pathFor(id, params), origin),
+    // Read SITE_ORIGIN at call-time so JSON-LD @id values reflect the real
+    // origin in production builds. Explicit `origin` arg (used by tests) takes
+    // precedence; env var is the production path; placeholder is the dev/test
+    // fallback. `process` is declared above (ambient) — no @types/node needed.
+    canonicalFor: (id, params, origin) =>
+      canonicalHref(
+        pathFor(id, params),
+        origin ?? process.env["SITE_ORIGIN"] ?? "https://example.com",
+      ),
     parentFor,
     breadcrumbsFor,
     // Static HTML routes eligible for discovery outputs (sitemap/nav): public

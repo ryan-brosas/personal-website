@@ -30,3 +30,21 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
   adds the settings key + NAV_ORDER slot. This keeps `navItems()`/PAGES type-safe.
 - **resolveRoutes stayed behavior-identical** by iterating `ROUTE_REGISTRY.navItems()` instead of
   PAGES; site-routes.ts no longer imports config/site (fewer PAGES consumers, same output).
+
+## [2026-07-25T04:40:00Z] Task: T3 — env-driven SITE_ORIGIN with prod placeholder guard
+
+- **Vite sets NODE_ENV=production internally** before evaluating `astro.config.mjs` during ANY
+  `astro build` invocation — including test-invoked builds via `spawnSync`. This makes `NODE_ENV`
+  unreliable as a discriminator for "real production build" vs "test build". Both `astro check`
+  and test-invoked `astro build` see `NODE_ENV=production` inside the config file.
+- **Guard design**: throw only when `SITE_ORIGIN` is explicitly set to the placeholder value
+  (`https://example.com`). This catches the operator mistake of copying the placeholder into
+  CI/CD env vars. Absent `SITE_ORIGIN` falls back silently — the normal dev/test state.
+- **`declare const process`**: `@types/node` is not installed; added a minimal ambient declaration
+  in `src/lib/route-registry.ts` so TypeScript accepts `process.env["SITE_ORIGIN"]` without
+  requiring the package. The declaration is type-only, zero runtime cost.
+- **`canonicalFor` signature**: made `origin` optional (`origin?: string`) in both the interface
+  and implementation. Explicit `origin` arg (used by existing tests) takes precedence; env var
+  is the production path; placeholder is the dev/test fallback. Tests pass unchanged.
+- **Full gate**: `npm run check` (0 errors) + `npm test` (142/142) + `npm run build` (5 pages)
+  + `npm run verify` (ok) + `SITE_ORIGIN=https://ryanjosebrosas.dev npm run build` (5 pages) all green.
