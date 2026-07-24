@@ -1,1 +1,11 @@
-{}
+{
+  "source-self-project-build-001": {
+    "id": "source-self-project-build-001",
+    "title": "This website's static build and public source repository",
+    "type": "approved-artifact",
+    "owner": "ryan",
+    "permission": "public",
+    "reviewedAt": "2026-07-25T00:00:00.000Z",
+    "notes": "Self-referential, directly observable evidence: the committed static output and its public source repository. No metrics, testimonials, or client data are asserted."
+  }
+}
