@@ -64,9 +64,9 @@ if (entry.id === "contact" && !contact) {
 ---
 
 <BaseLayout
+  routeId={entry.id}
   title={entry.data.title}
   description={entry.data.description}
-  canonicalPath={route.path}
   noindex={route.visibility === "noindex"}
 >
   <h1>{entry.data.title}</h1>

@@ -1,34 +1,26 @@
 ---
-// M2 (Plan 03, Child 2) — shared SEO head. Renders canonical, robots, description,
-// title, and basic OG metadata. canonical always goes through canonicalHref() so
-// HTML routes get a trailing slash and file endpoints (e.g. /404.html) stay
-// slashless. canonicalPath overrides Astro.url.pathname for special routes.
-import { canonicalHref } from "../lib/routes.ts";
+// M2 / W3·T9 — shared SEO head. Accepts EXACTLY one pre-resolved PageMetadata
+// object (from src/lib/metadata.ts) — no free-form title/description/canonical
+// props. Canonical is derived from ROUTE_REGISTRY inside buildPageMetadata (never
+// a prop), so HTML routes keep their trailing slash and file endpoints (e.g.
+// /404.html) stay slashless. OG tags are parameterized from metadata.og.
+import type { PageMetadata } from "../lib/metadata.ts";
 
 interface Props {
-  title: string;
-  description: string;
-  /** Override the canonical path (defaults to Astro.url.pathname). */
-  canonicalPath?: string;
-  /** Emit <meta name="robots" content="noindex,follow">. */
-  noindex?: boolean;
+  metadata: PageMetadata;
 }
 
-const { title, description, canonicalPath, noindex = false } = Astro.props;
-
-if (!Astro.site) {
-  throw new Error("Astro.site is not configured; cannot emit a canonical URL");
-}
-const canonical = canonicalHref(canonicalPath ?? Astro.url.pathname, Astro.site.href);
+const { metadata } = Astro.props;
 ---
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
-<title>{title}</title>
-<meta name="description" content={description} />
-<link rel="canonical" href={canonical} />
-{noindex && <meta name="robots" content="noindex,follow" />}
-<meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
+<title>{metadata.title}</title>
+<meta name="description" content={metadata.description} />
+<link rel="canonical" href={metadata.canonical} />
+{metadata.noindex && <meta name="robots" content="noindex,follow" />}
+<meta property="og:title" content={metadata.og.title} />
+<meta property="og:description" content={metadata.og.description} />
 <meta property="og:type" content="website" />
-<meta property="og:url" content={canonical} />
+<meta property="og:url" content={metadata.canonical} />
+{metadata.og.image && <meta property="og:image" content={metadata.og.image} />}

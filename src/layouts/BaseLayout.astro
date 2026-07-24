@@ -3,29 +3,31 @@
 // SeoHead, skip link, SiteHeader, one <main id="main"><slot /></main>. Brand
 // tokens flow from the canonical tokens.css through global.css; the :focus-visible
 // rule comes from tokens.css. No motion, no client script.
+// W3·T9: the shell no longer takes free-form canonical/title strings. It takes a
+// registry `routeId` and calls buildPageMetadata, so canonical + robots policy
+// derive from the ONE route registry. title/description/noindex are optional
+// overrides (page copy lives outside the registry; noindex overrides the
+// registry visibility for the 404 endpoint and content-driven noindex pages).
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import { buildPageMetadata } from "../lib/metadata.ts";
 import "../styles/global.css";
 
 interface Props {
-  title: string;
-  description: string;
-  canonicalPath?: string;
+  routeId: string;
+  title?: string;
+  description?: string;
   noindex?: boolean;
 }
 
-const { title, description, canonicalPath, noindex } = Astro.props;
+const { routeId, title, description, noindex } = Astro.props;
+const metadata = buildPageMetadata(routeId, { title, description, noindex });
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <SeoHead
-      title={title}
-      description={description}
-      canonicalPath={canonicalPath}
-      noindex={noindex}
-    />
+    <SeoHead metadata={metadata} />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

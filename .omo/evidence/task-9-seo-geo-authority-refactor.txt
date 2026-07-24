@@ -1,0 +1,96 @@
+Task 9 — Metadata builder + SeoHead PageMetadata contract
+=========================================================
+Date: 2026-07-25
+Slug: seo-geo-authority-refactor
+
+WHAT CHANGED
+------------
+- NEW  src/lib/metadata.ts       — PageMetadata type + buildPageMetadata(routeId, overrides?)
+- NEW  tests/metadata.test.mjs   — buildPageMetadata unit contract (6 tests)
+- MOD  src/components/SeoHead.astro  — single prop `metadata: PageMetadata` (loose strings removed)
+- MOD  src/layouts/BaseLayout.astro  — Props: routeId + optional title/description/noindex; calls buildPageMetadata
+- MOD  src/pages/index.astro     — routeId="home" (dropped ROOT_ROUTE_POLICY/canonicalPath/noindex)
+- MOD  src/pages/[page].astro    — routeId={entry.id} + noindex override from content route.visibility
+- MOD  src/pages/404.astro       — routeId="404" + noindex override (registry "404" is public)
+
+CONTRACT
+--------
+PageMetadata = { title, description, canonical, noindex, og: { title, description, image? } }
+- canonical derived ONLY via ROUTE_REGISTRY.canonicalFor(routeId) — no free-form canonicalPath prop
+- noindex derived from route.visibility === "noindex"; explicit override wins
+- SeoHead emits exactly ONE <link rel="canonical"> and conditional <meta name="robots" content="noindex,follow">
+- OG tags parameterized from metadata.og (default to page title/description)
+
+KEY DECISION: noindex,follow (NOT nofollow)
+-------------------------------------------
+Task brief §4 mentioned "noindex,nofollow" but shell.test.mjs asserts the exact
+string content="noindex,follow" (lines 123, 296, 487). The "must not break
+shell.test.mjs" invariant (§5) overrides §4 — preserved "noindex,follow".
+
+KEY DECISION: 404 needs an explicit noindex override
+----------------------------------------------------
+ROUTE_REGISTRY "404" entry has visibility:"public", but 404 must render
+noindex,follow. So 404.astro passes noindex as an override — this is exactly
+why buildPageMetadata accepts a noindex override.
+
+KEY DECISION: [page].astro content-driven noindex
+-------------------------------------------------
+The variant shell test builds /about/ with content visibility=noindex and
+expects noindex meta. Registry says about=public, so [page].astro passes
+noindex={route.visibility==="noindex"} as override — override wins. Variant
+test stays green.
+
+ORIGIN PARITY (why switching canonical source is behavior-preserving)
+---------------------------------------------------------------------
+Old SeoHead used Astro.site.href; astro.config sets site = SITE_ORIGIN ?? "https://example.com".
+canonicalFor defaults origin to process.env["SITE_ORIGIN"] ?? "https://example.com".
+Identical resolution → canonical output unchanged.
+
+RED -> GREEN (metadata.test.mjs)
+--------------------------------
+RED (before src/lib/metadata.ts existed):
+  node --test tests/metadata.test.mjs
+  -> tests 1 / pass 0 / fail 1  (module load error: metadata.ts absent)
+
+GREEN (after implementation):
+  node --test tests/metadata.test.mjs
+  -> tests 6 / pass 6 / fail 0
+  ✔ derives canonical from ROUTE_REGISTRY (trailing-slash HTML route)
+  ✔ derives slashless canonical for a file endpoint
+  ✔ noindex is derived from registry visibility when not overridden
+  ✔ explicit noindex override wins over registry visibility
+  ✔ title/description flow through and default the OG block
+  ✔ throws on an unknown route id (fail-fast)
+
+COMPOSITE GATE — npm run check && npm test && npm run build && npm run verify
+----------------------------------------------------------------------------
+npm run check :  Result (504 files): 0 errors, 0 warnings, 4 hints
+npm test      :  tests 157 / suites 31 / pass 157 / fail 0
+                 (142 baseline shell/policy + prior additions + 6 new metadata; 0 regressions)
+npm run build :  5 page(s) built (404, about, services, contact, index)
+npm run verify:  verify: ok
+
+BUILT-HTML SURFACE ARTIFACT
+---------------------------
+dist/index.html:
+  <link rel="canonical" href="https://example.com/">
+  <meta name="robots" content="noindex,follow">
+  <meta property="og:title" content="Ryan Brosas — Agent Systems Builder">
+  <meta property="og:url" content="https://example.com/">
+  canonical count = 1
+dist/about/index.html:
+  <link rel="canonical" href="https://example.com/about/">
+  <meta property="og:title" content="About Ryan Brosas">
+  (no robots meta — public)
+dist/404.html:
+  <link rel="canonical" href="https://example.com/404.html">   (slashless)
+  <meta name="robots" content="noindex,follow">
+
+INVARIANTS PRESERVED
+--------------------
+- single <link rel="canonical"> per page
+- noindex,follow meta on noindex pages (home, 404, noindex variant)
+- single <main id="main">, skip link, one h1, one inline nav script (shell.test.mjs green)
+- exactly 5 pages built; no new routes generated
+- no JSON-LD added (that is T10)
+- no route-registry.ts / config/routes.ts modification (import only)

@@ -3,23 +3,17 @@
 // Renders approved identity copy only (DESIGN.md:478-481,
 // ryan-brosas-landing-page.html:6-7). No Home Markdown record, no brand tokens,
 // no client script. Uses the shared BaseLayout/SeoHead. Root metadata (noindex +
-// canonical path) is derived from the centralized ROOT_ROUTE_POLICY so Plan 04
-// promotes the homepage atomically: flipping the policy to "public" updates both
-// the sitemap discovery and this page's robots meta in one change.
+// canonical) derives from the registry "home" entry via buildPageMetadata
+// (routeId="home") so Plan 04 promotes the homepage atomically: flipping the
+// registry "home" visibility to "public" updates both the sitemap discovery and
+// this page's robots meta in one change.
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { ROOT_ROUTE_POLICY } from "../config/routes.ts";
 
 const title = "Ryan Brosas — Agent Systems Builder";
 const description =
   "Ryan Brosas builds practical agent systems with clear context, checks, handoffs, and recovery paths.";
-const noindex = ROOT_ROUTE_POLICY.visibility === "noindex";
 ---
-<BaseLayout
-  title={title}
-  description={description}
-  canonicalPath={ROOT_ROUTE_POLICY.path}
-  noindex={noindex}
->
+<BaseLayout routeId="home" title={title} description={description}>
   <h1>Ryan Brosas</h1>
   <p><strong>Agent Systems Builder</strong></p>
   <p>I build agent systems so repetitive work stops coming back to you.</p>

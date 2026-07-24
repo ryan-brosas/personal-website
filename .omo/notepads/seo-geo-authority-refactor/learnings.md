@@ -48,3 +48,41 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
   is the production path; placeholder is the dev/test fallback. Tests pass unchanged.
 - **Full gate**: `npm run check` (0 errors) + `npm test` (142/142) + `npm run build` (5 pages)
   + `npm run verify` (ok) + `SITE_ORIGIN=https://ryanjosebrosas.dev npm run build` (5 pages) all green.
+
+## [2026-07-25] Task: T9 — buildPageMetadata builder + SeoHead PageMetadata contract
+
+- **`noindex,follow` is load-bearing, NOT `nofollow`:** the task brief §4 said
+  `noindex,nofollow`, but `tests/shell.test.mjs` asserts the exact string
+  `content="noindex,follow"` (lines 123/296/487) for `/`, `/404.html`, and the
+  noindex `/about/` variant. The "must not break shell.test.mjs" invariant wins —
+  keep `noindex,follow`. Do NOT trust a prose spec over the executable test.
+- **404 is registry-`public` but renders noindex:** `ROUTE_REGISTRY.byId("404")`
+  has `visibility:"public"`, yet `/404.html` must emit `noindex,follow`. This is
+  exactly why `buildPageMetadata` takes a `noindex` OVERRIDE — `404.astro` passes
+  `noindex` explicitly. `buildPageMetadata("404", { noindex:true })`.
+- **`[page].astro` noindex is content-driven, not registry-driven:** the variant
+  shell test flips a content record's `visibility` to `noindex` and expects the
+  robots meta. Registry says `about=public`, so `[page].astro` must pass
+  `noindex={route.visibility === "noindex"}` as an override (override wins over
+  the registry default). Deriving noindex purely from the registry would break
+  that test.
+- **Origin parity makes the canonical-source swap behavior-preserving:** old
+  `SeoHead` used `Astro.site.href`; `astro.config` sets `site = SITE_ORIGIN ??
+  "https://example.com"`. `ROUTE_REGISTRY.canonicalFor(id)` defaults its origin to
+  `process.env["SITE_ORIGIN"] ?? "https://example.com"`. Identical → switching
+  canonical derivation from `Astro.site` to `canonicalFor` changes no output.
+- **`canonicalFor` positional signature:** it is `canonicalFor(id, params, origin?)`
+  — call `canonicalFor(routeId, undefined)` for static routes (no params, env origin).
+- **PageMetadata shape shipped** (task-brief shape, not the looser plan shape):
+  `{ title, description, canonical, noindex, og: { title, description, image? } }`.
+  Overrides: `{ title?, description?, noindex?, ogTitle?, ogDescription?, ogImage? }`.
+  Page copy lives outside the registry, so title/description always arrive as
+  overrides (default `""`); og.title/description default to the page title/description.
+- **`index.astro` no longer needs `ROOT_ROUTE_POLICY`:** passing `routeId="home"`
+  lets `buildPageMetadata` derive both canonical and noindex from the registry
+  "home" entry — the T16 atomic-promotion property (flip home visibility → public)
+  still holds, now through one fewer indirection.
+- **Layering:** `src/lib/metadata.ts` imports `ROUTE_REGISTRY` from
+  `src/config/routes.ts` (top of the stack) — no cycle, since nothing in the
+  kernel imports metadata.ts.
+- **Full gate green:** check 0 errors · test 157/157 · build 5 pages · verify ok.
