@@ -13,10 +13,38 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { verifyBuild } from "../scripts/verify-build.mjs";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
+import { ROUTE_REGISTRY } from "../src/config/routes.ts";
+import { isHtmlRoute } from "../src/lib/routes.ts";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
 const SITE = "https://example.com";
+
+// Registry-derived build manifest — mirrors the CLI entry in
+// scripts/verify-build.mjs so the test and the verifier share one truth (no
+// hand-maintained route arrays). Gate filter: only unconditionally-enabled
+// routes (gate "always") plus the code-owned noindex root are actual build
+// targets today; the reserved case-studies hub (gate "case-studies-hub") is
+// registered but NOT built until T14, so it is excluded here. favicon.svg is a
+// public/ static asset, not a registry route, so it is the one declared literal.
+const registryDefs = ROUTE_REGISTRY.all();
+const expectedHtmlRoutes = registryDefs
+  .filter(
+    (d) =>
+      d.isDynamic !== true &&
+      isHtmlRoute(d.path) &&
+      (d.gate === "always" || d.visibility === "noindex"),
+  )
+  .map((d) => d.path);
+const expectedDiscoverableRoutes = ROUTE_REGISTRY.discoverableRoutes()
+  .filter((r) => r.gate === "always")
+  .map((r) => r.path);
+const expectedFileEndpoints = [
+  ...registryDefs
+    .filter((d) => d.isDynamic !== true && !isHtmlRoute(d.path))
+    .map((d) => d.path.replace(/^\/+/, "")),
+  "favicon.svg",
+];
 
 // Assert exactly one script exists and it is the marked inline nav enhancement
 // (no external src, no other client scripts, no generated _astro/*.js bundles).
@@ -99,9 +127,9 @@ describe("B1 root shell", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      expectedHtmlRoutes,
+      expectedDiscoverableRoutes,
+      expectedFileEndpoints,
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -269,9 +297,9 @@ describe("B3 footer and 404", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      expectedHtmlRoutes,
+      expectedDiscoverableRoutes,
+      expectedFileEndpoints,
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -340,9 +368,9 @@ describe("C2 about route", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      expectedHtmlRoutes,
+      expectedDiscoverableRoutes,
+      expectedFileEndpoints,
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -547,9 +575,9 @@ describe("C3 services route", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      expectedHtmlRoutes,
+      expectedDiscoverableRoutes,
+      expectedFileEndpoints,
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -640,9 +668,9 @@ describe("C4 contact route", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      expectedHtmlRoutes,
+      expectedDiscoverableRoutes,
+      expectedFileEndpoints,
       allowEmptySitemap: false,
     });
     assert.equal(
@@ -780,9 +808,9 @@ describe("D1 favicon", () => {
     const result = verifyBuild({
       distDir,
       site: SITE,
-      expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
-      expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
-      expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+      expectedHtmlRoutes,
+      expectedDiscoverableRoutes,
+      expectedFileEndpoints,
       allowEmptySitemap: false,
     });
     assert.equal(

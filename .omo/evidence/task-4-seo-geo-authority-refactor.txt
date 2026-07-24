@@ -1,0 +1,91 @@
+Task 4 — Verifier derives its manifest from ROUTE_REGISTRY (de-hardcode, gate-filtered)
+=======================================================================================
+Owner-approved Option 2 stopgap. Scope: scripts/verify-build.mjs + tests/shell.test.mjs only.
+(route-registry.ts / config/routes.ts UNCHANGED — import-only.)
+
+WHY A STOPGAP (conflict found during analysis)
+----------------------------------------------
+The registry's manifest helpers are intentionally AHEAD of the current build:
+- expectedBuildManifest() returns string[] (NOT the object the task brief described)
+  and INCLUDES "/case-studies/" (reserved hub, gate "case-studies-hub", not built
+  until T14). discoverableRoutes() also includes it (locked by
+  tests/route-registry.test.mjs:163).
+- favicon.svg is a public/ static asset copied to dist root — it is NOT a registry
+  route and can never come from the registry.
+A naive "derive everything from the registry" therefore fails the actual build
+(missing-route: /case-studies/, sitemap-missing: .../case-studies/) and cannot
+verify favicon without a literal.
+
+TWO SANCTIONED DEVIATIONS from the original "zero literals" wording
+------------------------------------------------------------------
+(a) favicon.svg — one declared string literal in expectedFileEndpoints (public/
+    static asset, not a registry route). Documented with an inline comment.
+(b) gate === "always" heuristic — layered in the verifier/test derivation (NOT in
+    the registry) to exclude the reserved case-studies hub. The code-owned noindex
+    root (visibility "noindex") is kept via an OR clause. This encodes gate-open
+    policy the registry does not yet evaluate; it converges cleanly at T14.
+
+DERIVATION (identical in verify-build.mjs CLI entry and shell.test.mjs)
+----------------------------------------------------------------------
+  const defs = ROUTE_REGISTRY.all();
+  expectedHtmlRoutes = defs.filter(d =>
+      d.isDynamic !== true && isHtmlRoute(d.path) &&
+      (d.gate === "always" || d.visibility === "noindex")).map(d => d.path);
+      -> ["/", "/services/", "/about/", "/contact/"]      (drops /case-studies/)
+  expectedDiscoverableRoutes = ROUTE_REGISTRY.discoverableRoutes()
+      .filter(r => r.gate === "always").map(r => r.path);
+      -> ["/services/", "/about/", "/contact/"]           (drops /case-studies/, home)
+  expectedFileEndpoints = defs.filter(d =>
+      d.isDynamic !== true && !isHtmlRoute(d.path)).map(d => d.path.replace(/^\/+/, ""))
+      .concat("favicon.svg");
+      -> ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"]
+  site = process.env.SITE_ORIGIN ?? "https://example.com"   (same pattern as route-registry.ts)
+
+NEW CHECK: placeholder-origin guard (verify-build.mjs section 5)
+---------------------------------------------------------------
+Runs only when forbidPlaceholderOrigin=true (CLI sets it when SITE_ORIGIN is set to
+a non-placeholder value). Scans every dist/**/*.html; FAILs if any
+<link rel="canonical"> href or <script type="application/ld+json"> body contains
+"example.com". Default dev/test builds (guard off) still verify with the placeholder.
+
+TDD: RED -> GREEN
+-----------------
+RED (raw registry helpers, no gate filter -> case-studies leaks in):
+  AssertionError: verifier must accept the root shell:
+    ["missing-route: /case-studies/",
+     "sitemap-missing: https://example.com/case-studies/ expected but not in sitemap"]
+  (same failure on the 404, /about/, /services/, /contact/, favicon assertions)
+  -> RED with the RIGHT message (manifest mismatch, not a syntax error).
+
+GREEN (add gate filter): node --test tests/shell.test.mjs -> ℹ fail 0
+
+FULL GATE (npm run check && npm test && npm run build && npm run verify)
+-----------------------------------------------------------------------
+  check : Result (508 files): 0 errors, 0 warnings, 4 hints
+          (the 4 hints/warnings are in docs/ brand-workbook *.js — pre-existing, unrelated)
+  test  : ℹ tests 182 / ℹ pass 182 / ℹ fail 0
+  build : BUILD OK
+  verify: verify: ok
+
+PROD-ORIGIN BUILD + VERIFY
+--------------------------
+  SITE_ORIGIN=https://ryanjosebrosas.dev npm run build   -> BUILD OK
+  SITE_ORIGIN=https://ryanjosebrosas.dev npm run verify  -> verify: ok
+  grep -rl example.com dist  -> (empty; no placeholder leaked into prod output)
+
+GUARD FIRES (inject temp bad canonical, then revert)
+----------------------------------------------------
+  sed example.com into dist/about/index.html canonical, then:
+  SITE_ORIGIN=https://ryanjosebrosas.dev node scripts/verify-build.mjs
+    EXIT=1
+    placeholder-origin-canonical: about/index.html canonical still uses example.com (https://example.com/about/)
+  Reverted (restored backup) + rebuilt default -> verify: ok
+
+FILES CHANGED
+-------------
+  M scripts/verify-build.mjs  (imports ROUTE_REGISTRY + isHtmlRoute; forbidPlaceholderOrigin
+                               option + section-5 guard; registry-derived CLI manifest)
+  M tests/shell.test.mjs       (registry-derived + gate-filtered manifest; 6 verifyBuild
+                               call sites now use the derived vars)
+
+COMMIT: refactor(verify): derive build manifest from ROUTE_REGISTRY (gate-filtered)

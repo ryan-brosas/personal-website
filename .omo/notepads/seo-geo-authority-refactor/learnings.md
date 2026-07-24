@@ -151,3 +151,64 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
   SourceRecord>` to match the `src/data/sources.json` object (`{}` today).
 - **Full gate green:** check 0 errors (508 files) · test 182/182 · build 5 pages ·
   verify ok. No shell.test.mjs race this run (ran cleanly).
+
+## [2026-07-25] Task: T7 — person entity + source/claim registry seed
+
+- **New authority registry** lives in `src/config/entities.ts`: TS domain types
+  `PersonEntity`/`VerifiedExternalProfile`/`SourceRecord`/`ClaimRecord` (all
+  string-literal unions — `erasableSyntaxOnly` forbids enums), plus `PERSON_ENTITY`,
+  `SELF_PROJECT_CLAIMS`, a zod `SourceRecordSchema` boundary validator, and the pure
+  `resolveClaimSources(claim, registry)` resolver.
+- **`knowsAbout` reuses T6's `TopicPillarSchema.options`** rather than re-listing the
+  four pillars — one authority for the topic model + entity graph, no drift.
+- **Type-only imports from publishing.ts** (`import type { SourceRegistry, ValidateResult }`)
+  satisfy `verbatimModuleSyntax`; the visibility/evidence unions are NOT redefined.
+- **Resolver semantics:** only `status==='approved'` claims are gated — they need >=1
+  sourceId AND every id present in `sources.json`; empty -> `approved-claim-requires-source`,
+  unknown -> `unknown-source`. Blocked/retired claims pass (they never render public;
+  that is enforced downstream by T8's evidence policy).
+- **Seeded source is honesty-safe:** ONE record, type `approved-artifact`, permission
+  `public` — the committed static build + public source repo (directly observable). No
+  live URL (site not launched), no metrics/testimonials/client data. `sameAs: []` (D-15
+  deferred — never guess external profile URLs).
+- **Updated the pre-existing `sources.json is empty` test** (it asserted `deepEqual({},...)`)
+  to assert the seeded record's id-matches-key + non-empty title + public permission.
+- **Concurrency gotcha:** T8 ran in parallel, writing `src/lib/{evidence,relationships,
+  freshness}.ts` and editing the SAME `tests/policy.test.mjs`. A first `node --test` hit a
+  transient `ERR_MODULE_NOT_FOUND` for `evidence.ts` caught mid-write; re-running after the
+  file settled was green. Staged ONLY the three T7-owned paths — did not capture T8's
+  untracked source files into the T7 commit.
+- **Full gate green:** check 0 errors · full test 182/182 · policy.test.mjs isolated 132/132
+  · build 5 pages · verify ok.
+
+## [2026-07-25] Task 4 — Verifier derives manifest from ROUTE_REGISTRY (gate-filtered)
+
+- **Registry helpers run AHEAD of the build.** `expectedBuildManifest()` returns
+  `string[]` (NOT an object) and includes `/case-studies/`; `discoverableRoutes()`
+  also includes it (locked by `tests/route-registry.test.mjs:163`). The hub is
+  reserved (gate `case-studies-hub`) but not built until T14. A naive
+  registry-derived manifest therefore fails the real build with
+  `missing-route: /case-studies/` + `sitemap-missing`.
+- **favicon.svg is not a route.** It is a `public/` static asset copied to dist
+  root, so it can never come from the registry — it MUST be a declared literal in
+  `expectedFileEndpoints` or the verifier flags `unexpected-file: favicon.svg`.
+- **Gate filter is the stopgap discriminator.** `gate === "always"` selects the
+  unconditionally-enabled routes (about/services/contact); the noindex root is
+  kept via `|| visibility === "noindex"`; case-studies (gate `case-studies-hub`)
+  falls out. Same expression drives both the CLI entry and shell.test.mjs so they
+  can't drift.
+- **RED needs the RAW helpers.** The shell test passes its own manifest to
+  `verifyBuild` (it does NOT exercise the CLI entry), so a correct gate-filtered
+  derivation is GREEN immediately. To get a meaningful RED, wire the test to the
+  UNFILTERED registry helpers first (case-studies leaks → verifyBuild rejects),
+  then add the filter for GREEN.
+- **6 verifyBuild call sites** in shell.test.mjs shared the hard-coded 4-route
+  manifest (not just the one at :96-147 named in the brief) — all replaced with the
+  derived vars via a single top-of-file derivation block.
+- **.mjs uses `process` without `declare`** — `astro check` types it fine (the file
+  already used `process.argv`/`process.exit`); the `declare const process` pattern
+  is only needed in the `.ts` policy kernel.
+- **Placeholder-origin guard** is env-gated at the CLI (`forbidPlaceholderOrigin =
+  site !== "https://example.com"`) and implemented as a pure option inside
+  `verifyBuild` (testable, no env read in the kernel). Verified: EXIT=1 on an
+  injected `example.com` canonical under `SITE_ORIGIN=prod`.

@@ -107,7 +107,7 @@ Your next move: approve to start work (`$start-work`), or ask for a high-accurac
   QA scenarios: happy — `SITE_ORIGIN=https://ryanjosebrosas.dev npm run build` then grep built `<link rel="canonical">` shows the prod origin, zero `example.com`; failure — `NODE_ENV=production` without `SITE_ORIGIN` build fails fast with the guard message. Evidence `.omo/evidence/task-3-seo-geo-authority-refactor.txt`
   Commit: Y | feat(config): env-driven SITE_ORIGIN with prod placeholder guard
 
-- [ ] 4. Verifier derives its manifest from the registry (de-hardcode)
+- [x] 4. Verifier derives its manifest from the registry (de-hardcode)
   What to do / Must NOT do: Rewrite the `scripts/verify-build.mjs` CLI entry (currently `:229-236`) to compute `site`, `expectedHtmlRoutes`, `expectedDiscoverableRoutes`, and endpoint list from `ROUTE_REGISTRY.expectedBuildManifest()` + `process.env.SITE_ORIGIN ?? "https://example.com"` — NO route/site literals. Add a verifier check: FAIL if any built `<link rel="canonical">` or `<script type="application/ld+json">` contains `example.com` while `SITE_ORIGIN` is the prod value. Update `tests/shell.test.mjs` (hard-codes the 4-route manifest at :96-147) to derive expectations from the registry FIRST (red), then green. Must NOT keep any literal route array in the verifier; must NOT relax `allowEmptySitemap:false`.
   Parallelization: Wave 1 | Blocked by: 2,3 | Blocks: 13,14,15,16
   References: `scripts/verify-build.mjs:229-236`, `tests/shell.test.mjs:96-147`, design doc §13 (expectedBuildManifest, discovery parity), INV-06.
@@ -131,7 +131,7 @@ Your next move: approve to start work (`$start-work`), or ask for a high-accurac
   QA scenarios: happy — a schema test asserts a `CaseStudyRecord` with `visibility:'public'` and no evidence ref FAILS validation; failure — build with a leftover `src/content/projects/*.md` present asserts a config error (then remove it). Evidence `.omo/evidence/task-6-seo-geo-authority-refactor.txt`
   Commit: Y | feat(content): publication/seo/topic models + collection migration
 
-- [ ] 7. Person entity + source registry seed
+- [x] 7. Person entity + source registry seed
   What to do / Must NOT do: Create `src/config/entities.ts` with `PersonEntity` (`id:'ryan-brosas'`, `sameAs: VerifiedExternalProfile[]`, `knowsAbout`) and `SourceRecord`/`ClaimRecord` types wired to `src/data/sources.json` (currently `{}`). Seed only APPROVED, self-referential sources needed for the self-project case study (e.g. the public repo / live build). Must NOT invent external testimonials or metrics; must NOT list unverified `sameAs` profiles (D-15 deferred — include only confirmed public profiles).
   Parallelization: Wave 2 | Blocked by: 6 | Blocks: 10,14,16 | Can parallelize with: 8
   References: `src/data/sources.json:1` (`{}`), design doc §12 (PersonEntity, SourceRecord, ClaimRecord, kinds fact|metric|testimonial|interpretation|proposal, status approved|blocked|retired), Appendix B.

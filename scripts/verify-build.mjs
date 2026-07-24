@@ -6,7 +6,8 @@
 import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
-import { canonicalHref } from "../src/lib/routes.ts";
+import { canonicalHref, isHtmlRoute } from "../src/lib/routes.ts";
+import { ROUTE_REGISTRY } from "../src/config/routes.ts";
 
 const listFiles = (dir) => {
   const result = [];
@@ -65,6 +66,7 @@ export const verifyBuild = (manifest) => {
     expectedDiscoverableRoutes = [],
     expectedFileEndpoints = [],
     allowEmptySitemap = false,
+    forbidPlaceholderOrigin = false,
   } = manifest;
 
   if (!fs.existsSync(distDir)) {
@@ -220,19 +222,77 @@ export const verifyBuild = (manifest) => {
     }
   }
 
+  // 5. Placeholder-origin guard. When building for a real origin (SITE_ORIGIN set
+  //    to a non-placeholder value), no built HTML may still emit the example.com
+  //    placeholder in a <link rel="canonical"> or a <script type="application/
+  //    ld+json"> block — that signals metadata that bypassed the SITE_ORIGIN-driven
+  //    canonical pipeline. Skipped on default dev/test builds (guard off) where the
+  //    placeholder origin is the expected canonical.
+  if (forbidPlaceholderOrigin) {
+    const PLACEHOLDER = "example.com";
+    for (const relPath of listFiles(distDir)) {
+      const normalized = relPath.replace(/\\/g, "/");
+      if (!normalized.endsWith(".html")) continue;
+      const html = fs.readFileSync(path.join(distDir, normalized), "utf-8");
+      for (const href of extractCanonicals(html)) {
+        if (href.includes(PLACEHOLDER)) {
+          errors.push(
+            `placeholder-origin-canonical: ${normalized} canonical still uses ${PLACEHOLDER} (${href})`,
+          );
+        }
+      }
+      const stripped = html.replace(/<!--[\s\S]*?-->/g, "");
+      const jsonLd =
+        /<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+      for (const m of stripped.matchAll(jsonLd)) {
+        if (m[1].includes(PLACEHOLDER)) {
+          errors.push(`placeholder-origin-jsonld: ${normalized} JSON-LD still uses ${PLACEHOLDER}`);
+        }
+      }
+    }
+  }
+
   return { ok: errors.length === 0, errors };
 };
 
-// CLI entry: verify the root build.
+// CLI entry: verify the root build. The manifest is DERIVED from ROUTE_REGISTRY
+// (INV-06) — no hard-coded route arrays. Gate filter: only unconditionally
+// enabled routes (gate "always") plus the code-owned noindex root are actual
+// build targets today; the reserved case-studies hub (gate "case-studies-hub")
+// is registered but NOT built until T14, so it is excluded. favicon.svg is a
+// public/ static asset, not a registry route, so it is the one declared literal.
 const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] === __filename) {
+  const PLACEHOLDER_ORIGIN = "https://example.com";
+  const site = process.env.SITE_ORIGIN ?? PLACEHOLDER_ORIGIN;
+
+  const defs = ROUTE_REGISTRY.all();
+  const expectedHtmlRoutes = defs
+    .filter(
+      (d) =>
+        d.isDynamic !== true &&
+        isHtmlRoute(d.path) &&
+        (d.gate === "always" || d.visibility === "noindex"),
+    )
+    .map((d) => d.path);
+  const expectedDiscoverableRoutes = ROUTE_REGISTRY.discoverableRoutes()
+    .filter((r) => r.gate === "always")
+    .map((r) => r.path);
+  const expectedFileEndpoints = [
+    ...defs
+      .filter((d) => d.isDynamic !== true && !isHtmlRoute(d.path))
+      .map((d) => d.path.replace(/^\/+/, "")),
+    "favicon.svg",
+  ];
+
   const result = verifyBuild({
     distDir: "dist",
-    site: "https://example.com",
-    expectedHtmlRoutes: ["/", "/about/", "/services/", "/contact/"],
-    expectedDiscoverableRoutes: ["/about/", "/services/", "/contact/"],
-    expectedFileEndpoints: ["sitemap.xml", "robots.txt", "404.html", "favicon.svg"],
+    site,
+    expectedHtmlRoutes,
+    expectedDiscoverableRoutes,
+    expectedFileEndpoints,
     allowEmptySitemap: false,
+    forbidPlaceholderOrigin: site !== PLACEHOLDER_ORIGIN,
   });
   if (!result.ok) {
     console.error(result.errors.join("\n"));
