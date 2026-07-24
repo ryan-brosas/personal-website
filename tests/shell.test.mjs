@@ -46,17 +46,31 @@ const expectedFileEndpoints = [
   "favicon.svg",
 ];
 
-// Assert exactly one script exists and it is the marked inline nav enhancement
-// (no external src, no other client scripts, no generated _astro/*.js bundles).
+// Assert exactly one NAV-ENHANCEMENT script exists and it is the marked inline
+// nav enhancement (no external src, no other client scripts, no generated
+// _astro/*.js bundles). JSON-LD and other metadata <script> blocks are excluded
+// from the count — they carry no behavioral JS and do not violate the a11y
+// contract that only the single nav enhancement script runs client-side.
 const assertOneNavScript = (html) => {
   const scripts = [...html.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
-  assert.equal(scripts.length, 1, `expected exactly one script (got ${scripts.length})`);
-  assert.ok(
-    /data-nav-enhancement/i.test(scripts[0]),
-    "the single script must be the nav enhancement",
+  // Filter out metadata scripts (JSON-LD, import maps, etc.) — only count
+  // behavioral scripts that could run client-side.
+  const behavioral = scripts.filter(
+    (t) =>
+      !/type\s*=\s*["']application\/ld\+json["']/i.test(t) &&
+      !/type\s*=\s*["']importmap["']/i.test(t),
+  );
+  assert.equal(
+    behavioral.length,
+    1,
+    `expected exactly one behavioral script (got ${behavioral.length}); scripts: ${JSON.stringify(scripts)}`,
   );
   assert.ok(
-    !/\bsrc\s*=/i.test(scripts[0]),
+    /data-nav-enhancement/i.test(behavioral[0]),
+    "the single behavioral script must be the nav enhancement",
+  );
+  assert.ok(
+    !/\bsrc\s*=/i.test(behavioral[0]),
     "the nav enhancement script must be inline (no src attribute)",
   );
 };
@@ -1174,5 +1188,143 @@ describe("D3 progressive navigation", () => {
     const sprite = fs.readFileSync(spritePath, "utf-8");
     assert.ok(!/<script/i.test(sprite), "sprite has no <script>");
     assert.ok(!/\bhref\s*=\s*["']https?:/i.test(sprite), "sprite has no external references");
+  });
+});
+
+// ── T11 authority layouts (Commercial + CaseStudy) build probe ───────────────
+// CommercialLayout / CaseStudyLayout are not wired to any real page yet (pages
+// land in T14/T15), so their a11y + structured-data contract is proven here by
+// copying production src into an isolated repo-local temp root, adding two
+// throwaway fixture pages that render each layout, building, and asserting the
+// shell contract on the output HTML. The tracked source is never mutated; the
+// temp root is gitignored under node_modules/. A raw `astro build` (NOT the
+// verifier) is used, so the throwaway probe routes never trip the manifest.
+const buildLayoutProbe = () => {
+  const tempRoot = fs.mkdtempSync(path.join(repoRoot, "node_modules", ".layout-probe-"));
+  const rel = path.relative(repoRoot, tempRoot);
+  assert.ok(
+    !path.isAbsolute(rel) && !rel.startsWith(".."),
+    `probe temp root must stay inside repo (got ${rel})`,
+  );
+
+  // Copy production files needed for a standalone build (mirrors the C2 variant).
+  fs.cpSync(path.join(repoRoot, "src"), path.join(tempRoot, "src"), { recursive: true });
+  fs.copyFileSync(path.join(repoRoot, "astro.config.mjs"), path.join(tempRoot, "astro.config.mjs"));
+  fs.copyFileSync(path.join(repoRoot, "tsconfig.json"), path.join(tempRoot, "tsconfig.json"));
+  fs.copyFileSync(path.join(repoRoot, "package.json"), path.join(tempRoot, "package.json"));
+  const publicDir = path.join(repoRoot, "public");
+  if (fs.existsSync(publicDir)) {
+    fs.cpSync(publicDir, path.join(tempRoot, "public"), { recursive: true });
+  }
+  // global.css @imports ../../docs/Ryan-Brosas-Brand-System/tokens.css — copy it
+  // so the relative import resolves inside the temp root.
+  const tokensDest = path.join(tempRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css");
+  fs.mkdirSync(path.dirname(tokensDest), { recursive: true });
+  fs.copyFileSync(
+    path.join(repoRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css"),
+    tokensDest,
+  );
+
+  // Throwaway fixture pages that exercise each layout with a real public routeId.
+  // NOTE: no leading underscore — Astro treats `_`-prefixed files under
+  // src/pages/ as private and emits NO route for them, so the probe would build
+  // clean but produce no HTML to assert on.
+  const pagesDir = path.join(tempRoot, "src", "pages");
+  fs.writeFileSync(
+    path.join(pagesDir, "probe-commercial.astro"),
+    '---\nimport CommercialLayout from "../layouts/CommercialLayout.astro";\n---\n' +
+      '<CommercialLayout routeId="services" title="Work With Me" description="Probe description" visibility="public">\n' +
+      "  <h1>Work With Me</h1>\n  <p>Probe commercial body.</p>\n</CommercialLayout>\n",
+    "utf-8",
+  );
+  fs.writeFileSync(
+    path.join(pagesDir, "probe-casestudy.astro"),
+    '---\nimport CaseStudyLayout from "../layouts/CaseStudyLayout.astro";\n---\n' +
+      '<CaseStudyLayout routeId="case-studies" title="Case Study" description="Probe description" visibility="public">\n' +
+      "  <h1>Case Study Title</h1>\n  <p>Probe case-study body.</p>\n</CaseStudyLayout>\n",
+    "utf-8",
+  );
+
+  const distDir = path.join(tempRoot, "dist");
+  const result = spawnSync(astroBin, ["build", "--outDir", distDir], {
+    cwd: tempRoot,
+    encoding: "utf-8",
+  });
+  if (result.status !== 0) {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+    assert.fail(
+      `layout probe build failed (status ${result.status}):\n${result.stdout}\n${result.stderr}`,
+    );
+  }
+  return { distDir, cleanup: () => fs.rmSync(tempRoot, { recursive: true, force: true }) };
+};
+
+describe("T11 authority layouts (Commercial + CaseStudy)", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildLayoutProbe();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  // One assertion set for both layouts: the shell contract must be preserved
+  // (single main landmark, skip link, exactly one behavioral inline script,
+  // registry-derived breadcrumbs, single h1) and the JSON-LD data block must
+  // carry the entity @graph with the layout's page-kind node.
+  const assertLayoutShell = (route, kindType) => {
+    const html = readHtml(distDir, route);
+    assert.ok(html, `probe ${route}index.html must exist`);
+
+    // Exactly one <main id="main"> — from BaseLayout; layouts must not add a 2nd.
+    assert.equal(
+      (html.match(/<main[^>]*id="main"/gi) || []).length,
+      1,
+      `exactly one main#main on ${route}`,
+    );
+
+    // Skip link from BaseLayout survives the wrap.
+    assert.ok(
+      /<a[^>]+href="#main"[^>]*>\s*Skip to content\s*<\/a>/i.test(html),
+      `skip-to-content link present on ${route}`,
+    );
+
+    // Exactly one BEHAVIORAL inline script (assertOneNavScript excludes JSON-LD).
+    assertOneNavScript(html);
+
+    // Registry-derived breadcrumb trail rendered (Breadcrumbs component).
+    assert.ok(
+      /<nav[^>]*aria-label=["']Breadcrumb["']/i.test(html),
+      `breadcrumb nav present on ${route}`,
+    );
+
+    // Exactly one h1 — from the page slot (BaseLayout/header/footer add none).
+    assert.equal((html.match(/<h1/gi) || []).length, 1, `exactly one h1 on ${route}`);
+
+    // A single JSON-LD data block carrying the entity @graph and the kind node.
+    const ld = [
+      ...html.matchAll(
+        /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,
+      ),
+    ];
+    assert.equal(ld.length, 1, `exactly one JSON-LD block on ${route}`);
+    const graph = JSON.parse(ld[0][1]);
+    assert.equal(graph["@context"], "https://schema.org", `JSON-LD @context on ${route}`);
+    const types = graph["@graph"].map((node) => node["@type"]);
+    assert.ok(types.includes("WebPage"), `graph has a WebPage node on ${route}`);
+    assert.ok(types.includes(kindType), `graph has a ${kindType} node on ${route}`);
+  };
+
+  test("CommercialLayout preserves the shell a11y contract and emits a Service graph", () => {
+    assertLayoutShell("/probe-commercial/", "Service");
+  });
+
+  test("CaseStudyLayout preserves the shell a11y contract and emits an Article graph", () => {
+    assertLayoutShell("/probe-casestudy/", "Article");
   });
 });

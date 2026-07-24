@@ -1,0 +1,45 @@
+---
+// W3·T11 (SEO/GEO authority refactor) — the commercial (Service) page layout. It
+// WRAPS BaseLayout: the shared shell owns <html>/<head>/SeoHead, the skip link,
+// the single <main id="main">, the header/footer, and the one nav-enhancement
+// script — this layout NEVER re-implements them, so the a11y contract enforced by
+// tests/shell.test.mjs is preserved by construction. On top of the shell it adds
+// exactly two page-level authority artifacts:
+//   1. a JSON-LD entity graph — a DATA block (type="application/ld+json"), not
+//      behavioral JS, so it is excluded from the shell "one behavioral script"
+//      contract and never bundles into _astro/*.js (JsonLd uses is:inline);
+//   2. a registry-derived breadcrumb trail (no client script).
+// The graph is keyed off Astro.site (the real origin from astro.config) so the
+// canonical + @id anchors stay deterministic. kind:"service" marks the extra
+// Service node, which — like the WebPage/BreadcrumbList nodes — is emitted only
+// for a public page (INV-03, enforced inside buildEntityGraph).
+import BaseLayout from "./BaseLayout.astro";
+import JsonLd from "../components/JsonLd.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { buildEntityGraph } from "../lib/structured-data.ts";
+import type { Visibility } from "../lib/publishing.ts";
+
+interface Props {
+  routeId: string;
+  title: string;
+  description: string;
+  visibility: Visibility;
+  noindex?: boolean;
+}
+
+const { routeId, title, description, visibility, noindex } = Astro.props;
+
+// Astro.site is the real origin from astro.config (SITE_ORIGIN ?? placeholder);
+// buildEntityGraph normalises the trailing slash. Fall back to the placeholder
+// so a mis-set config never throws at render time.
+const site = Astro.site?.href ?? "https://example.com";
+const graph = buildEntityGraph({
+  site,
+  page: { routeId, title, description, visibility, kind: "service" },
+});
+---
+<BaseLayout routeId={routeId} title={title} description={description} noindex={noindex}>
+  <JsonLd graph={graph} />
+  <Breadcrumbs routeId={routeId} />
+  <slot />
+</BaseLayout>
