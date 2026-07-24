@@ -1,0 +1,43 @@
+---
+// W3·T10 — semantic breadcrumb trail. The trail is DERIVED from the ONE route
+// registry (ROUTE_REGISTRY.breadcrumbsFor) — never hard-coded — so IA changes
+// flow through automatically. The code-owned "home" root is suppressed upstream
+// (it owns the brand link), so a top-level page yields a single self-crumb and
+// the home shell yields an empty trail (nothing rendered). Works without JS.
+import { ROUTE_REGISTRY } from "../config/routes.ts";
+
+interface Props {
+  routeId: string;
+}
+
+const { routeId } = Astro.props;
+const trail = ROUTE_REGISTRY.breadcrumbsFor(routeId);
+
+// Human label from a route id (the registry stores no crumb copy):
+// "case-studies" → "Case Studies", "about" → "About".
+const labelFor = (id: string): string =>
+  id
+    .split("-")
+    .map((part) => (part.length === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join(" ");
+---
+{
+  trail.length > 0 && (
+    <nav aria-label="Breadcrumb">
+      <ol>
+        {trail.map((crumb, index) => {
+          const isCurrent = index === trail.length - 1;
+          return (
+            <li>
+              {isCurrent ? (
+                <span aria-current="page">{labelFor(crumb.id)}</span>
+              ) : (
+                <a href={crumb.path}>{labelFor(crumb.id)}</a>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  )
+}

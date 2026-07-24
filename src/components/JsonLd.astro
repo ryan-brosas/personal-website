@@ -1,0 +1,16 @@
+---
+// W3·T10 — renders a pre-built schema.org entity graph as a single JSON-LD data
+// block. The graph is built by src/lib/structured-data.ts (buildEntityGraph) in
+// the page/layout that owns the real `Astro.site` origin; this component only
+// serialises it. `type="application/ld+json"` is a DATA block, not executable JS,
+// so it is explicitly excluded from the shell "one behavioral script" a11y
+// contract (tests/shell.test.mjs) and never runs client-side.
+import type { JsonLdGraph } from "../lib/structured-data.ts";
+
+interface Props {
+  graph: JsonLdGraph;
+}
+
+const { graph } = Astro.props;
+---
+<script is:inline type="application/ld+json" set:html={JSON.stringify(graph)} />
