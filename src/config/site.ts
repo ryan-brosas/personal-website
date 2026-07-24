@@ -1,8 +1,11 @@
-// M2 (Plan 03, Child 1) code-controlled page configuration.
-// Owns page IDs (matching src/content/pages/<id>.md), route paths, and
-// navigation order. Root "/" is code-owned (no Home record) and activated as
-// noindex in Child 2 (m2-semantic-shell). The settings singleton owns the
-// human-readable labels; this module owns the structural contract.
+// Backward-compatibility shim (W1·T2). PAGES and NAV_ORDER are now DERIVED from
+// the single route registry (src/config/routes.ts) so existing callers
+// (SiteHeader, [page].astro) keep working while route truth lives in one place
+// (INV-06). This module no longer authors routes; it only projects the
+// registry's primary-nav entries into the legacy PageConfig shape. A later W1
+// slice removes remaining PAGES callers and this shim.
+import { ROUTE_REGISTRY } from "./routes.ts";
+import type { Visibility } from "../lib/publishing.ts";
 
 export interface PageConfig {
   /** Content collection entry ID (matches src/content/pages/<id>.md). */
@@ -11,13 +14,16 @@ export interface PageConfig {
   path: string;
   /** Key into SettingsData.navLabels for this page's nav label. */
   navLabelKey: "about" | "services" | "contact";
+  /** Registry-derived visibility (draft records never appear here). */
+  visibility: Visibility;
 }
 
-export const PAGES: PageConfig[] = [
-  { id: "about", path: "/about/", navLabelKey: "about" },
-  { id: "services", path: "/services/", navLabelKey: "services" },
-  { id: "contact", path: "/contact/", navLabelKey: "contact" },
-];
+export const PAGES: PageConfig[] = ROUTE_REGISTRY.navItems().map((route) => ({
+  id: route.id,
+  path: route.path,
+  navLabelKey: route.navLabelKey,
+  visibility: route.visibility,
+}));
 
-/** Navigation order (by page id). Root is code-owned and prepended by the shell. */
-export const NAV_ORDER: string[] = ["about", "services", "contact"];
+/** Navigation order (by page id), derived from the registry's primary nav. */
+export const NAV_ORDER: string[] = ROUTE_REGISTRY.navItems().map((route) => route.id);

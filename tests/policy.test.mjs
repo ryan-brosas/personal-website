@@ -10,7 +10,8 @@ import {
   DateFieldsSchema,
   EvidenceSchema,
 } from "../src/lib/publishing.ts";
-import { ROUTES, canonicalHref, isHtmlRoute, isFileEndpoint } from "../src/lib/routes.ts";
+import { canonicalHref, isHtmlRoute, isFileEndpoint } from "../src/lib/routes.ts";
+import { ROUTE_REGISTRY } from "../src/config/routes.ts";
 import { renderSitemap, renderRobots } from "../src/lib/discovery.ts";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -333,8 +334,21 @@ describe("M2 route-visibility pipeline (A2)", () => {
 });
 
 describe("T3 routes and canonical helpers", () => {
-  test("ROUTES is an array (empty in M1)", () => {
-    assert.ok(Array.isArray(ROUTES));
+  test("ROUTE_REGISTRY exposes the first-release route inventory", () => {
+    const ids = ROUTE_REGISTRY.all()
+      .map((r) => r.id)
+      .sort();
+    assert.deepEqual(ids, [
+      "404",
+      "about",
+      "case-studies",
+      "case-studies-slug",
+      "contact",
+      "home",
+      "robots",
+      "services",
+      "sitemap",
+    ]);
   });
 
   describe("isHtmlRoute / isFileEndpoint", () => {

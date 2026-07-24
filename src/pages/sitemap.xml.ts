@@ -7,7 +7,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { renderSitemap } from "../lib/discovery.ts";
 import { resolveRoutes } from "../lib/site-routes.ts";
-import { ROOT_ROUTE_POLICY } from "../lib/routes.ts";
+import { ROOT_ROUTE_POLICY } from "../config/routes.ts";
 import type { Visibility } from "../lib/publishing.ts";
 
 export const GET: APIRoute = async ({ site }) => {

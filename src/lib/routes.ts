@@ -1,27 +1,17 @@
-// M1 (Plan 01) route inventory + canonical helpers. Pure module (no astro
-// runtime imports, no any) — Node-testable. ROUTES is empty in M1 (no production HTML
-// routes until Plan 03); it grows as modules ship.
+// M1 canonical-path helpers. Pure module (no astro runtime imports, no any) —
+// Node-testable. Route TRUTH (inventory, visibility, nav, parents) now lives in
+// the single route registry (src/config/routes.ts via src/lib/route-registry.ts,
+// INV-06); this module keeps only the low-level canonical-path primitives that
+// the registry and discovery layer build on.
 //
 // Route contract (docs/sitemap.md:25):
 // - HTML routes use canonical trailing slashes.
 // - File endpoints (/rss.xml, /sitemap.xml, /robots.txt, /404.html) do NOT.
-import type { Visibility } from "./publishing.ts";
 
-export const ROUTES: string[] = [];
-
-// Code-owned root route. Activated as noindex in Child 2 (m2-semantic-shell);
-// promoted to public by Plan 04. Kept here so the route contract is centralized.
+// Canonical root path token, reused by the shell brand/home links. The root's
+// disposition (visibility/promotion) is owned by the registry's "home" entry,
+// not here — this is just the "/" string.
 export const ROOT_ROUTE = "/" as const;
-
-// Code-owned root route policy. Centralizes the root's visibility so the page
-// metadata, sitemap discovery, and (later) Plan 04 promotion all read one
-// source. noindex in M2 (excluded from discovery, stays crawlable); Plan 04
-// flips visibility to "public" to activate the evidence homepage. The `import
-// type` is erased at runtime, so this module stays Node-testable and pure.
-export const ROOT_ROUTE_POLICY: { path: string; visibility: Visibility } = {
-  path: ROOT_ROUTE,
-  visibility: "noindex",
-};
 
 // File endpoints carry a file extension: /sitemap.xml, /robots.txt, /404.html,
 // /rss.xml. /404.html is slashless even though it is HTML.
