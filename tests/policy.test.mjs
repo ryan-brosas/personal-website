@@ -13,6 +13,7 @@ import {
 import { canonicalHref, isHtmlRoute, isFileEndpoint } from "../src/lib/routes.ts";
 import { ROUTE_REGISTRY } from "../src/config/routes.ts";
 import { renderSitemap, renderRobots } from "../src/lib/discovery.ts";
+import { CRAWLER_POLICY } from "../src/config/crawlers.ts";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -568,25 +569,61 @@ describe("T4 discovery rendering", () => {
   });
 
   describe("renderRobots", () => {
-    test("emits User-agent: * with no Disallow", () => {
-      const txt = renderRobots(site);
+    // Differentiated crawler policy (T13): the wildcard block never Disallows;
+    // named training crawlers are Disallowed; named search crawlers are Allowed.
+    // search-crawl permission and training consent are SEPARATE stanzas.
+    const policy = [
+      { userAgent: "OAI-SearchBot", allow: ["/"] },
+      { userAgent: "GPTBot", disallow: ["/"] },
+    ];
+
+    test("keeps the wildcard block with no Disallow", () => {
+      const txt = renderRobots(site, policy);
       assert.ok(txt.includes("User-agent: *"), "has User-agent: *");
-      assert.ok(!txt.includes("Disallow"), "no Disallow for any route");
+      const wildcardBlock = txt.split(/User-agent:/)[1] ?? "";
+      assert.ok(!wildcardBlock.includes("Disallow"), "wildcard block has no Disallow");
     });
 
     test("emits an absolute slashless Sitemap line", () => {
-      const txt = renderRobots(site);
+      const txt = renderRobots(site, policy);
       assert.ok(txt.includes("Sitemap: https://example.com/sitemap.xml"), "absolute sitemap line");
       assert.ok(!txt.includes("sitemap.xml/"), "no trailing slash on sitemap endpoint");
     });
 
     test("normalizes a trailing slash on the origin", () => {
-      const txt = renderRobots("https://example.com/");
+      const txt = renderRobots("https://example.com/", policy);
       assert.ok(
         txt.includes("Sitemap: https://example.com/sitemap.xml"),
         "single slash between origin and endpoint",
       );
       assert.ok(!txt.includes("//sitemap.xml"), "no double slash");
+    });
+
+    test("Disallows named training crawlers", () => {
+      const txt = renderRobots(site, policy);
+      assert.match(txt, /User-agent: GPTBot\nDisallow: \//, "GPTBot Disallow: /");
+    });
+
+    test("Allows named search crawlers", () => {
+      const txt = renderRobots(site, policy);
+      assert.match(txt, /User-agent: OAI-SearchBot\nAllow: \//, "OAI-SearchBot Allow: /");
+    });
+
+    test("emits the real CRAWLER_POLICY differentiation", () => {
+      const txt = renderRobots(site, CRAWLER_POLICY);
+      for (const bot of ["GPTBot", "ClaudeBot", "Google-Extended"]) {
+        assert.match(txt, new RegExp(`User-agent: ${bot}\\nDisallow: /`), `${bot} disallowed`);
+      }
+      for (const bot of ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"]) {
+        assert.match(txt, new RegExp(`User-agent: ${bot}\\nAllow: /`), `${bot} allowed`);
+      }
+    });
+
+    test("does not Disallow any search crawler nor Allow any training crawler", () => {
+      const txt = renderRobots(site, CRAWLER_POLICY);
+      // No search crawler appears in a Disallow stanza; no training crawler in an Allow stanza.
+      assert.doesNotMatch(txt, /User-agent: OAI-SearchBot\nDisallow/, "search bot not disallowed");
+      assert.doesNotMatch(txt, /User-agent: GPTBot\nAllow/, "training bot not allowed");
     });
   });
 });
@@ -941,6 +978,22 @@ describe("T6 read-only build verifier", () => {
   test("robots.txt with inline comments on directives passes", () => {
     const goodRobots =
       "User-agent: * # all crawlers\n\nSitemap: https://example.com/sitemap.xml # primary\n";
+    const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": goodRobots });
+    try {
+      const result = verifyBuild(rootManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("robots.txt with per-bot Disallow under a NAMED user-agent passes", () => {
+    // Training-consent differentiation: Disallow: / under a named agent is
+    // intended and must NOT trip robots-has-disallow (only the * block is gated).
+    const goodRobots =
+      "User-agent: *\n\nSitemap: https://example.com/sitemap.xml\n\n" +
+      "User-agent: GPTBot\nDisallow: /\n\n" +
+      "User-agent: OAI-SearchBot\nAllow: /\n";
     const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": goodRobots });
     try {
       const result = verifyBuild(rootManifest(dir));

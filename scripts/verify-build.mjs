@@ -134,6 +134,10 @@ export const verifyBuild = (manifest) => {
         .filter((l) => l);
       let hasUserAgent = false;
       let hasCorrectSitemap = false;
+      // Track the active user-agent block. The wildcard `*` block must never
+      // Disallow (noindex pages stay crawlable); per-bot Disallow under a NAMED
+      // agent is the intended search-vs-training differentiation and is allowed.
+      let currentAgent = null;
       const siteOrigin = site.replace(/\/+$/, "");
       const expectedSitemapValue = `${siteOrigin}/sitemap.xml`;
       for (const line of lines) {
@@ -141,9 +145,14 @@ export const verifyBuild = (manifest) => {
         if (colonIdx === -1) continue;
         const directive = line.slice(0, colonIdx).trim().toLowerCase();
         const value = line.slice(colonIdx + 1).trim();
-        if (directive === "user-agent" && value === "*") hasUserAgent = true;
-        if (directive === "disallow") {
-          errors.push("robots-has-disallow: robots.txt must not Disallow any route");
+        if (directive === "user-agent") {
+          currentAgent = value;
+          if (value === "*") hasUserAgent = true;
+        }
+        if (directive === "disallow" && currentAgent === "*") {
+          errors.push(
+            "robots-has-disallow: robots.txt must not Disallow any route under User-agent: *",
+          );
         }
         if (directive === "sitemap" && value === expectedSitemapValue) {
           hasCorrectSitemap = true;

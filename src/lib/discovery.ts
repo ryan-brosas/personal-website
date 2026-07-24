@@ -4,6 +4,7 @@
 import { isDiscoverable } from "./publishing.ts";
 import { canonicalHref } from "./routes.ts";
 import type { Visibility } from "./publishing.ts";
+import type { CrawlerPolicy } from "../config/crawlers.ts";
 
 export interface SitemapRoute {
   path: string;
@@ -37,10 +38,22 @@ export const renderSitemap = (routes: SitemapRoute[], site: string): string => {
   return `<urlset xmlns="${SITEMAP_NS}">\n${urls}\n</urlset>`;
 };
 
-// Render robots.txt from the configured origin. Visibility-independent: no
-// Disallow for any route (noindex pages stay crawlable, drafts have no route).
-// Emits User-agent: * and an absolute slashless Sitemap line.
-export const renderRobots = (site: string): string => {
+// Render robots.txt from the configured origin plus a differentiated crawler
+// policy. The wildcard `User-agent: *` block is visibility-independent and
+// carries NO Disallow (noindex pages stay crawlable, drafts have no route),
+// followed by an absolute slashless Sitemap line. Each policy entry then emits
+// one deterministic stanza (array order): a `User-agent:` line, then its
+// `Allow:` lines, then its `Disallow:` lines. Pure: site + policy in, string
+// out — no env reads, no Date. Search-crawl permission (Allow) and training
+// consent (Disallow) live in separate named stanzas and are never conflated.
+export const renderRobots = (site: string, policy: CrawlerPolicy[]): string => {
   const origin = site.replace(/\/+$/, "");
-  return `User-agent: *\n\nSitemap: ${origin}/sitemap.xml\n`;
+  const header = `User-agent: *\n\nSitemap: ${origin}/sitemap.xml\n`;
+  const stanzas = policy.map((entry) => {
+    const lines = [`User-agent: ${entry.userAgent}`];
+    for (const path of entry.allow ?? []) lines.push(`Allow: ${path}`);
+    for (const path of entry.disallow ?? []) lines.push(`Disallow: ${path}`);
+    return `${lines.join("\n")}\n`;
+  });
+  return [header, ...stanzas].join("\n");
 };
