@@ -86,3 +86,36 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
   `src/config/routes.ts` (top of the stack) — no cycle, since nothing in the
   kernel imports metadata.ts.
 - **Full gate green:** check 0 errors · test 157/157 · build 5 pages · verify ok.
+
+## [2026-07-25] Task: T6 — content data models + atomic collection migration
+
+- **New authority models** live in `src/lib/content-schemas.ts`: `PublicationRecord`,
+  `SeoFields`, `TopicFields`, `ServiceRecord`, `CaseStudyRecord` (+ `PublicationDates`,
+  `ReviewStatus`, `Robots`, `TopicPillar`, `SearchIntent`, `Audience`). Both a zod
+  `*Schema` value and an inferred type are exported per model.
+- **Do NOT reuse `publishing.ts` DateFieldsSchema for publications.** §12.2 needs
+  `modifiedAt` + `expiresAt`; the kernel schema has `updatedAt` and no expiry. Since
+  `publishing.ts` is off-limits, a local `PublicationDatesSchema` was added. Kept the
+  kernel's `VisibilitySchema`/`EvidenceSchema` imports (never redefined).
+- **Fail-closed vs "reject missing visibility":** these conflict. `visibility` keeps
+  `.default("draft")`, so an omitted value defaults rather than rejects. Tests assert
+  (a) an INVALID visibility value is rejected and (b) omitted → "draft". That satisfies
+  the visibility contract without dropping the mandated fail-closed default.
+- **canonicalOverride = reject-by-default:** `CANONICAL_OVERRIDE_ALLOWLIST` (empty) +
+  `.refine(v => allowlist.includes(v))`. Any editor-supplied canonical fails until a
+  code owner adds it. Cleaner than a literal union (empty zod union is impossible).
+- **Records flatten SeoFields** (title/description top-level via `.merge`), matching the
+  task's "extends PublicationRecord + SeoFields" phrasing, not the plan's nested `seo:`.
+  `.merge()` is safe here — Publication/Seo/Topic field sets are disjoint.
+- **Atomic migration, no orphan window:** in ONE edit, `content.config.ts` gained
+  `services` + `"case-studies"` and dropped projects/blog/directories/directoryEntries.
+  Removed now-unused `reference`/`z`/`RecordBase` imports. No src consumer referenced the
+  dropped collections (verified via grep) so no downstream breakage.
+- **Empty-dir warnings:** created `src/content/{services,case-studies}/` with `.gitkeep`.
+  glob still WARNs "No files found matching **/*.md" (dir exists, no md yet) — but the
+  old missing-BASE-dir warns for the removed collections are gone.
+- **Test concurrency race (gotcha):** `npm test` = `node --test` runs test FILES in
+  parallel. `tests/shell.test.mjs` and `tests/policy.test.mjs` BOTH spawn `astro build`;
+  concurrent builds intermittently fail shell.test.mjs's D1/D2/D3 (~13 fails). Re-running,
+  or running `node --test tests/shell.test.mjs` in isolation, is green (24/24). Not a
+  logic bug — a build-output/timing race. Full clean run: 157/157.

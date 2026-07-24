@@ -4,10 +4,14 @@
 // arrives; glob() warns but does not throw) and the settings singleton.
 // Runtime-only astro:content / astro:loaders imports are gated by
 // `astro check` + `astro build`, not Node behavioral tests.
-import { defineCollection, reference } from "astro:content";
+import { defineCollection } from "astro:content";
 import { glob, file } from "astro/loaders";
-import { z } from "astro/zod";
-import { RecordBase, PageSchema, SettingsDataSchema } from "./lib/content-schemas.ts";
+import {
+  PageSchema,
+  SettingsDataSchema,
+  ServiceRecordSchema,
+  CaseStudyRecordSchema,
+} from "./lib/content-schemas.ts";
 
 const pages = defineCollection({
   loader: glob({
@@ -22,28 +26,18 @@ const pages = defineCollection({
   schema: PageSchema,
 });
 
-const projects = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/projects" }),
-  schema: RecordBase.extend({
-    related: z.array(reference("projects")).optional(),
-  }),
+// SEO/GEO authority launch collections (Plan seo-geo-authority-refactor, T6).
+// Empty until content arrives; the .gitkeep-tracked dirs suppress glob's
+// missing-base warnings. These replace the earlier M2 scaffold collections in
+// the same commit — no orphan window.
+const services = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/services" }),
+  schema: ServiceRecordSchema,
 });
 
-const blog = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/blog" }),
-  schema: RecordBase,
-});
-
-const directories = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx,json}", base: "./src/content/directories" }),
-  schema: RecordBase,
-});
-
-const directoryEntries = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/directoryEntries" }),
-  schema: RecordBase.extend({
-    directory: reference("directories").optional(),
-  }),
+const caseStudies = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/case-studies" }),
+  schema: CaseStudyRecordSchema,
 });
 
 const settings = defineCollection({
@@ -53,9 +47,7 @@ const settings = defineCollection({
 
 export const collections = {
   pages,
-  projects,
-  blog,
-  directories,
-  directoryEntries,
+  services,
+  "case-studies": caseStudies,
   settings,
 };

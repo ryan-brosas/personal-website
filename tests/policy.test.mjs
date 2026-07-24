@@ -18,7 +18,15 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { verifyBuild } from "../scripts/verify-build.mjs";
-import { PageSchema, SettingsDataSchema } from "../src/lib/content-schemas.ts";
+import {
+  PageSchema,
+  SettingsDataSchema,
+  PublicationRecordSchema,
+  SeoFieldsSchema,
+  TopicFieldsSchema,
+  ServiceRecordSchema,
+  CaseStudyRecordSchema,
+} from "../src/lib/content-schemas.ts";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
 import markdownSafety, { assertMarkdownRendered } from "../src/lib/markdown-safety.ts";
 
@@ -1422,5 +1430,85 @@ export const collections = { pages };
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
+  });
+});
+
+describe("T6 content data models", () => {
+  const seo = {
+    title: "Reliable AI workflow systems",
+    description: "Proof-backed agent workflows for founders and operators.",
+  };
+  const validCaseStudy = {
+    ...seo,
+    visibility: "public",
+    owner: "ryan",
+    kind: "case-study",
+    slug: "agent-reliability-audit",
+    pillar: "ai-workflow-systems",
+  };
+
+  test("CaseStudyRecord accepts a valid public record", () => {
+    const r = CaseStudyRecordSchema.safeParse(validCaseStudy);
+    assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
+  });
+
+  test("CaseStudyRecord rejects a record missing slug", () => {
+    const { slug, ...withoutSlug } = validCaseStudy;
+    assert.equal(CaseStudyRecordSchema.safeParse(withoutSlug).success, false);
+  });
+
+  test("CaseStudyRecord rejects an invalid visibility value", () => {
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({ ...validCaseStudy, visibility: "listed" }).success,
+      false,
+    );
+  });
+
+  test("CaseStudyRecord defaults visibility to draft (fail-closed) when omitted", () => {
+    const { visibility, ...withoutVisibility } = validCaseStudy;
+    const r = CaseStudyRecordSchema.safeParse(withoutVisibility);
+    assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
+    assert.equal(r.data.visibility, "draft");
+  });
+
+  test("CaseStudyRecord requires a known topic pillar", () => {
+    const { pillar, ...withoutPillar } = validCaseStudy;
+    assert.equal(CaseStudyRecordSchema.safeParse(withoutPillar).success, false);
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({ ...validCaseStudy, pillar: "unknown-pillar" }).success,
+      false,
+    );
+  });
+
+  test("ServiceRecord requires title and description", () => {
+    const base = { visibility: "public", owner: "ryan", kind: "service", slug: "workflow-audit" };
+    assert.equal(ServiceRecordSchema.safeParse(base).success, false);
+    assert.equal(ServiceRecordSchema.safeParse({ ...base, ...seo }).success, true);
+  });
+
+  test("PublicationRecord requires owner to be 'ryan'", () => {
+    assert.equal(PublicationRecordSchema.safeParse({ visibility: "public" }).success, false);
+    assert.equal(
+      PublicationRecordSchema.safeParse({ visibility: "public", owner: "ryan" }).success,
+      true,
+    );
+    assert.equal(
+      PublicationRecordSchema.safeParse({ visibility: "public", owner: "someone" }).success,
+      false,
+    );
+  });
+
+  test("SeoFields rejects canonicalOverride outside the code-owned allowlist", () => {
+    assert.equal(
+      SeoFieldsSchema.safeParse({ ...seo, canonicalOverride: "https://example.com/impostor" })
+        .success,
+      false,
+    );
+    assert.equal(SeoFieldsSchema.safeParse(seo).success, true);
+  });
+
+  test("TopicFields requires a known pillar", () => {
+    assert.equal(TopicFieldsSchema.safeParse({ pillar: "unknown" }).success, false);
+    assert.equal(TopicFieldsSchema.safeParse({ pillar: "agent-reliability" }).success, true);
   });
 });
