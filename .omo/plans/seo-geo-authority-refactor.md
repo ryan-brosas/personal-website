@@ -155,7 +155,7 @@ Your next move: approve to start work (`$start-work`), or ask for a high-accurac
   QA scenarios: happy — metadata unit test asserts `buildPageMetadata` for a case study returns `ogType:'article'`; failure — passing an unknown prop to `SeoHead` is a type error (`npm run check`). Evidence `.omo/evidence/task-9-seo-geo-authority-refactor.txt`
   Commit: Y | feat(seo): single buildPageMetadata + SeoHead contract
 
-- [ ] 10. JSON-LD entity graph + JsonLd/Breadcrumbs components
+- [x] 10. JSON-LD entity graph + JsonLd/Breadcrumbs components
   What to do / Must NOT do: Create `src/lib/structured-data.ts` building a JSON-LD `@graph` (`Person`#person / `WebSite`#website / `WebPage` / `Service` / `Article` / `BreadcrumbList`) with stable `@id` anchors keyed off the origin; `src/components/JsonLd.astro` renders it; `src/components/Breadcrumbs.astro` derives from `route-registry.breadcrumbsFor`. Structured data must describe ONLY visible content (INV-03). TDD: unit tests set `site='https://ryanjosebrosas.dev'` explicitly (NOT env fallback) and assert no `example.com` in `@id`. Must NOT emit graph nodes for hidden/noindex pages; must NOT hard-code breadcrumb trails.
   Parallelization: Wave 3 | Blocked by: 2,7,9 | Blocks: 11,14,15,16
   References: design doc §13 (JSON-LD graph, stable @id), Metis gap #13 (example.com in @id), INV-03, `src/lib/route-registry.ts` (breadcrumbsFor).
@@ -171,7 +171,7 @@ Your next move: approve to start work (`$start-work`), or ask for a high-accurac
   QA scenarios: happy — build a probe page with `CommercialLayout`, shell test asserts exactly one `<main>` + skip link; failure — a second inline `<script>` in a layout fails the one-inline-script test. Evidence `.omo/evidence/task-11-seo-geo-authority-refactor.txt`
   Commit: Y | feat(layouts): commercial + case-study layouts
 
-- [ ] 12. Shared authority components
+- [x] 12. Shared authority components
   What to do / Must NOT do: Create `src/components/{Byline,EvidenceNote,FreshnessNotice,RelatedContent}.astro` consuming `evidence.ts`/`freshness.ts`/`relationships.ts`. `RelatedContent` receives `[]` when targets are not public (per todo 8). `FreshnessNotice` shows dates only for substantive changes. `EvidenceNote` renders only approved claim refs. Must NOT render evidence for unapproved/blocked claims; must NOT show freshness for trivial edits.
   Parallelization: Wave 3 | Blocked by: 8,10 | Blocks: 14 | Can parallelize with: 11
   References: design doc §12/§13 (Byline/EvidenceNote/FreshnessNotice/RelatedContent), `src/lib/evidence.ts`/`freshness.ts`/`relationships.ts` (todo 8), INV-09/11.

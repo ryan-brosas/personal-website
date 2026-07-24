@@ -1,0 +1,12 @@
+---
+// T12 — author byline. Renders the ONE author entity (PERSON_ENTITY, id
+// "ryan-brosas") via the pure authority seam — never invents a per-page author.
+// `sameAs` is empty (D-15 deferred), so no external profile link is emitted.
+// Server-rendered only; works without JS.
+import { bylinePerson } from "./authority.ts";
+
+const person = bylinePerson();
+---
+<p class="byline">
+  By <span class="byline__author">{person.name}</span> — {person.role}
+</p>

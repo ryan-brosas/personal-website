@@ -1,0 +1,25 @@
+---
+// T12 — freshness notice. Surfaces an "Updated" date ONLY when the latest change
+// was substantive (via the authority seam → nextModifiedAt, INV-13). A trivial edit
+// (formatting / frontmatter-only / typo-fix) manufactures no freshness and renders
+// NOTHING. `now` is INJECTED (never Date.now() in view logic). Works without JS.
+import { freshnessDate } from "./authority.ts";
+import type { ChangeKind } from "../lib/freshness.ts";
+import type { PublicationDates } from "../lib/content-schemas.ts";
+
+interface Props {
+  dates: PublicationDates;
+  change: ChangeKind;
+  now: string;
+}
+
+const { dates, change, now } = Astro.props;
+const shown = freshnessDate(dates, change, now);
+---
+{
+  shown !== undefined && (
+    <p class="freshness-notice">
+      Updated <time datetime={shown}>{shown}</time>
+    </p>
+  )
+}

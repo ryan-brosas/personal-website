@@ -212,3 +212,67 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
   site !== "https://example.com"`) and implemented as a pure option inside
   `verifyBuild` (testable, no env read in the kernel). Verified: EXIT=1 on an
   injected `example.com` canonical under `SITE_ORIGIN=prod`.
+
+## [2026-07-25] Task: T10 — JSON-LD entity graph + JsonLd/Breadcrumbs components
+
+- **Inherited a STALLED, inconsistent draft (untracked).** `src/lib/structured-data.ts`
+  + `tests/structured-data.test.mjs` + `tests/breadcrumbs.test.mjs` existed but were
+  three MUTUALLY-INCONSISTENT shapes: lib exported `buildStructuredData(routeId)->ARRAY`
+  reading env, its test asserted a `#page`/`searchEntity`/`knowsAbout` shape the lib
+  never produced (self-RED), and breadcrumbs.test asserted `breadcrumbsFor("home").length===1`
+  while the committed registry SUPPRESSES home (returns `[]`). Rewrote all three to the
+  T10 spec + registry reality. Lesson: verify on-disk state before assuming "no code yet".
+- **Task API is `buildEntityGraph({ site, page })` -> `{ "@context":"https://schema.org", "@graph":[...] }`,
+  NOT the array shape.** `site` (origin) is passed EXPLICITLY and is the ONLY origin source —
+  dropped env/`declare const process`/`originFromEnv` entirely from the lib (the layout passes
+  `Astro.site` at wire-time in T11+). Anchors: Person `${origin}/#person`, WebSite `${origin}/#website`,
+  WebPage `${canonical}#webpage` (canonical via `ROUTE_REGISTRY.canonicalFor(id,undefined,origin)`).
+- **`toOrigin(site)` strips a trailing slash** (`/\/+$/`) so `${origin}/#person` never doubles the
+  slash — makes the builder robust whether the caller passes `.dev` or `.dev/`.
+- **INV-03 gate = `visibility === "public"` ONLY.** Person + WebSite (global site identity) are
+  ALWAYS emitted; WebPage/Service/Article/BreadcrumbList are emitted ONLY for `public` pages —
+  `noindex` AND `draft` contribute no page node. Test proves a noindex page keeps Person/WebSite
+  but drops WebPage + BreadcrumbList.
+- **shell.test.mjs inline-script contract does NOT collide with JSON-LD.** `assertOneNavScript`
+  (lines 54-62) filters out `type="application/ld+json"` and `importmap` before counting
+  "behavioral" scripts. `JsonLd.astro` uses `<script is:inline type="application/ld+json" set:html=...>`
+  — a DATA block, excluded by design. Added `is:inline` to silence the astro(4000) hint AND
+  guarantee it is never bundled into `_astro/*.js` (which the verifier rejects).
+- **Breadcrumb labels are derived, not stored.** The registry keeps no crumb copy, so both
+  `Breadcrumbs.astro` and the lib title-case the route id (`"case-studies" -> "Case Studies"`).
+  The trail itself comes straight from `breadcrumbsFor` (never hard-coded) so IA changes flow through.
+- **`rm` is DENY-listed** in this repo's bash permissions — could not delete the broken stray
+  `tests/breadcrumbs.test.mjs`; rewrote it in place to correct, registry-true assertions instead
+  (kept as valid T10 breadcrumb-data-contract coverage).
+- **Full gate green:** check 0 errors/0 warnings (513 files) · test 195/195 (was 182, +13) ·
+  build 5 pages · verify ok. Components intentionally NOT wired into pages (T11/T14/T15).
+
+## [2026-07-25] Task: T12 — shared authority components (Byline/Evidence/Freshness/Related)
+
+- **`.astro` isn't Node-importable, so the TDD seam is a `.ts` file.** `node --test`
+  can't import `.astro`. Extracted each component's ONE decision into
+  `src/components/authority.ts` (`bylinePerson`/`evidenceSources`/`freshnessDate`/
+  `relatedRefs`) — pure functions that DELEGATE to the T7/T8 kernels
+  (`PERSON_ENTITY`/`resolvePublicClaim`/`nextModifiedAt`/`getRelatedList`) and
+  reimplement nothing. The `.astro` files import the seam and only render. This gives
+  a real RED (seam missing → `ERR_MODULE_NOT_FOUND`) AND tests the component contract,
+  not just the kernel. 11/11 green.
+- **Render-nothing is the guard pattern, not a branch in the seam.** Components use
+  `{ sources.length > 0 && (...) }` / `{ shown !== undefined && (...) }` (same as the
+  proven `Breadcrumbs.astro`). So a blocked/retired/internal-only claim → `[]` → empty,
+  and a trivial edit → `undefined` → empty, with zero conditional logic in the `.astro`.
+- **`freshnessDate` = `nextModifiedAt(...).changed ? .modifiedAt : undefined`.** INV-13:
+  a trivial edit keeps the OLD `modifiedAt`, but the NOTICE must still show nothing — so
+  gate on `.changed`, not on `.modifiedAt` being defined. Otherwise a prior substantive
+  date would leak through a later typo-fix render.
+- **`rel` is NOT a valid `<span>` attribute** — astro's `HTMLAttributes` rejects it
+  (`ts(2322)`). `rel` belongs on `<a>`/`<link>`. Used `class="byline__author"` instead.
+- **`resolvePublicClaim` (non-throwing) is the right resolver for a public component**,
+  never `assertClaimResolvable` (build gate, throws). Internal-only-backed public claim
+  → `{ok:false,"internal-only-source"}` → `[]`, so a public page never leaks it.
+- **Suite-red was 100% T11's, confirmed in ISOLATION (not the build race).**
+  `node --test tests/shell.test.mjs` alone → 24 pass / 2 fail, both T11's
+  Commercial/CaseStudy layout probes (its untracked layouts + its shell.test.mjs edits).
+  My components are unwired, so they can't touch those probes. Committed ONLY my 6 files.
+- **Full gate for my slice:** check 0 errors (519 files) · components.test 11/11 ·
+  build 5 pages · verify ok.

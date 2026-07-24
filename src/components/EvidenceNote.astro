@@ -1,0 +1,35 @@
+---
+// T12 — claim evidence note. Renders ONLY the public-safe backing sources of an
+// approved claim (via the authority seam → resolvePublicClaim). A blocked, retired,
+// unresolvable, or internal-only-backed claim resolves to [] and renders NOTHING —
+// a public page never surfaces a non-approved or leaky claim (INV-09, design §12.5).
+// Server-rendered only; works without JS.
+import { evidenceSources } from "./authority.ts";
+import type { ClaimRecord, SourceRegistry } from "../lib/evidence.ts";
+
+interface Props {
+  claim: ClaimRecord;
+  registry: SourceRegistry;
+}
+
+const { claim, registry } = Astro.props;
+const sources = evidenceSources(claim, registry);
+---
+{
+  sources.length > 0 && (
+    <aside class="evidence-note">
+      <p class="evidence-note__claim">{claim.statement}</p>
+      <ul class="evidence-note__sources">
+        {sources.map((source) => (
+          <li>
+            {source.publicUrl ? (
+              <a href={source.publicUrl}>{source.title}</a>
+            ) : (
+              <span>{source.title}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </aside>
+  )
+}
