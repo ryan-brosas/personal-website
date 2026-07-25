@@ -1338,3 +1338,80 @@ describe("T11 authority layouts (Commercial + CaseStudy)", () => {
     assertLayoutShell("/probe-casestudy/", "Article");
   });
 });
+
+// ── T15 commercial pages (services/about/contact) — structured-data contract ──
+// The three registry singleton pages render through CommercialLayout so every one
+// carries an entity graph: the services page is a Service (kind:"service"), while
+// about/contact are plain WebPages (kind:"webpage", no Service node — a Service on
+// an about/contact page would misdescribe the visible content). Contact keeps its
+// settings-driven scheduler CTA. A removed/unregistered route (/projects/) must
+// produce no build output — the narrowed [page].astro iterates registry IDs only.
+const jsonLdGraphsOf = (html) => {
+  const stripped = html.replace(/<!--[\s\S]*?-->/g, "");
+  return [
+    ...stripped.matchAll(
+      /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,
+    ),
+  ].map((m) => JSON.parse(m[1]));
+};
+
+describe("T15 commercial pages (services/about/contact) structured data", () => {
+  let distDir;
+  let cleanup;
+
+  before(() => {
+    const built = buildShell();
+    distDir = built.distDir;
+    cleanup = built.cleanup;
+  });
+
+  after(() => {
+    if (cleanup) cleanup();
+  });
+
+  const graphTypesFor = (route) => {
+    const html = readHtml(distDir, route);
+    assert.ok(html, `dist${route}index.html must exist`);
+    const graphs = jsonLdGraphsOf(html);
+    assert.equal(graphs.length, 1, `exactly one JSON-LD block on ${route}`);
+    const graph = graphs[0];
+    assert.equal(graph["@context"], "https://schema.org", `JSON-LD @context on ${route}`);
+    return graph["@graph"].map((node) => node["@type"]);
+  };
+
+  test("/services/ emits a Service + WebPage entity graph", () => {
+    const types = graphTypesFor("/services/");
+    assert.ok(types.includes("WebPage"), "services graph has a WebPage node");
+    assert.ok(types.includes("Service"), "services graph has a Service node");
+  });
+
+  test("/about/ emits a WebPage graph with no Service node", () => {
+    const types = graphTypesFor("/about/");
+    assert.ok(types.includes("WebPage"), "about graph has a WebPage node");
+    assert.ok(!types.includes("Service"), "about graph has no Service node");
+  });
+
+  test("/contact/ emits a WebPage graph (no Service) and the settings scheduler CTA", () => {
+    const types = graphTypesFor("/contact/");
+    assert.ok(types.includes("WebPage"), "contact graph has a WebPage node");
+    assert.ok(!types.includes("Service"), "contact graph has no Service node");
+
+    const html = readHtml(distDir, "/contact/");
+    const schedulerMatch = html.match(
+      /<a[^>]*href="https:\/\/calendly\.com\/ryanjoserbrosas\/30min"[^>]*>([\s\S]*?)<\/a>/i,
+    );
+    assert.ok(
+      schedulerMatch,
+      "contact renders the locked HTTPS Calendly scheduler CTA from settings",
+    );
+    assert.equal(
+      schedulerMatch[1].replace(/<[^>]+>/g, "").trim(),
+      "Schedule a conversation",
+      "scheduler CTA has the exact label",
+    );
+  });
+
+  test("a removed/unregistered route (/projects/) produces no built page", () => {
+    assert.equal(readHtml(distDir, "/projects/"), undefined, "/projects/ must not be built");
+  });
+});

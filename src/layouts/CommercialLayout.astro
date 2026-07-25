@@ -10,13 +10,17 @@
 //      contract and never bundles into _astro/*.js (JsonLd uses is:inline);
 //   2. a registry-derived breadcrumb trail (no client script).
 // The graph is keyed off Astro.site (the real origin from astro.config) so the
-// canonical + @id anchors stay deterministic. kind:"service" marks the extra
-// Service node, which — like the WebPage/BreadcrumbList nodes — is emitted only
-// for a public page (INV-03, enforced inside buildEntityGraph).
+// canonical + @id anchors stay deterministic. `kind` selects the extra page node:
+// it defaults to "service" (the commercial services page), but a caller may pass
+// "webpage" for a commercial-shell page that is NOT a service (about/contact) so
+// no Service node is emitted for content that is not a service. Like the WebPage/
+// BreadcrumbList nodes, the Service node is emitted only for a public page
+// (INV-03, enforced inside buildEntityGraph).
 import BaseLayout from "./BaseLayout.astro";
 import JsonLd from "../components/JsonLd.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildEntityGraph } from "../lib/structured-data.ts";
+import type { EntityGraphPageKind } from "../lib/structured-data.ts";
 import type { Visibility } from "../lib/publishing.ts";
 
 interface Props {
@@ -25,9 +29,10 @@ interface Props {
   description: string;
   visibility: Visibility;
   noindex?: boolean;
+  kind?: EntityGraphPageKind;
 }
 
-const { routeId, title, description, visibility, noindex } = Astro.props;
+const { routeId, title, description, visibility, noindex, kind = "service" } = Astro.props;
 
 // Astro.site is the real origin from astro.config (SITE_ORIGIN ?? placeholder);
 // buildEntityGraph normalises the trailing slash. Fall back to the placeholder
@@ -35,7 +40,7 @@ const { routeId, title, description, visibility, noindex } = Astro.props;
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({
   site,
-  page: { routeId, title, description, visibility, kind: "service" },
+  page: { routeId, title, description, visibility, kind },
 });
 ---
 <BaseLayout routeId={routeId} title={title} description={description} noindex={noindex}>

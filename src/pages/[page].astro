@@ -1,22 +1,28 @@
 ---
-// M2 (Plan 03, Child 3) — visibility-constrained dynamic content route.
-// Handles configured PAGES (about/services/contact) only. Root / and /404.html
-// stay code-owned fixed files. getStaticPaths loads every page entry, asserts
-// every one rendered (catches glob-swallowed markdown-safety errors), resolves
-// visibilities through the single pipeline, joins through PAGES, validates a
-// one-segment path, and returns one route per public/noindex record. Draft and
-// unconfigured records produce no route.
+// W4·T15 (SEO/GEO authority refactor) — the registry singleton page route. Serves
+// the three commercial-shell singletons (about/services/contact) through
+// CommercialLayout so every one carries an entity graph: services is a Service
+// (kind:"service"), about/contact are plain WebPages (kind:"webpage" — a Service
+// node would misdescribe a non-service page). getStaticPaths is NARROWED to the
+// registry's primary-nav singletons: it iterates ROUTE_REGISTRY, joins each id to
+// its `pages` content entry, and emits a route ONLY when a routable record exists.
+// A content file whose id is not a registered singleton (or a removed/orphan
+// route like /projects/) therefore produces NO build output — route truth stays
+// in the ONE registry (INV-06), never in the content glob.
 //
-// Contact (Child 5) is the only page that surfaces settings-driven actions. The
-// scheduler link + email fallback come from settings.data.contact (single source
-// of truth), rendered by the template after <Content/> — never authored in
-// markdown — so the body copy and the action destinations cannot drift.
+// The noindex meta is driven by the CONTENT record's visibility (not the registry
+// default) so demoting a page to noindex in frontmatter flips its robots policy
+// without a registry edit. Contact is the only page that surfaces settings-driven
+// actions: the scheduler link + email fallback come from settings.data.contact
+// (single source of truth), rendered by the template after <Content/> — never
+// authored in markdown — so body copy and action destinations cannot drift.
 import type { GetStaticPaths } from "astro";
 import { getCollection, getEntry, render } from "astro:content";
-import BaseLayout from "../layouts/BaseLayout.astro";
-import { PAGES } from "../config/site.ts";
-import { resolveRoutes } from "../lib/site-routes.ts";
+import CommercialLayout from "../layouts/CommercialLayout.astro";
+import { ROUTE_REGISTRY } from "../config/routes.ts";
+import { isRoutable } from "../lib/publishing.ts";
 import { assertMarkdownRendered } from "../lib/markdown-safety.ts";
+import type { EntityGraphPageKind } from "../lib/structured-data.ts";
 
 export const getStaticPaths = (async () => {
   const entries = await getCollection("pages");
@@ -26,32 +32,30 @@ export const getStaticPaths = (async () => {
     assertMarkdownRendered(entry);
   }
   const entriesById = new Map(entries.map((e) => [e.id, e]));
-  const visibilities = Object.fromEntries(
-    entries.map((e) => [e.id, e.data.visibility]),
-  );
-  const routes = resolveRoutes(visibilities);
-  return routes.map((route) => {
-    const pageConfig = PAGES.find((p) => p.path === route.path);
-    if (!pageConfig) {
-      throw new Error(`No PAGES config for resolved route ${route.path}`);
-    }
-    const entry = entriesById.get(pageConfig.id);
-    if (!entry) {
-      throw new Error(`No content entry for page id ${pageConfig.id}`);
-    }
-    const match = route.path.match(/^\/([^/?#]+)\/$/);
-    if (!match) {
-      throw new Error(`Route ${route.path} is not a single-segment HTML path`);
-    }
-    return {
-      params: { page: match[1] },
-      props: { entry, route },
-    };
-  });
+
+  // Registry-ID-only narrowing: only primary-nav singleton routes (about,
+  // services, contact) are content-backed pages. Each must have a `pages` entry
+  // AND be routable (draft excluded). Orphan/removed routes cannot render.
+  return ROUTE_REGISTRY.all()
+    .filter((def) => def.kind === "singleton" && def.navPlacement === "primary")
+    .flatMap((def) => {
+      const entry = entriesById.get(def.id);
+      if (!entry || !isRoutable(entry.data.visibility)) return [];
+      const match = def.path.match(/^\/([^/?#]+)\/$/);
+      if (!match) {
+        throw new Error(`Route ${def.path} for "${def.id}" is not a single-segment HTML path`);
+      }
+      return [{ params: { page: match[1] }, props: { entry } }];
+    });
 }) satisfies GetStaticPaths;
 
-const { entry, route } = Astro.props;
+const { entry } = Astro.props;
 const { Content } = await render(entry);
+
+// The services page is a Service; about/contact are plain WebPages (no Service
+// node on non-service content). buildEntityGraph gates the page node on public
+// visibility (INV-03) inside CommercialLayout.
+const kind: EntityGraphPageKind = entry.id === "services" ? "service" : "webpage";
 
 // Contact surfaces settings-driven actions; other pages need no settings.
 // Throw at build time if the contact contract is missing so links are never
@@ -63,11 +67,13 @@ if (entry.id === "contact" && !contact) {
 }
 ---
 
-<BaseLayout
+<CommercialLayout
   routeId={entry.id}
   title={entry.data.title}
   description={entry.data.description}
-  noindex={route.visibility === "noindex"}
+  visibility={entry.data.visibility}
+  noindex={entry.data.visibility === "noindex"}
+  kind={kind}
 >
   <h1>{entry.data.title}</h1>
   <Content />
@@ -83,4 +89,4 @@ if (entry.id === "contact" && !contact) {
       </p>
     </>
   )}
-</BaseLayout>
+</CommercialLayout>
