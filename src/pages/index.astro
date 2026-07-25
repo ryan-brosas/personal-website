@@ -12,6 +12,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import JsonLd from "../components/JsonLd.astro";
 import { buildEntityGraph } from "../lib/structured-data.ts";
+import { homepageClaims } from "../lib/home-proof.ts";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 
 const routeId = "home";
@@ -26,6 +27,13 @@ const visibility = home?.visibility ?? "noindex";
 
 // Registry-derived link to the self-project case study (never a hard-coded path).
 const caseStudyHref = ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: "this-site" });
+
+// T16 — the ONLY factual positioning the homepage asserts. Sourced from the
+// single validated claim set (SELF_PROJECT_CLAIMS) via `homepageClaims`, filtered
+// to claims whose evidence resolves public-safe. Rendered claims therefore ==
+// validated claims by construction: the copy can never assert an unbacked
+// positioning, and every statement shown is evidence-gated (INV-09, T16).
+const claims = homepageClaims();
 
 // Astro.site is the real origin from astro.config; buildEntityGraph normalises
 // the trailing slash. Fall back to the placeholder so a mis-set config never
@@ -46,4 +54,13 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
     Every claim here is evidence-backed. See how this site itself is built:
     <a href={caseStudyHref}>Building This Website</a>.
   </p>
+  {
+    claims.length > 0 && (
+      <ul class="homepage-claims">
+        {claims.map((claim) => (
+          <li>{claim.statement}</li>
+        ))}
+      </ul>
+    )
+  }
 </BaseLayout>

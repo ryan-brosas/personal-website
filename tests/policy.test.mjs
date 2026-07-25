@@ -242,6 +242,27 @@ describe("T7 person entity + source/claim registry", () => {
       assert.equal(resolveClaimSources(claim, sourcesRegistry).ok, true);
     }
   });
+
+  test("INV-09 scope: the self-project asserts only observable facts (no metric/testimonial)", () => {
+    // The launch positioning is self-referential and directly observable; it must
+    // NOT smuggle a client metric or testimonial claim, which would demand
+    // permissioned third-party evidence the site does not carry.
+    assert.ok(SELF_PROJECT_CLAIMS.length > 0, "there is at least one seeded claim");
+    for (const claim of SELF_PROJECT_CLAIMS) {
+      assert.notEqual(claim.kind, "metric", `claim ${claim.id} must not be a metric`);
+      assert.notEqual(claim.kind, "testimonial", `claim ${claim.id} must not be a testimonial`);
+      assert.equal(claim.kind, "fact", `claim ${claim.id} is an observable fact`);
+      // A fact-only self-project cites its own artifacts — every backing source
+      // is public-safe (never internal-only / redacted leakage on a public page).
+      for (const sourceId of claim.sourceIds) {
+        assert.equal(
+          sourcesRegistry[sourceId].permission,
+          "public",
+          `source ${sourceId} backing a public self-project claim is public-safe`,
+        );
+      }
+    }
+  });
 });
 
 describe("M2 content schemas (A1)", () => {
@@ -1591,10 +1612,41 @@ describe("T6 content data models", () => {
     kind: "case-study",
     slug: "agent-reliability-audit",
     pillar: "ai-workflow-systems",
+    // T6/INV-09: a public case study must cite verified evidence.
+    evidence: { kind: "verified", sourceId: "source-self-project-build-001" },
   };
 
   test("CaseStudyRecord accepts a valid public record", () => {
     const r = CaseStudyRecordSchema.safeParse(validCaseStudy);
+    assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
+  });
+
+  test("CaseStudyRecord REJECTS a public record with NO evidence (T6/INV-09)", () => {
+    const { evidence, ...withoutEvidence } = validCaseStudy;
+    const r = CaseStudyRecordSchema.safeParse(withoutEvidence);
+    assert.equal(r.success, false, "a public case study without evidence must fail");
+    assert.ok(
+      r.success ? false : r.error.issues.some((i) => i.path.includes("evidence")),
+      "the failure is attributed to the missing evidence",
+    );
+  });
+
+  test("CaseStudyRecord REJECTS a public record whose evidence is not kind:'verified'", () => {
+    const r = CaseStudyRecordSchema.safeParse({
+      ...validCaseStudy,
+      evidence: { kind: "proposed", tradeOff: "pending source approval" },
+    });
+    assert.equal(r.success, false, "public evidence must be kind:'verified'");
+  });
+
+  test("CaseStudyRecord ACCEPTS a public record WITH verified evidence", () => {
+    const r = CaseStudyRecordSchema.safeParse(validCaseStudy);
+    assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
+  });
+
+  test("CaseStudyRecord ACCEPTS a DRAFT record without evidence (fail-closed exemption)", () => {
+    const { evidence, ...withoutEvidence } = validCaseStudy;
+    const r = CaseStudyRecordSchema.safeParse({ ...withoutEvidence, visibility: "draft" });
     assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
   });
 

@@ -95,6 +95,27 @@ describe("validateRegistry invariants (fail-fast)", () => {
     );
   });
 
+  test("T2: throws when a primary-nav route targets a non-public (draft) route", () => {
+    // nav-without-public — a nav entry pointing at a draft route (which emits no
+    // route) is a dangling link and must fail fast.
+    assert.throws(
+      () =>
+        validateRegistry([
+          singleton({ navPlacement: "primary", navLabelKey: "about", visibility: "draft" }),
+        ]),
+      /must target a public-capable route/,
+    );
+  });
+
+  test("T2: throws when a route references a non-implemented gate", () => {
+    // gate-without-impl — a reserved-but-unbuilt gate would silently never
+    // promote; the registry rejects it at construction time.
+    assert.throws(
+      () => validateRegistry([singleton({ gate: "llms-experiment" })]),
+      /non-implemented gate "llms-experiment"/,
+    );
+  });
+
   test("defineRoutes validates at construction (throws on bad input)", () => {
     assert.throws(() => defineRoutes([singleton(), singleton()]), /duplicate route id/);
   });

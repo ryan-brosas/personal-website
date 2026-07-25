@@ -11,6 +11,7 @@
 //   INV-06 ALL route truth from ONE registry
 //   INV-07 a hub declares a min-child gate
 import { canonicalHref, isHtmlRoute, isFileEndpoint } from "./routes.ts";
+import { isRoutable } from "./publishing.ts";
 import type { Visibility } from "./publishing.ts";
 
 // Minimal ambient declaration so TypeScript accepts `process.env` without
@@ -82,6 +83,17 @@ export interface RouteRegistry {
   expectedBuildManifest(): string[];
 }
 
+// The gates actually WIRED in the first release. A route may only reference a
+// gate whose promotion logic exists; declaring a not-yet-implemented gate (e.g.
+// insights-hub / research-hub / privacy-required / llms-experiment — reserved in
+// RouteGateId for later slices) is a build-time error, not a silent no-op (INV-15
+// keeps experimental surfaces out until their gate ships).
+const IMPLEMENTED_GATES: ReadonlySet<RouteGateId> = new Set([
+  "always",
+  "home-proof",
+  "case-studies-hub",
+]);
+
 const DYNAMIC_SEGMENT = /\[([^\]]+)\]/g;
 
 // Substitute [param] segments from `params`. Static paths pass through
@@ -144,6 +156,23 @@ export const validateRegistry = (defs: readonly RouteDefinition[]): void => {
 
     if (def.navPlacement === "primary" && def.navLabelKey === undefined) {
       throw new Error(`validateRegistry: primary-nav route "${def.id}" must declare a navLabelKey`);
+    }
+
+    // A primary-nav entry advertises a route in the public surface; it must point
+    // at a public-capable (routable: public|noindex) route, never a `draft` one
+    // that emits no route at all (nav-without-public — a dangling nav link).
+    if (def.navPlacement === "primary" && !isRoutable(def.visibility)) {
+      throw new Error(
+        `validateRegistry: primary-nav route "${def.id}" must target a public-capable route (visibility "${def.visibility}" emits no route)`,
+      );
+    }
+
+    // A route may only reference a gate whose promotion logic is implemented; a
+    // reserved-but-unbuilt gate would silently never promote (gate-without-impl).
+    if (!IMPLEMENTED_GATES.has(def.gate)) {
+      throw new Error(
+        `validateRegistry: route "${def.id}" references non-implemented gate "${def.gate}"`,
+      );
     }
   }
 };

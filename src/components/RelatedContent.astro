@@ -5,6 +5,7 @@
 // still builds and a public page never links a non-public target (INV-11). An empty
 // result renders NOTHING. Server-rendered only; works without JS.
 import { relatedRefs } from "./authority.ts";
+import { ROUTE_REGISTRY } from "../config/routes.ts";
 import type { RelationshipRef } from "../lib/relationships.ts";
 import type { CollectionsMap } from "../lib/publishing.ts";
 
@@ -16,21 +17,38 @@ interface Props {
 const { refs, collections } = Astro.props;
 const related = relatedRefs(refs, collections);
 
+// Map a content collection to its registry collection-route id (INV-06 — never
+// hard-code a route path). Only case-studies is linkable today; extend this map
+// as new per-record collection routes land in ROUTE_REGISTRY.
+const COLLECTION_ROUTE_ID: Record<string, string> = {
+  "case-studies": "case-studies-slug",
+};
+
 // Human label from a collection id (no crumb copy is stored): "case-studies" →
-// "Case Studies". Trailing-slash HTML route per the canonical convention.
+// "Case Studies".
 const labelFor = (id: string): string =>
   id
     .split("-")
     .map((part) => (part.length === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
     .join(" ");
+
+// Resolve each public ref to its registry-derived trailing-slash canonical path.
+// A ref whose collection has no registered route is dropped (flatMap → []), so a
+// registry gap never emits a broken hard-coded link.
+const items = related.flatMap((ref) => {
+  const routeId = COLLECTION_ROUTE_ID[ref.collection];
+  return routeId === undefined
+    ? []
+    : [{ href: ROUTE_REGISTRY.pathFor(routeId, { slug: ref.id }), label: labelFor(ref.id) }];
+});
 ---
 {
-  related.length > 0 && (
+  items.length > 0 && (
     <nav class="related-content" aria-label="Related">
       <ul>
-        {related.map((ref) => (
+        {items.map((item) => (
           <li>
-            <a href={`/${ref.collection}/${ref.id}/`}>{labelFor(ref.id)}</a>
+            <a href={item.href}>{item.label}</a>
           </li>
         ))}
       </ul>

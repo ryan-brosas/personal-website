@@ -175,10 +175,34 @@ export type ServiceRecord = z.infer<typeof ServiceRecordSchema>;
 // and slug. Narrative fields (challenge, decisions, verification, …) are deferred to
 // the case-study child. TODO(handle): add challenge/decisions/verification/claimIds
 // from §12.8 when the case-study page ships. on-or-after 2026-12-01
+// A PUBLIC case study must cite verified evidence (T6, design §12.8 + INV-09):
+// a public page never ships an evidence-free authority claim. `evidence` is a
+// SINGLE object (publishing.ts EvidenceSchema discriminated union), so the gate
+// requires it to be present AND `kind:"verified"` when visibility is public.
+// draft/noindex records are exempt (no route / excluded from discovery), keeping
+// the fail-closed draft default frictionless for work-in-progress.
 export const CaseStudyRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchema)
   .merge(TopicFieldsSchema)
   .extend({
     kind: z.literal("case-study"),
     slug: z.string().min(1),
+  })
+  .superRefine((record, ctx) => {
+    if (record.visibility !== "public") return;
+    if (record.evidence === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["evidence"],
+        message: "a public case study must cite verified evidence",
+      });
+      return;
+    }
+    if (record.evidence.kind !== "verified") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["evidence"],
+        message: "a public case study's evidence must be kind:'verified'",
+      });
+    }
   });
 export type CaseStudyRecord = z.infer<typeof CaseStudyRecordSchema>;

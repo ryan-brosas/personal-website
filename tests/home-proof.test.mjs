@@ -8,8 +8,11 @@
 // verifier + the shell suite's draft-flip QA scenario cover.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { homepageProofGate, resolveHomeVisibility } from "../src/lib/home-proof.ts";
+import { homepageProofGate, resolveHomeVisibility, homepageClaims } from "../src/lib/home-proof.ts";
 import { ROOT_ROUTE_POLICY } from "../src/config/routes.ts";
+import { SELF_PROJECT_CLAIMS } from "../src/config/entities.ts";
+import { resolvePublicClaim } from "../src/lib/evidence.ts";
+import sourcesJson from "../src/data/sources.json" with { type: "json" };
 
 // The one approved public-safe source (mirror of src/data/sources.json).
 const SOURCES = {
@@ -148,5 +151,51 @@ describe("resolveHomeVisibility + ROOT_ROUTE_POLICY — real repo wiring", () =>
 
   test("ROOT_ROUTE_POLICY.visibility reflects the gate result (public)", () => {
     assert.equal(ROOT_ROUTE_POLICY.visibility, "public");
+  });
+});
+
+describe("T16 — homepage rendered claims are reconciled with SELF_PROJECT_CLAIMS", () => {
+  const registry = sourcesJson;
+  const claimIds = new Set(SELF_PROJECT_CLAIMS.map((c) => c.id));
+
+  test("homepageClaims() renders at least one positioning claim", () => {
+    assert.ok(homepageClaims(registry).length > 0, "the promoted homepage stands on ≥1 claim");
+  });
+
+  test("every homepage-rendered claim is PRESENT in SELF_PROJECT_CLAIMS", () => {
+    for (const claim of homepageClaims(registry)) {
+      assert.ok(
+        claimIds.has(claim.id),
+        `rendered claim ${claim.id} must be a validated SELF_PROJECT_CLAIMS entry`,
+      );
+    }
+  });
+
+  test("every homepage-rendered claim RESOLVES to a public-safe source (evidence-backed)", () => {
+    for (const claim of homepageClaims(registry)) {
+      assert.equal(
+        resolvePublicClaim(claim, registry).ok,
+        true,
+        `rendered claim ${claim.id} must resolve against sources.json`,
+      );
+    }
+  });
+
+  test("rendered set == full validated set when every seeded claim resolves (no unbacked drift)", () => {
+    // With the real public-safe registry, every SELF_PROJECT_CLAIMS entry resolves,
+    // so the homepage renders the WHOLE validated set — rendered claims and
+    // validated claims are the same set, the T16 reconciliation.
+    assert.deepEqual(
+      homepageClaims(registry)
+        .map((c) => c.id)
+        .sort(),
+      SELF_PROJECT_CLAIMS.map((c) => c.id).sort(),
+    );
+  });
+
+  test("an unresolvable claim is DROPPED from the rendered set (fail-closed copy)", () => {
+    // With an EMPTY registry no claim resolves, so nothing renders — the homepage
+    // never asserts a positioning it cannot back.
+    assert.deepEqual(homepageClaims({}), []);
   });
 });

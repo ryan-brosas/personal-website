@@ -1,10 +1,16 @@
 import { defineConfig } from "astro/config";
 import markdownSafety from "./src/lib/markdown-safety.ts";
+import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 
-// W1·T3: SITE_ORIGIN is injected at build time via env var. In dev/test the
-// placeholder "https://example.com" is used silently. In production builds,
-// the placeholder is rejected — set SITE_ORIGIN to the real origin before
-// running `npm run build` in production.
+// W1·T3 / INV-12: SITE_ORIGIN is injected at build time via env var. Resolution +
+// the production guard live in the pure `resolveSiteOrigin` (src/lib/site-origin.ts,
+// unit-tested in tests/site-origin.test.mjs):
+//   • PRODUCTION_BUILD=true → SITE_ORIGIN MUST be a real origin (throws on absent
+//     OR placeholder) — Vite forces NODE_ENV=production in every build, so a
+//     dedicated PRODUCTION_BUILD signal is the only reliable "real release" marker.
+//   • dev/test/preview/`astro check` → absent SITE_ORIGIN silently falls back to the
+//     placeholder, but an EXPLICIT placeholder value still throws (operator copy
+//     -paste guard).
 //
 // M2 C1: markdown body safety guard. Astro 5.18.2 hardcodes
 // allowDangerousHtml:true and runs custom rehypePlugins before rehypeRaw, so
@@ -12,20 +18,7 @@ import markdownSafety from "./src/lib/markdown-safety.ts";
 // attributes, and javascript:/data: protocols. allowDangerousHtml stays
 // default true (do NOT set false — it silently strips instead of failing).
 
-const PLACEHOLDER_ORIGIN = "https://example.com";
-const siteOrigin = process.env.SITE_ORIGIN ?? PLACEHOLDER_ORIGIN;
-
-// Guard: throw if SITE_ORIGIN is explicitly set to the placeholder value.
-// This catches the operator mistake of copying the placeholder into CI/CD env
-// vars. Omitting SITE_ORIGIN entirely is allowed (falls back to placeholder
-// silently) so that dev, test, and `astro check` all work without configuration.
-// Vite sets NODE_ENV=production internally before evaluating this file, so
-// NODE_ENV is not a reliable signal for "real production build" here.
-if (process.env.SITE_ORIGIN === PLACEHOLDER_ORIGIN) {
-  throw new Error(
-    "SITE_ORIGIN must not be the placeholder value in production (e.g. SITE_ORIGIN=https://ryanjosebrosas.dev npm run build)",
-  );
-}
+const siteOrigin = resolveSiteOrigin(process.env);
 
 export default defineConfig({
   site: siteOrigin,

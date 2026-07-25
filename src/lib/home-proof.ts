@@ -188,3 +188,21 @@ export const resolveHomeVisibility = (): Visibility =>
       status: claim.status,
     })),
   }).visibility;
+
+/**
+ * T16 — the positioning claims the homepage may RENDER. It is exactly the subset
+ * of `SELF_PROJECT_CLAIMS` whose backing source resolves public-safe through the
+ * SAME authority the proof gate uses (`resolvePublicClaim`). index.astro renders
+ * this list verbatim, so the rendered positioning can never drift from the
+ * validated claim set (no unbacked copy) and never surfaces an internal-only /
+ * unresolvable claim. When the gate has promoted "/" to public, every seeded
+ * claim resolves, so the full set renders; otherwise the homepage is noindex.
+ */
+export const homepageClaims = (registry: SourceRegistry = SOURCES): ClaimRecord[] =>
+  SELF_PROJECT_CLAIMS.map((claim) => ({
+    id: claim.id,
+    statement: claim.statement,
+    kind: claim.kind,
+    sourceIds: [...claim.sourceIds],
+    status: claim.status,
+  })).filter((claim) => resolvePublicClaim(claim, registry).ok);
