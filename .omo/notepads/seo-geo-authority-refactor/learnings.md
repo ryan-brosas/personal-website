@@ -397,3 +397,127 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
 - **Full gate green:** check 0 errors (526 files) · test 220/220 (+12, no race) ·
   build 7 pages · verify ok · prod-origin build verify ok · ZERO example.com in
   dist · slug canonical + Article/BreadcrumbList @id at prod origin.
+
+## T15 — services/about/contact on CommercialLayout
+- **One `[page].astro` handler, NOT dedicated per-page files.** Creating `services.astro`
+  etc. would COLLIDE with `[page].astro` generating the same route. Kept the single
+  dynamic handler and narrowed its getStaticPaths to iterate `ROUTE_REGISTRY.all()`
+  filtered to `kind==="singleton" && navPlacement==="primary"` (→ about/services/contact),
+  joined to their `pages` entry, emitting a route only when `isRoutable`. This is the
+  registry-ID-only narrowing: orphan content files and removed routes (/projects/) build
+  nothing. Dropped `resolveRoutes`/`PAGES` in favor of direct registry iteration.
+- **CommercialLayout parameterized with optional `kind` (default "service").** about/contact
+  must be WebPage-only (a Service node on a non-service page violates "structured data
+  matches visible content"). Passing `kind:"webpage"` → buildEntityGraph emits WebPage only;
+  services keeps default "service" → WebPage+Service. Default preserves the T11 probe
+  (routeId="services", no kind) with zero regression. This was the one strictly-required
+  touch outside the listed scope, and it's additive/backward-compatible.
+- **noindex meta MUST come from CONTENT visibility, not the registry default.** buildPageMetadata
+  derives noindex from REGISTRY visibility (about/services/contact are registry-"public"),
+  but the C2 copied-production variant rewrites about.md→noindex and asserts noindex,follow +
+  sitemap exclusion. So pass `noindex={entry.data.visibility === "noindex"}` explicitly to
+  CommercialLayout→BaseLayout. Also pass `visibility={entry.data.visibility}` so the graph
+  page-node is public-gated on the real content visibility (INV-03).
+- **Content md files unchanged.** PageSchema (pages collection) already carries
+  title/description/visibility and would STRIP extra ServiceRecord fields; the Service
+  semantics live in the kind:"service" JSON-LD node, not frontmatter. "as needed" → no change.
+- **Breadcrumbs on a top-level page render a single `<span aria-current>` self-crumb** (home
+  suppressed), no h1/no script — safe for the tight C2/C3/C4 one-h1 / one-nav-script asserts.
+- **Spurious LSP staleness after edits.** The LSP tool flagged phantom errors in
+  CaseStudyLayout/BaseLayout/SiteHeader (params/resolveCollectionRoutes "missing") that
+  contradict the on-disk files AND a clean `npm run check`. `astro check` is authoritative;
+  ignore stale LSP diagnostics on files you didn't touch.
+- **Full gate green:** check 0 errors (526 files) · test 224/224 (+4 T15, no race) ·
+  build 7 pages · verify ok. RED→GREEN: 3 JSON-LD-missing failures → all pass.
+
+## T16 — proof-gated public homepage promotion
+- **Pure gate + fs edge loader split.** `homepageProofGate(input)` (src/lib/home-proof.ts) is a
+  pure discriminated-result function tested BOTH directions in-process; `resolveHomeVisibility()`
+  is the edge that reads the real this-site.md frontmatter + sources.json + SELF_PROJECT_CLAIMS and
+  runs the gate. The registry "home" visibility = `resolveHomeVisibility()` (config/routes.ts), so
+  sitemap discovery + robots meta + JSON-LD WebPage node all flip from ONE gate result. Reused the T8
+  `resolvePublicClaim` kernel for both the case-study evidence AND every homepage claim — not re-derived.
+- **CRITICAL: path resolution must be process.cwd(), NOT import.meta.url.** Vite bundles
+  config/routes.ts -> home-proof.ts, so at `astro build` time import.meta.url points at a build chunk,
+  not src/lib/ — a relative content path silently fails the fs read -> gate denies -> home stayed
+  noindex in dist even though the in-process test registry saw public. Symptom: `sitemap-missing:
+  https://example.com/`. Fix: `${process.cwd()}/src/content/case-studies/this-site.md` (Astro build +
+  Node test runner + copied-variant build all run with cwd = project root). Fail-closed try/catch ->
+  undefined -> noindex.
+- **node:fs in a type-checked .ts needs an ambient shim.** `declare module "node:fs"` INSIDE a module
+  file is treated as augmentation (TS2664, no @types/node). Put the ambient module decl in the
+  non-module src/env.d.ts (only `readFileSync` declared). `process` declared locally type-only.
+- **SeoHead now emits robots ALWAYS** (`noindex ? "noindex,follow" : "index,follow"`) so the promoted
+  homepage carries the literal `index,follow` (task requirement). Public pages gain an explicit
+  index,follow directive (semantically identical to the prior implicit default); existing tests only
+  assert ABSENCE of noindex, so no regression.
+- **verifier + shell filters extended to gate "home-proof".** expectedHtmlRoutes and
+  expectedDiscoverableRoutes in BOTH scripts/verify-build.mjs and tests/shell.test.mjs now include
+  `gate === "home-proof"` (discoverableRoutes() already pre-filters public, so home only enters the
+  discoverable set when the gate promoted it).
+- **Two unit tests updated to new reality (not weakened):** metadata.test (home noindex->public
+  derivation), route-registry.test (discoverableRoutes now includes "/"). shell.test root/ tests
+  flipped from noindex-shell to public-homepage contract (index,follow + in sitemap + case-study link
+  + Person/WebSite/WebPage JSON-LD).
+- **Draft-flip QA proof:** this-site.md public->draft rebuild => home noindex + / excluded from
+  sitemap; restore => index,follow + / present. Machine-executable, fail-closed.
+- **Full gate green:** check 0 errors (528 files) · test 235/235 (+11) · build 7 pages · verify ok ·
+  prod-origin (ryanjosebrosas.dev) build+verify ok · ZERO example.com in dist.
+
+## Final-review fix pass (F1/F2 REJECT findings)
+
+- **Stale LSP vs `astro check`**: The opencode LSP daemon reported phantom errors
+  (`params` not on EntityGraphPage/PageMetadataOverrides; `resolveCollectionRoutes`
+  missing) in CaseStudyLayout/BaseLayout/SiteHeader — files I never touched.
+  `npm run check` (astro check) reported **0 errors across 531 files**. Trust
+  `astro check`, not the LSP daemon, when they disagree — the daemon hadn't loaded
+  the generated `.astro/types.d.ts`.
+- **INV-12 origin guard is testable only as a pure fn**: Vite forces
+  `NODE_ENV=production` in EVERY build incl `node --test`, so a real-release signal
+  needs a dedicated `PRODUCTION_BUILD=true` env var. Extracted `resolveSiteOrigin(env)`
+  to `src/lib/site-origin.ts`; astro.config.mjs imports it (it already imports .ts,
+  e.g. markdown-safety). Pure fn → no child-process spawning to test the throw.
+- **T6 public-evidence refine ripples into fixtures**: adding a `.superRefine`
+  requiring verified evidence when `visibility:"public"` broke the existing
+  `validCaseStudy` fixture (public, no evidence). Fix = add evidence to the fixture
+  AND add fail/pass/draft-pass tests. `.merge().extend().superRefine()` returns a
+  ZodEffects but still works as an Astro collection schema + `safeParse().data`.
+- **T2 gate-without-impl**: `RouteGateId` type allows reserved gates
+  (insights-hub/research-hub/privacy-required/llms-experiment) but only
+  always/home-proof/case-studies-hub are wired. `validateRegistry` now rejects any
+  gate outside an `IMPLEMENTED_GATES` set — this doubles as the INV-15 enforcement
+  (no llms-experiment route can be registered).
+- **T16 rendered==validated by construction**: instead of parsing prose, made
+  `homepageClaims()` the single source index.astro renders, derived from
+  `SELF_PROJECT_CLAIMS` filtered through `resolvePublicClaim`. Test asserts
+  subset+resolvable+full-set-equivalence. Shell test anchors preserved (one h1
+  "Ryan Brosas", "AI workflow systems for founder-led teams", /case-studies/this-site/ link).
+- **Prod-verify harness gotcha**: `verify` reads SITE_ORIGIN too; a prod build with
+  a real origin must be verified WITH the same SITE_ORIGIN or it reports spurious
+  `sitemap-missing` (placeholder vs real-origin URL mismatch), not a real defect.
+
+## [2026-07-25] F1 fix — reconcile RENDERED homepage claims with the validated set
+- **F1's gap: helper-subset ≠ rendered-subset.** The T16 tests proved `homepageClaims()`
+  returns a valid, evidence-resolvable subset — but index.astro ALSO rendered free prose
+  ("reliable AI workflow systems … so repetitive work stops coming back to you") + a
+  capability list, none of it in `SELF_PROJECT_CLAIMS`. Fix was to DELETE the unbacked
+  prose, not to add claims (never invent evidence — the prose bends to the validated set).
+- **Surgical two-file change.** (1) index.astro: neutralized `description` (dropped
+  "reliable"/capability/outcome), REMOVED the standalone unbacked paragraph; kept the
+  already-present evidence-backed connective + case-study link, the h1 identity, and the
+  homepageClaims()-driven `<ul>`. (2) home-proof.test.mjs: new "T16/F1" describe reads the
+  actual `src/pages/index.astro` source and FAILS if unbacked positioning is re-added
+  (denylist /reliable/, outcome promise, "human handoffs" capability list) + asserts
+  rendered==validated (each rendered statement ∈ SELF_PROJECT_CLAIMS).
+- **CONSTRAINT: shell.test.mjs:211 REQUIRES `AI workflow systems for founder-led teams`
+  in the built HTML.** That phrase is topic+audience NAMING (not a quality/outcome claim),
+  lives in the hero `<p><strong>`, and MUST stay — it is acceptable neutral positioning per
+  the F1 brief AND load-bearing for the shell test. Only "reliable"/outcome/capability prose
+  was the violation.
+- **Source-static test beats a 3rd concurrent build.** Reading index.astro text (no astro
+  build) is deterministic, race-free, and "fails if someone re-adds unbacked prose" — exactly
+  the brief's preferred fallback when a fresh dist read is impractical in `node --test`.
+- **Full gate green:** check 0 errors (531 files) · test 262/262 (+3, no race) · build 7 pages ·
+  verify ok · prod-origin (ryanjosebrosas.dev, PRODUCTION_BUILD=true) build 7 pages + verify ok ·
+  ZERO example.com in dist. (Stale-LSP phantom errors on CaseStudyLayout/BaseLayout/SiteHeader
+  persist — astro check is authoritative; ignore, per the T15/final-review note above.)

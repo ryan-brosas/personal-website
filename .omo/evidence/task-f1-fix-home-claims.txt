@@ -1,0 +1,76 @@
+F1 final-review blocker fix — reconcile rendered homepage claims with the validated set
+========================================================================================
+
+Blocker (reviewer F1, plan-compliance):
+  src/pages/index.astro RENDERED unvalidated positioning prose (description metadata,
+  the "I design and build reliable AI workflow systems … so repetitive work stops
+  coming back to you" paragraph) that is ABSENT from SELF_PROJECT_CLAIMS, then
+  separately appended homepageClaims(). Tests validated only the helper's returned
+  set — not that ALL visible positioning == the validated claim set.
+
+Fix (surgical, index.astro + test only):
+  1. src/pages/index.astro
+     - description: dropped "reliable" (quality claim) + the capability list + the
+       "for founder-led teams" outcome-flavoured prose; reduced to neutral identity +
+       topic + audience naming: "Ryan Brosas — AI workflow systems for founder-led
+       teams. Every claim on this site is evidence-backed."
+     - REMOVED the standalone unbacked paragraph ("I design and build reliable AI
+       workflow systems … so repetitive work stops coming back to you."). The
+       evidence-backed connective ("Every claim here is evidence-backed. See how this
+       site itself is built: …") already existed and stays.
+     - h1 "Ryan Brosas" (identity), the hero topic/audience label "AI workflow systems
+       for founder-led teams" (topic+audience naming, no evidence-requiring claim —
+       and REQUIRED by shell.test.mjs:211), the registry-derived case-study link, and
+       the homepageClaims()-driven <ul class="homepage-claims"> are UNCHANGED. The only
+       evidence-requiring positioning is now that data-driven list == validated set.
+     - title UNCHANGED (already neutral: no "reliable"/outcome, names subject+audience).
+     - SELF_PROJECT_CLAIMS NOT modified (no invented evidence).
+  2. tests/home-proof.test.mjs — new describe "T16/F1 — rendered homepage positioning
+     is reconciled with the validated set": reads the actual index.astro source and
+     FAILS if unbacked positioning prose is re-added (denylist: /reliable/, outcome
+     promise, capability list) + asserts the ONLY evidence-requiring positioning is the
+     homepageClaims() list + rendered==validated (each rendered statement ∈
+     SELF_PROJECT_CLAIMS).
+
+Isolated new-test run:
+  $ node --test tests/home-proof.test.mjs
+  ▶ T16/F1 — rendered homepage positioning is reconciled with the validated set
+    ✔ the rendered body asserts NO unbacked positioning prose
+    ✔ the ONLY evidence-requiring positioning is the homepageClaims() list
+    ✔ each rendered claim statement IS a validated SELF_PROJECT_CLAIMS statement
+  ℹ tests 19  ℹ pass 19  ℹ fail 0
+
+Composite gate — npm run check && npm test && npm run build && npm run verify
+-----------------------------------------------------------------------------
+$ npm run check
+  Result (531 files):
+  - 0 errors
+  - 0 warnings
+  - 4 hints
+
+$ npm test
+  ℹ tests 262
+  ℹ pass 262
+  ℹ fail 0
+  ℹ duration_ms 47755.76801
+
+$ npm run build
+  11:09:10 [build] 7 page(s) built in 2.15s
+  11:09:10 [build] Complete!
+
+$ npm run verify
+  verify: ok
+
+Production build — SITE_ORIGIN=https://ryanjosebrosas.dev PRODUCTION_BUILD=true
+-------------------------------------------------------------------------------
+$ SITE_ORIGIN=https://ryanjosebrosas.dev PRODUCTION_BUILD=true npm run build
+  11:09:34 [build] 7 page(s) built in 2.11s
+  11:09:34 [build] Complete!
+
+$ SITE_ORIGIN=https://ryanjosebrosas.dev PRODUCTION_BUILD=true npm run verify
+  verify: ok
+
+$ grep -rn example.com dist/ | wc -l
+  0            (ZERO matches — no placeholder origin in the production dist)
+
+Page counts: default build 7 pages, production build 7 pages.

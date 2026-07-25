@@ -16,9 +16,15 @@ import { homepageClaims } from "../lib/home-proof.ts";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 
 const routeId = "home";
+// Neutral identity + topic + audience naming only (F1 reconciliation). The
+// title/description assert NO capability/quality/outcome claim — the only
+// evidence-requiring positioning the homepage carries is the homepageClaims()
+// list below, which is asserted subset-equal to the validated SELF_PROJECT_CLAIMS
+// set. "AI workflow systems for founder-led teams" names the subject and audience;
+// it is not a claim requiring evidence (and no "reliable"/outcome promise remains).
 const title = "Ryan Brosas — AI workflow systems for founder-led teams";
 const description =
-  "Ryan Brosas designs and builds reliable AI workflow systems — explicit context, checks, human handoffs, and recovery paths — for founder-led teams.";
+  "Ryan Brosas — AI workflow systems for founder-led teams. Every claim on this site is evidence-backed.";
 
 // The homepage's disposition is the gate result carried by the registry "home"
 // entry; the WebPage node is emitted only when the gate promoted "/" to public.
@@ -45,11 +51,6 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
   <JsonLd graph={graph} />
   <h1>Ryan Brosas</h1>
   <p><strong>AI workflow systems for founder-led teams</strong></p>
-  <p>
-    I design and build reliable AI workflow systems — explicit context, checks,
-    human handoffs, and recovery paths — so repetitive work stops coming back to
-    you.
-  </p>
   <p>
     Every claim here is evidence-backed. See how this site itself is built:
     <a href={caseStudyHref}>Building This Website</a>.

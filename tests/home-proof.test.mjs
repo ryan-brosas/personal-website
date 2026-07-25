@@ -8,6 +8,7 @@
 // verifier + the shell suite's draft-flip QA scenario cover.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { homepageProofGate, resolveHomeVisibility, homepageClaims } from "../src/lib/home-proof.ts";
 import { ROOT_ROUTE_POLICY } from "../src/config/routes.ts";
 import { SELF_PROJECT_CLAIMS } from "../src/config/entities.ts";
@@ -197,5 +198,64 @@ describe("T16 — homepage rendered claims are reconciled with SELF_PROJECT_CLAI
     // With an EMPTY registry no claim resolves, so nothing renders — the homepage
     // never asserts a positioning it cannot back.
     assert.deepEqual(homepageClaims({}), []);
+  });
+});
+
+// F1 (final-review blocker) — the reviewer's gap was that the earlier tests proved
+// the HELPER returns a valid subset, but NOT that the RENDERED homepage contains no
+// positioning claim outside that set. index.astro previously also asserted free
+// prose ("reliable AI workflow systems … so repetitive work stops coming back to
+// you") absent from SELF_PROJECT_CLAIMS. This suite reads the actual page source and
+// FAILS if any unbacked positioning prose is (re-)introduced: every evidence-requiring
+// positioning claim must flow through the homepageClaims() list, and the only other
+// visible copy is neutral identity/topic/audience naming or a meta connective.
+describe("T16/F1 — rendered homepage positioning is reconciled with the validated set", () => {
+  const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf-8");
+  // The rendered template is everything after the second `---` frontmatter fence.
+  const renderedBody = pageSource
+    .split(/^---\s*$/m)
+    .slice(2)
+    .join("---");
+
+  // Evidence-requiring qualifiers / capability / outcome promises that are NOT in
+  // SELF_PROJECT_CLAIMS. If any reappears in the page, positioning has drifted from
+  // the validated set and the homepage would assert an unbacked claim again.
+  const forbiddenPositioning = [
+    { label: "quality qualifier 'reliable'", pattern: /reliable/i },
+    { label: "outcome promise", pattern: /repetitive work stops coming back/i },
+    {
+      label: "capability list ('checks, human handoffs, recovery paths')",
+      pattern: /human handoffs/i,
+    },
+  ];
+
+  test("the rendered body asserts NO unbacked positioning prose", () => {
+    for (const { label, pattern } of forbiddenPositioning) {
+      assert.ok(
+        !pattern.test(renderedBody),
+        `index.astro must not render unbacked positioning (${label}) — it is absent from SELF_PROJECT_CLAIMS`,
+      );
+    }
+  });
+
+  test("the ONLY evidence-requiring positioning is the homepageClaims() list", () => {
+    // The positioning list is data-driven from the validated claim set — not prose.
+    assert.match(pageSource, /const claims = homepageClaims\(\)/);
+    assert.match(renderedBody, /claims\.map\(\(claim\) =>/);
+    assert.match(renderedBody, /\{claim\.statement\}/);
+  });
+
+  test("each rendered claim statement IS a validated SELF_PROJECT_CLAIMS statement", () => {
+    // rendered == validated (not merely a valid subset): every statement the page can
+    // render is one of the validated claims, and the page renders the whole resolvable set.
+    const validated = new Set(SELF_PROJECT_CLAIMS.map((c) => c.statement));
+    const rendered = homepageClaims().map((c) => c.statement);
+    assert.ok(rendered.length > 0, "the promoted homepage renders ≥1 positioning claim");
+    for (const statement of rendered) {
+      assert.ok(
+        validated.has(statement),
+        `rendered positioning "${statement}" must be a validated SELF_PROJECT_CLAIMS statement`,
+      );
+    }
   });
 });
