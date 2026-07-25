@@ -5,6 +5,7 @@
 // registry's primary-nav entries into the legacy PageConfig shape. A later W1
 // slice removes remaining PAGES callers and this shim.
 import { ROUTE_REGISTRY } from "./routes.ts";
+import type { NavLabelKey } from "../lib/route-registry.ts";
 import type { Visibility } from "../lib/publishing.ts";
 
 export interface PageConfig {
@@ -13,7 +14,7 @@ export interface PageConfig {
   /** HTML route path (trailing slash per the canonical route contract). */
   path: string;
   /** Key into SettingsData.navLabels for this page's nav label. */
-  navLabelKey: "about" | "services" | "contact";
+  navLabelKey: NavLabelKey;
   /** Registry-derived visibility (draft records never appear here). */
   visibility: Visibility;
 }

@@ -1,0 +1,49 @@
+---
+// W4·T14 (SEO/GEO authority refactor) — the case-studies HUB. A listing WebPage,
+// NOT an Article: it carries a WebPage + BreadcrumbList entity graph (no Article
+// node), so the structured data matches the visible content (a list of entries),
+// never asserting article authorship for a directory page. The min-child gate
+// (INV-07) is enforced for DISCOVERY by resolveCollectionRoutes — the hub is
+// only advertised in the sitemap/nav/verifier when ≥1 public entry exists — and
+// the visible list here is built from the same isDiscoverable filter, so an
+// empty hub can never list a non-public entry. Links are registry-derived
+// (pathFor), never hard-coded.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import JsonLd from "../../components/JsonLd.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { getCollection } from "astro:content";
+import { isDiscoverable } from "../../lib/publishing.ts";
+import { buildEntityGraph } from "../../lib/structured-data.ts";
+import { ROUTE_REGISTRY } from "../../config/routes.ts";
+
+const routeId = "case-studies";
+const title = "Case Studies";
+const description =
+  "Selected build write-ups — transparent, evidence-backed accounts of systems and how they were made.";
+
+const entries = (await getCollection("case-studies"))
+  .filter((entry) => isDiscoverable(entry.data.visibility))
+  .sort((a, b) => a.data.slug.localeCompare(b.data.slug));
+
+const site = Astro.site?.href ?? "https://example.com";
+const graph = buildEntityGraph({
+  site,
+  page: { routeId, title, description, visibility: "public" },
+});
+---
+<BaseLayout routeId={routeId} title={title} description={description}>
+  <JsonLd graph={graph} />
+  <Breadcrumbs routeId={routeId} />
+  <h1>{title}</h1>
+  <ul>
+    {
+      entries.map((entry) => (
+        <li>
+          <a href={ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: entry.data.slug })}>
+            {entry.data.title}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

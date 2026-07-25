@@ -37,6 +37,10 @@ export interface PageMetadataOverrides {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  // Dynamic-route params (e.g. { slug }) filling the route's [param] segments.
+  // Static routes omit this; canonicalFor tolerates undefined. Required for a
+  // collection route (case-studies-slug) whose canonical needs the slug.
+  params?: Record<string, string>;
 }
 
 // Build the SEO head for a registered route. Throws on an unknown id so a broken
@@ -51,8 +55,9 @@ export const buildPageMetadata = (
   }
 
   // Canonical is derived from the registry (origin resolved from SITE_ORIGIN at
-  // call-time inside canonicalFor). Static routes take no params.
-  const canonical = ROUTE_REGISTRY.canonicalFor(routeId, undefined);
+  // call-time inside canonicalFor). Dynamic routes pass their [param] values
+  // through overrides.params; static routes omit them (undefined).
+  const canonical = ROUTE_REGISTRY.canonicalFor(routeId, overrides.params);
 
   // noindex defaults to the registry visibility; an explicit override wins.
   const noindex = overrides.noindex ?? route.visibility === "noindex";

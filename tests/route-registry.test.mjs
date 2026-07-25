@@ -130,17 +130,20 @@ describe("ROUTE_REGISTRY derived helpers", () => {
     );
   });
 
-  test("navItems yields the shipped primary order: about, services, contact", () => {
+  test("navItems yields the primary order with case-studies slotted (T14)", () => {
+    // T14 promotes case-studies to primary nav at navOrder 25 — between
+    // services (20) and contact (30), preserving the shipped about/services/contact
+    // order around it.
     assert.deepEqual(
       ROUTE_REGISTRY.navItems().map((r) => r.id),
-      ["about", "services", "contact"],
+      ["about", "services", "case-studies", "contact"],
     );
   });
 
-  test("navItems excludes the code-owned root and the reserved case-studies hub", () => {
+  test("navItems includes the T14 case-studies hub but never the code-owned root", () => {
     const ids = ROUTE_REGISTRY.navItems().map((r) => r.id);
     assert.ok(!ids.includes("home"), "home is not a nav item");
-    assert.ok(!ids.includes("case-studies"), "case-studies is reserved, not yet navigable");
+    assert.ok(ids.includes("case-studies"), "case-studies is navigable as of T14");
   });
 
   test("parentFor resolves the hub for the collection route", () => {

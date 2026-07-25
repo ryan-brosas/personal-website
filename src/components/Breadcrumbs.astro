@@ -8,10 +8,13 @@ import { ROUTE_REGISTRY } from "../config/routes.ts";
 
 interface Props {
   routeId: string;
+  // Dynamic-route params (e.g. { slug }) so the leaf crumb's [param] segment
+  // resolves. Static routes omit this (breadcrumbsFor tolerates undefined).
+  params?: Record<string, string>;
 }
 
-const { routeId } = Astro.props;
-const trail = ROUTE_REGISTRY.breadcrumbsFor(routeId);
+const { routeId, params } = Astro.props;
+const trail = ROUTE_REGISTRY.breadcrumbsFor(routeId, params);
 
 // Human label from a route id (the registry stores no crumb copy):
 // "case-studies" → "Case Studies", "about" → "About".

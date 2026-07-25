@@ -276,3 +276,124 @@ _Auto-scaffolded by /start-work. Append new entries below - never overwrite._
   My components are unwired, so they can't touch those probes. Committed ONLY my 6 files.
 - **Full gate for my slice:** check 0 errors (519 files) · components.test 11/11 ·
   build 5 pages · verify ok.
+
+## [2026-07-25] Task: T11 — Commercial + CaseStudy authority layouts
+
+- **Both layouts are thin WRAPPERS of BaseLayout, never re-implementations.** Pattern:
+  `<BaseLayout routeId title description noindex?><JsonLd graph={buildEntityGraph({site,page})}/>
+  <Breadcrumbs routeId/><slot/></BaseLayout>`. The single `<main id="main">`, skip link,
+  SeoHead (via `buildPageMetadata(routeId)`), header/footer, and the ONE nav-enhancement
+  script all come from BaseLayout — the a11y/shell contract is preserved by construction.
+  Only difference between the two: `kind:"service"` vs `kind:"article"` in the page object.
+- **Props: `{ routeId, title, description, visibility, noindex? }`.** `visibility` is a required
+  prop (not derived) because it gates the WebPage/Service/Article/BreadcrumbList nodes inside
+  `buildEntityGraph` (INV-03); `noindex?` stays an optional passthrough so BaseLayout keeps
+  deriving it from the registry unless a content record overrides (T15). `title`/`description`
+  flow to BaseLayout→SeoHead AND into the graph's page node — one source, no drift.
+- **`site = Astro.site?.href ?? "https://example.com"`.** `buildEntityGraph` takes the origin
+  EXPLICITLY (T10 dropped env reads from the lib), so the layout is the wire-time origin owner.
+  `Astro.site.href` yields a trailing slash; `toOrigin` inside the builder strips it. Placeholder
+  fallback keeps render from throwing if config `site` is ever unset.
+- **Type-only `import type { Visibility } from "../lib/publishing.ts"`** (verbatimModuleSyntax);
+  `.ts`/`.astro` extensions on imports match the repo convention (BaseLayout imports `../lib/metadata.ts`).
+- **PROBE GOTCHA — Astro ignores `_`-prefixed src/pages files.** The build-probe copies prod src
+  to a temp root (C2-variant pattern) and drops throwaway fixture pages that render each layout,
+  then asserts the shell contract on the built HTML (raw `astro build`, NOT the verifier, so the
+  extra probe routes never trip the manifest). First attempt named them `_probe-*.astro` → Astro
+  treats `_`-prefixed pages as PRIVATE and emits NO route, so the build was clean but produced no
+  HTML (tests failed on "must exist", masking the real cause). Renamed to `probe-*.astro` → GREEN.
+- **JSON-LD is safe against `assertOneNavScript`.** It counts only behavioral scripts and filters
+  out `type="application/ld+json"` (shell.test.mjs:58-62). Probe parses the single ld+json block
+  and asserts the graph carries both a `WebPage` node and the layout's kind node (`Service`/`Article`).
+- **Full gate green:** check 0 errors/0 warnings (521 files) · shell.test.mjs isolated 26/26 (+2) ·
+  build 5 pages · verify ok · full `npm test` 208/208 (no race this run). Layouts intentionally
+  NOT wired into any page — pages land in T14/T15.
+
+## [2026-07-25] Task: T13 — differentiated crawler robots policy
+
+- **Verifier was NOT user-agent-aware (blocker, operator-authorized fix).** The
+  T4 robots check (`scripts/verify-build.mjs`) used a single flat loop that
+  flagged ANY `Disallow:` with `robots-has-disallow`. A differentiated policy
+  MUST emit `Disallow: /` under named training crawlers, so it tripped the
+  check. Fix: track `currentAgent` (set on every `user-agent` directive) and
+  gate the error to `currentAgent === "*"`. Per-bot Disallow under a NAMED agent
+  now passes — the intended search-vs-training differentiation. This does NOT
+  weaken the `*` invariant; the wildcard block still may never Disallow.
+- **Locked verifier tests survive the fix for free.** policy.test.mjs:836
+  (`Disallow: /` under `User-agent: *`) still FAILS because its Disallow sits
+  under `*`; :915 (commented) still passes. Added ONE new test: a named-agent
+  `Disallow: /` under GPTBot now PASSES verifyBuild — covers the parser change.
+- **renderRobots stays PURE and deterministic.** New sig
+  `renderRobots(site, policy: CrawlerPolicy[])`. The `*` + `Sitemap:` header is
+  unchanged and owned by the function (never from policy). Stanzas emit in array
+  order: `User-agent:` then `Allow:` lines then `Disallow:` lines. `[header,
+  ...stanzas].join("\n")` gives one blank line between blocks. No env, no Date.
+- **Bot names live ONLY in `src/config/crawlers.ts`.** robots.txt.ts imports
+  `CRAWLER_POLICY` — zero bot literals in the endpoint. `CrawlerPolicy` is a
+  plain string-literal-keyed type (erasableSyntaxOnly-safe); `import type` used
+  for the type-only import in discovery.ts (verbatimModuleSyntax).
+- **INV — search permission ≠ training consent.** Allow group (OAI-SearchBot,
+  Claude-SearchBot, PerplexityBot) and Disallow group (GPTBot, ClaudeBot,
+  Google-Extended) are disjoint; a test asserts no search bot is Disallowed and
+  no training bot is Allowed.
+- **Full gate green:** check 0 errors (522 files) · full test 213/213 ·
+  policy.test.mjs isolated 137/137 · build 5 pages · verify ok (PASSES despite
+  named-agent Disallow lines — proves the parser fix).
+
+## [2026-07-25] Task: T14 — case-studies hub + slug page + transparent self-project
+
+- **The block was real; Option A resolved it via ONE registry-derived helper.**
+  `resolveCollectionRoutes(recordsByCollection)` (src/lib/site-routes.ts) is the
+  single source of the collection route inventory: for EVERY dynamic collection
+  route in the registry it applies the INV-07 min-child gate — ≥1 PUBLIC record
+  → emit the parent hub route + one slug-sorted child per public record; zero
+  public → emit nothing. Fully generic (iterates `def.isDynamic && def.collection`,
+  `pathFor(def.id,{slug})`, `def.parent`) — NO `/case-studies/`/`this-site`
+  literals. Consumed by sitemap.xml.ts, [slug].astro (via isDiscoverable),
+  SiteHeader, verify-build.mjs, and the shell.test.mjs manifest block → public
+  canonical == sitemap == internal discovery == verifier-expected BY CONSTRUCTION.
+- **The verifier/test are Node .mjs and can't call getCollection.** Added
+  `scripts/collection-records.mjs` (`readCaseStudyRecords` = minimal frontmatter
+  regex for slug+visibility, fail-closed to draft; `caseStudyRoutes` = reader ⊕
+  resolveCollectionRoutes). Both verify-build.mjs (additive; T13's `currentAgent`
+  robots parser untouched) and tests/shell.test.mjs import it, so the derivation
+  is single-sourced. Astro-runtime consumers use getCollection instead — same
+  pure helper, different record source.
+- **DYNAMIC-ROUTE CANONICAL NEEDS PARAMS THREADED THROUGH THE WHOLE CHAIN.**
+  `canonicalFor(id, params)` / `breadcrumbsFor(id, params)` already took params,
+  but buildPageMetadata, buildEntityGraph, BaseLayout, CaseStudyLayout, AND
+  **Breadcrumbs.astro** all dropped them. Missing the Breadcrumbs one is a SILENT
+  trap: it built fine for the static hub but threw `pathFor: missing route param
+  "slug"` at BUILD time for /case-studies/[slug]/ — the stack pointed at
+  structured-data.mjs:25 which is actually the bundled **Breadcrumbs** component
+  (`breadcrumbsFor(routeId)` with no params), NOT buildEntityGraph. Thread params
+  as an OPTIONAL prop through ALL FIVE — additive, so metadata/structured-data
+  unit tests (static routes, params undefined) stay green.
+- **Hub `index.astro` cannot self-suppress emission (Astro static page).** So the
+  min-child gate is enforced for DISCOVERY (sitemap/nav/verifier via the helper)
+  and proven by the helper unit test (zero public → []). The physical hub html
+  always emits; when the only entry is draft, `npm run verify` FAILS-CLOSED with
+  `unexpected-route: /case-studies/` (an empty/orphaned hub cannot ship). The
+  per-record child gate IS real (getStaticPaths filters isDiscoverable → no child
+  route for draft/noindex).
+- **Hub carries WebPage+BreadcrumbList, NOT Article.** A listing page is not an
+  article — emitting Article would violate "structured data matches visible
+  content". Built the hub on BaseLayout + JsonLd(buildEntityGraph, kind omitted)
+  + Breadcrumbs. The ENTRY page uses CaseStudyLayout (kind:"article") →
+  Article+BreadcrumbList, which is what the acceptance QA checks.
+- **evidence is a SINGLE object, not an array.** PublicationRecordSchema has
+  `evidence: EvidenceSchema.optional()` (a discriminatedUnion), so this-site.md
+  frontmatter is `evidence:\n  kind: verified\n  sourceId: source-self-project-build-001`
+  — an array would fail content-collection validation. (The brief's `[{...}]` was
+  wrong vs the actual T6 schema; followed the schema.)
+- **Making the hub navigable rippled further than routes.ts.** NavLabelKey union
+  (+caseStudies), PageConfig.navLabelKey → NavLabelKey (site.ts), SettingsData
+  navLabels.caseStudies (required; +2 policy.test.mjs validSettings fixtures),
+  site.json label, and SiteHeader folding resolveCollectionRoutes into
+  resolvedByPath (the hub is not a `pages` record, so resolveRoutes alone drops
+  it). Updated route-registry.test.mjs's two nav assertions (order now
+  about/services/case-studies@25/contact; hub now navigable) — reflecting new
+  behavior, not weakening.
+- **Full gate green:** check 0 errors (526 files) · test 220/220 (+12, no race) ·
+  build 7 pages · verify ok · prod-origin build verify ok · ZERO example.com in
+  dist · slug canonical + Article/BreadcrumbList @id at prod origin.

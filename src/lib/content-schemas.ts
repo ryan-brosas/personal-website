@@ -37,6 +37,7 @@ export const SettingsDataSchema = z.object({
     about: z.string().min(1),
     services: z.string().min(1),
     contact: z.string().min(1),
+    caseStudies: z.string().min(1),
   }),
   contact: z.object({
     schedulerUrl: z

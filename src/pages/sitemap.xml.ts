@@ -6,7 +6,7 @@
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { renderSitemap } from "../lib/discovery.ts";
-import { resolveRoutes } from "../lib/site-routes.ts";
+import { resolveRoutes, resolveCollectionRoutes } from "../lib/site-routes.ts";
 import { ROOT_ROUTE_POLICY } from "../config/routes.ts";
 import type { Visibility } from "../lib/publishing.ts";
 
@@ -17,7 +17,20 @@ export const GET: APIRoute = async ({ site }) => {
   for (const page of pages) {
     visibilities[page.id] = page.data.visibility;
   }
-  const routes = [ROOT_ROUTE_POLICY, ...resolveRoutes(visibilities)];
+  // Collection-backed routes (case-studies hub + entries) are discovered from
+  // their own collection and gated by the INV-07 min-child rule via the shared
+  // resolveCollectionRoutes helper — the SAME derivation the verifier uses, so
+  // the sitemap and the verifier's expected route set can never drift.
+  const caseStudies = await getCollection("case-studies");
+  const caseStudyRecords = caseStudies.map((entry) => ({
+    slug: entry.data.slug,
+    visibility: entry.data.visibility,
+  }));
+  const routes = [
+    ROOT_ROUTE_POLICY,
+    ...resolveRoutes(visibilities),
+    ...resolveCollectionRoutes({ "case-studies": caseStudyRecords }),
+  ];
   return new Response(renderSitemap(routes, siteHref), {
     headers: { "Content-Type": "application/xml" },
   });

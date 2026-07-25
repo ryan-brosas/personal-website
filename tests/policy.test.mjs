@@ -281,7 +281,12 @@ describe("M2 content schemas (A1)", () => {
 
   const validSettings = (contact = lockedContact) => ({
     siteTitle: "Ryan Brosas",
-    navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+    navLabels: {
+      about: "About",
+      services: "Work With Me",
+      contact: "Contact",
+      caseStudies: "Case Studies",
+    },
     contact: { ...contact },
   });
 
@@ -303,7 +308,12 @@ describe("M2 content schemas (A1)", () => {
   test("E1 contact settings: rejects an absent contact block", () => {
     const parsed = SettingsDataSchema.safeParse({
       siteTitle: "Ryan Brosas",
-      navLabels: { about: "About", services: "Work With Me", contact: "Contact" },
+      navLabels: {
+        about: "About",
+        services: "Work With Me",
+        contact: "Contact",
+        caseStudies: "Case Studies",
+      },
     });
     assert.equal(parsed.success, false, "absent contact block must fail (contact is required)");
   });

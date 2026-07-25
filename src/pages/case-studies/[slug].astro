@@ -1,0 +1,33 @@
+---
+// W4·T14 (SEO/GEO authority refactor) — the case-study ENTRY route. One static
+// path per PUBLIC case-study record (getStaticPaths filters on the shared
+// isDiscoverable policy, so draft/noindex records emit no route — the min-child
+// gate's per-record half). Rendered through CaseStudyLayout (kind:"article"),
+// which — for a public page — emits the Article + BreadcrumbList JSON-LD keyed
+// off the entry's canonical. The registry slug param flows through so the
+// canonical and @id anchors resolve to /case-studies/<slug>/.
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import CaseStudyLayout from "../../layouts/CaseStudyLayout.astro";
+import { isDiscoverable } from "../../lib/publishing.ts";
+
+export const getStaticPaths = (async () => {
+  const entries = await getCollection("case-studies");
+  return entries
+    .filter((entry) => isDiscoverable(entry.data.visibility))
+    .map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+<CaseStudyLayout
+  routeId="case-studies-slug"
+  title={entry.data.title}
+  description={entry.data.description}
+  visibility={entry.data.visibility}
+  params={{ slug: entry.data.slug }}
+>
+  <h1>{entry.data.title}</h1>
+  <Content />
+</CaseStudyLayout>

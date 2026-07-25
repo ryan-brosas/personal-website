@@ -12,6 +12,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { verifyBuild } from "../scripts/verify-build.mjs";
+import { caseStudyRoutes } from "../scripts/collection-records.mjs";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
 import { ROUTE_REGISTRY } from "../src/config/routes.ts";
 import { isHtmlRoute } from "../src/lib/routes.ts";
@@ -22,23 +23,32 @@ const SITE = "https://example.com";
 
 // Registry-derived build manifest — mirrors the CLI entry in
 // scripts/verify-build.mjs so the test and the verifier share one truth (no
-// hand-maintained route arrays). Gate filter: only unconditionally-enabled
-// routes (gate "always") plus the code-owned noindex root are actual build
-// targets today; the reserved case-studies hub (gate "case-studies-hub") is
-// registered but NOT built until T14, so it is excluded here. favicon.svg is a
-// public/ static asset, not a registry route, so it is the one declared literal.
+// hand-maintained route arrays). Gate filter: unconditionally-enabled routes
+// (gate "always") plus the code-owned noindex root are the registry-static build
+// targets. Collection-backed routes (the case-studies hub + entries) are
+// content-driven and gated by the INV-07 min-child rule, so they are derived
+// from tracked frontmatter through the SAME resolveCollectionRoutes helper the
+// verifier and sitemap use — keeping test, verifier, sitemap, and build in
+// lockstep. favicon.svg is a public/ static asset, the one declared literal.
 const registryDefs = ROUTE_REGISTRY.all();
-const expectedHtmlRoutes = registryDefs
-  .filter(
-    (d) =>
-      d.isDynamic !== true &&
-      isHtmlRoute(d.path) &&
-      (d.gate === "always" || d.visibility === "noindex"),
-  )
-  .map((d) => d.path);
-const expectedDiscoverableRoutes = ROUTE_REGISTRY.discoverableRoutes()
-  .filter((r) => r.gate === "always")
-  .map((r) => r.path);
+const collectionPaths = caseStudyRoutes().map((r) => r.path);
+const expectedHtmlRoutes = [
+  ...registryDefs
+    .filter(
+      (d) =>
+        d.isDynamic !== true &&
+        isHtmlRoute(d.path) &&
+        (d.gate === "always" || d.visibility === "noindex"),
+    )
+    .map((d) => d.path),
+  ...collectionPaths,
+];
+const expectedDiscoverableRoutes = [
+  ...ROUTE_REGISTRY.discoverableRoutes()
+    .filter((r) => r.gate === "always")
+    .map((r) => r.path),
+  ...collectionPaths,
+];
 const expectedFileEndpoints = [
   ...registryDefs
     .filter((d) => d.isDynamic !== true && !isHtmlRoute(d.path))

@@ -19,10 +19,13 @@ interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  // Dynamic-route params (e.g. { slug }) so the canonical resolves for a
+  // collection entry. Static routes omit this.
+  params?: Record<string, string>;
 }
 
-const { routeId, title, description, noindex } = Astro.props;
-const metadata = buildPageMetadata(routeId, { title, description, noindex });
+const { routeId, title, description, noindex, params } = Astro.props;
+const metadata = buildPageMetadata(routeId, { title, description, noindex, params });
 ---
 <!doctype html>
 <html lang="en">

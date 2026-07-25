@@ -38,6 +38,10 @@ export interface EntityGraphPage {
   description: string;
   visibility: Visibility;
   kind?: EntityGraphPageKind;
+  // Dynamic-route params (e.g. { slug }) filling the route's [param] segments,
+  // so the canonical + breadcrumb @id anchors resolve for a collection entry.
+  // Static routes omit this (canonicalFor/breadcrumbsFor tolerate undefined).
+  params?: Record<string, string>;
 }
 
 export interface BuildEntityGraphInput {
@@ -151,8 +155,8 @@ export const buildEntityGraph = ({ site, page }: BuildEntityGraphInput): JsonLdG
 
   // INV-03: only a public page contributes a page node to the graph.
   if (page.visibility === "public") {
-    const canonical = ROUTE_REGISTRY.canonicalFor(page.routeId, undefined, origin);
-    const trail = ROUTE_REGISTRY.breadcrumbsFor(page.routeId);
+    const canonical = ROUTE_REGISTRY.canonicalFor(page.routeId, page.params, origin);
+    const trail = ROUTE_REGISTRY.breadcrumbsFor(page.routeId, page.params);
     const hasBreadcrumb = trail.length > 0;
 
     graph.push(buildWebPageNode(origin, canonical, page, hasBreadcrumb));

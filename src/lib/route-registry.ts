@@ -24,7 +24,7 @@ export type NavPlacement = "primary" | "footer" | "secondary" | "none";
 // Nav label keys are the settings-backed labels (SettingsData.navLabels). Only
 // routes whose label lives in settings may carry one; new nav entries land
 // together with their settings key (e.g. case-studies in T14).
-export type NavLabelKey = "about" | "services" | "contact";
+export type NavLabelKey = "about" | "services" | "contact" | "caseStudies";
 
 export type RouteGateId =
   | "always"

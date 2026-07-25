@@ -4,7 +4,8 @@
     "navLabels": {
       "about": "About",
       "services": "Work With Me",
-      "contact": "Contact"
+      "contact": "Contact",
+      "caseStudies": "Case Studies"
     },
     "contact": {
       "schedulerUrl": "https://calendly.com/ryanjoserbrosas/30min",

@@ -25,9 +25,12 @@ interface Props {
   description: string;
   visibility: Visibility;
   noindex?: boolean;
+  // Dynamic-route params (e.g. { slug }) so the canonical + Article/BreadcrumbList
+  // @id anchors resolve for a collection entry. Static routes (the hub) omit this.
+  params?: Record<string, string>;
 }
 
-const { routeId, title, description, visibility, noindex } = Astro.props;
+const { routeId, title, description, visibility, noindex, params } = Astro.props;
 
 // Astro.site is the real origin from astro.config (SITE_ORIGIN ?? placeholder);
 // buildEntityGraph normalises the trailing slash. Fall back to the placeholder
@@ -35,11 +38,11 @@ const { routeId, title, description, visibility, noindex } = Astro.props;
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({
   site,
-  page: { routeId, title, description, visibility, kind: "article" },
+  page: { routeId, title, description, visibility, kind: "article", params },
 });
 ---
-<BaseLayout routeId={routeId} title={title} description={description} noindex={noindex}>
+<BaseLayout routeId={routeId} title={title} description={description} noindex={noindex} params={params}>
   <JsonLd graph={graph} />
-  <Breadcrumbs routeId={routeId} />
+  <Breadcrumbs routeId={routeId} params={params} />
   <slot />
 </BaseLayout>

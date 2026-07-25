@@ -8,6 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { canonicalHref, isHtmlRoute } from "../src/lib/routes.ts";
 import { ROUTE_REGISTRY } from "../src/config/routes.ts";
+import { caseStudyRoutes } from "./collection-records.mjs";
 
 const listFiles = (dir) => {
   const result = [];
@@ -276,17 +277,31 @@ if (process.argv[1] === __filename) {
   const site = process.env.SITE_ORIGIN ?? PLACEHOLDER_ORIGIN;
 
   const defs = ROUTE_REGISTRY.all();
-  const expectedHtmlRoutes = defs
-    .filter(
-      (d) =>
-        d.isDynamic !== true &&
-        isHtmlRoute(d.path) &&
-        (d.gate === "always" || d.visibility === "noindex"),
-    )
-    .map((d) => d.path);
-  const expectedDiscoverableRoutes = ROUTE_REGISTRY.discoverableRoutes()
-    .filter((r) => r.gate === "always")
-    .map((r) => r.path);
+  // Collection-backed routes (case-studies hub + entries) are content-driven, so
+  // they cannot come from the registry alone: they are derived from the tracked
+  // frontmatter through the SAME resolveCollectionRoutes helper the sitemap
+  // endpoint uses (INV-07 min-child gate applied once, in one place). This keeps
+  // the verifier's expected set == the sitemap == the runtime build. No route or
+  // slug literals are hard-coded here.
+  const collectionRoutes = caseStudyRoutes();
+  const collectionPaths = collectionRoutes.map((r) => r.path);
+  const expectedHtmlRoutes = [
+    ...defs
+      .filter(
+        (d) =>
+          d.isDynamic !== true &&
+          isHtmlRoute(d.path) &&
+          (d.gate === "always" || d.visibility === "noindex"),
+      )
+      .map((d) => d.path),
+    ...collectionPaths,
+  ];
+  const expectedDiscoverableRoutes = [
+    ...ROUTE_REGISTRY.discoverableRoutes()
+      .filter((r) => r.gate === "always")
+      .map((r) => r.path),
+    ...collectionPaths,
+  ];
   const expectedFileEndpoints = [
     ...defs
       .filter((d) => d.isDynamic !== true && !isHtmlRoute(d.path))

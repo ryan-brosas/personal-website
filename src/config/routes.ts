@@ -35,16 +35,20 @@ const ROUTE_DEFINITIONS: RouteDefinition[] = [
     navLabelKey: "services",
     navOrder: 20,
   },
-  // Case-studies hub — id reserved now, gate declared (INV-07 min-child), but
-  // NOT navigable yet. T14 builds the hub page, adds navLabels.caseStudies, and
-  // promotes this to primary nav.
+  // Case-studies hub (T14). Primary-nav, slotted between services (20) and
+  // contact (30). Discovery still honours the INV-07 min-child gate: the hub is
+  // only advertised in the sitemap/nav/verifier when ≥1 public entry exists —
+  // that gate is applied by resolveCollectionRoutes over the collection records,
+  // not by this static registry entry.
   {
     id: "case-studies",
     kind: "hub",
     path: "/case-studies/",
     visibility: "public",
     gate: "case-studies-hub",
-    navPlacement: "none",
+    navPlacement: "primary",
+    navLabelKey: "caseStudies",
+    navOrder: 25,
   },
   {
     id: "case-studies-slug",
