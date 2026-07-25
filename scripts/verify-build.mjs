@@ -291,14 +291,19 @@ if (process.argv[1] === __filename) {
         (d) =>
           d.isDynamic !== true &&
           isHtmlRoute(d.path) &&
-          (d.gate === "always" || d.visibility === "noindex"),
+          // The code-owned root (gate "home-proof") is always a build target in
+          // both dispositions; "always" routes are unconditional; content-driven
+          // noindex pages (e.g. the C2 variant) are routable too.
+          (d.gate === "always" || d.gate === "home-proof" || d.visibility === "noindex"),
       )
       .map((d) => d.path),
     ...collectionPaths,
   ];
   const expectedDiscoverableRoutes = [
     ...ROUTE_REGISTRY.discoverableRoutes()
-      .filter((r) => r.gate === "always")
+      // discoverableRoutes() already filters to public; the home-proof root joins
+      // the "always" routes in discovery ONLY when the gate promoted it to public.
+      .filter((r) => r.gate === "always" || r.gate === "home-proof")
       .map((r) => r.path),
     ...collectionPaths,
   ];

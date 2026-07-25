@@ -1,20 +1,49 @@
 ---
-// M2 (Plan 03, Child 2) — minimal code-owned root shell.
-// Renders approved identity copy only (DESIGN.md:478-481,
-// ryan-brosas-landing-page.html:6-7). No Home Markdown record, no brand tokens,
-// no client script. Uses the shared BaseLayout/SeoHead. Root metadata (noindex +
-// canonical) derives from the registry "home" entry via buildPageMetadata
-// (routeId="home") so Plan 04 promotes the homepage atomically: flipping the
-// registry "home" visibility to "public" updates both the sitemap discovery and
-// this page's robots meta in one change.
+// W4·T16 (SEO/GEO authority refactor) — the proof-gated public homepage.
+// The homepage is promoted to public ONLY through the machine-executable proof
+// gate (src/lib/home-proof.ts → resolveHomeVisibility → the registry "home"
+// entry). This page reads that ONE registry visibility, so its robots policy
+// (via buildPageMetadata in BaseLayout), its sitemap inclusion, and the JSON-LD
+// WebPage node here can never drift from the gate: if the self-project case
+// study were flipped to draft, the gate would keep "/" noindex and the WebPage
+// node would disappear (INV-03). Proof-led positioning links the self-project
+// case study as the evidence behind the homepage claim. No client script; the
+// ADR-004 Signal Path homepage motion is a later plan and is not introduced here.
 import BaseLayout from "../layouts/BaseLayout.astro";
+import JsonLd from "../components/JsonLd.astro";
+import { buildEntityGraph } from "../lib/structured-data.ts";
+import { ROUTE_REGISTRY } from "../config/routes.ts";
 
-const title = "Ryan Brosas — Agent Systems Builder";
+const routeId = "home";
+const title = "Ryan Brosas — AI workflow systems for founder-led teams";
 const description =
-  "Ryan Brosas builds practical agent systems with clear context, checks, handoffs, and recovery paths.";
+  "Ryan Brosas designs and builds reliable AI workflow systems — explicit context, checks, human handoffs, and recovery paths — for founder-led teams.";
+
+// The homepage's disposition is the gate result carried by the registry "home"
+// entry; the WebPage node is emitted only when the gate promoted "/" to public.
+const home = ROUTE_REGISTRY.byId("home");
+const visibility = home?.visibility ?? "noindex";
+
+// Registry-derived link to the self-project case study (never a hard-coded path).
+const caseStudyHref = ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: "this-site" });
+
+// Astro.site is the real origin from astro.config; buildEntityGraph normalises
+// the trailing slash. Fall back to the placeholder so a mis-set config never
+// throws at render time.
+const site = Astro.site?.href ?? "https://example.com";
+const graph = buildEntityGraph({ site, page: { routeId, title, description, visibility } });
 ---
-<BaseLayout routeId="home" title={title} description={description}>
+<BaseLayout routeId={routeId} title={title} description={description}>
+  <JsonLd graph={graph} />
   <h1>Ryan Brosas</h1>
-  <p><strong>Agent Systems Builder</strong></p>
-  <p>I build agent systems so repetitive work stops coming back to you.</p>
+  <p><strong>AI workflow systems for founder-led teams</strong></p>
+  <p>
+    I design and build reliable AI workflow systems — explicit context, checks,
+    human handoffs, and recovery paths — so repetitive work stops coming back to
+    you.
+  </p>
+  <p>
+    Every claim here is evidence-backed. See how this site itself is built:
+    <a href={caseStudyHref}>Building This Website</a>.
+  </p>
 </BaseLayout>

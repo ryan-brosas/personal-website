@@ -159,11 +159,13 @@ describe("ROUTE_REGISTRY derived helpers", () => {
     assert.deepEqual(ROUTE_REGISTRY.breadcrumbsFor("about"), [{ id: "about", path: "/about/" }]);
   });
 
-  test("discoverableRoutes = public, non-dynamic, HTML only (no home/endpoints/slug)", () => {
+  test("discoverableRoutes = public, non-dynamic, HTML only (home included once gate-promoted; no endpoints/slug)", () => {
     const paths = ROUTE_REGISTRY.discoverableRoutes()
       .map((r) => r.path)
       .sort();
-    assert.deepEqual(paths, ["/about/", "/case-studies/", "/contact/", "/services/"]);
+    // The homepage "/" is gate-promoted to public (T16), so it now joins the
+    // discoverable set; file endpoints and the dynamic [slug] pattern stay out.
+    assert.deepEqual(paths, ["/", "/about/", "/case-studies/", "/contact/", "/services/"]);
   });
 
   test("expectedBuildManifest lists static route paths, excludes the dynamic pattern", () => {

@@ -19,8 +19,11 @@ describe("T9 buildPageMetadata", () => {
   });
 
   test("noindex is derived from registry visibility when not overridden", () => {
-    // home is noindex in the first release; about is public.
-    assert.equal(buildPageMetadata("home").noindex, true);
+    // home is gate-promoted to public (T16) and about is public — both derive
+    // noindex=false straight from their registry visibility (no override). The
+    // noindex=true derivation is exercised by the override test below and the C2
+    // content-driven-noindex build variant (no registry route is static noindex).
+    assert.equal(buildPageMetadata("home").noindex, false);
     assert.equal(buildPageMetadata("about").noindex, false);
   });
 

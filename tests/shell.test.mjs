@@ -38,14 +38,19 @@ const expectedHtmlRoutes = [
       (d) =>
         d.isDynamic !== true &&
         isHtmlRoute(d.path) &&
-        (d.gate === "always" || d.visibility === "noindex"),
+        // The code-owned root (gate "home-proof") is always a build target in
+        // both dispositions; "always" routes are unconditional; content-driven
+        // noindex pages (e.g. the C2 variant) are routable too.
+        (d.gate === "always" || d.gate === "home-proof" || d.visibility === "noindex"),
     )
     .map((d) => d.path),
   ...collectionPaths,
 ];
 const expectedDiscoverableRoutes = [
   ...ROUTE_REGISTRY.discoverableRoutes()
-    .filter((r) => r.gate === "always")
+    // discoverableRoutes() already filters to public; the home-proof root joins
+    // the "always" routes in discovery ONLY when the gate promoted it to public.
+    .filter((r) => r.gate === "always" || r.gate === "home-proof")
     .map((r) => r.path),
   ...collectionPaths,
 ];
@@ -145,9 +150,12 @@ describe("B1 root shell", () => {
     if (cleanup) cleanup();
   });
 
-  test("root / is a noindex self-canonical identity shell", () => {
+  test("root / is a public indexable homepage promoted through the proof gate", () => {
     // The verifier is the gate: it fails with `missing-route: /` until index.astro
-    // exists, so this assertion fails before any HTML read can ENOENT.
+    // exists, so this assertion fails before any HTML read can ENOENT. With the
+    // homepage promoted, `/` is now BOTH an expected HTML route and a discoverable
+    // route (the gate + the home-proof filter), so the verifier's sitemap parity
+    // and canonical checks cover it.
     const result = verifyBuild({
       distDir,
       site: SITE,
@@ -159,7 +167,7 @@ describe("B1 root shell", () => {
     assert.equal(
       result.ok,
       true,
-      `verifier must accept the root shell: ${JSON.stringify(result.errors)}`,
+      `verifier must accept the promoted homepage: ${JSON.stringify(result.errors)}`,
     );
 
     const html = readHtml(distDir, "/");
@@ -170,10 +178,14 @@ describe("B1 root shell", () => {
     assert.equal(canonicals.length, 1, "exactly one canonical link");
     assert.equal(canonicals[0], "https://example.com/", "canonical is the root self-URL");
 
-    // noindex,follow — noindex stays crawlable but excluded from discovery.
+    // Promoted homepage: NO noindex; an explicit index,follow robots directive.
     assert.ok(
-      /<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
-      "has noindex,follow robots meta",
+      !/<meta\s+name="robots"\s+content="noindex,follow"/i.test(html),
+      "promoted homepage has no noindex meta",
+    );
+    assert.ok(
+      /<meta\s+name="robots"\s+content="index,follow"/i.test(html),
+      "has index,follow robots meta",
     );
 
     // Standards-mode document with language and a main landmark.
@@ -187,26 +199,46 @@ describe("B1 root shell", () => {
       "has a skip-to-content link to #main",
     );
 
-    // Exactly one h1 with approved identity copy.
+    // Exactly one h1 with the approved identity name.
     const h1s = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
     assert.ok(h1s, "has an h1");
     const h1Text = h1s[1].replace(/<[^>]+>/g, "").trim();
-    assert.equal(h1s.length === undefined ? 1 : html.match(/<h1/gi).length, 1, "exactly one h1");
+    assert.equal(html.match(/<h1/gi).length, 1, "exactly one h1");
     assert.ok(h1Text.includes("Ryan Brosas"), "h1 includes the identity name");
 
-    // No client script.
+    // Proof-led positioning + the self-project case study link (its evidence).
+    assert.ok(
+      /AI workflow systems for founder-led teams/i.test(html),
+      "homepage carries the proof-led positioning",
+    );
+    assert.ok(
+      /<a[^>]+href="\/case-studies\/this-site\/"[^>]*>/i.test(html),
+      "homepage links the self-project case study as its evidence",
+    );
+
+    // Person + WebSite + WebPage JSON-LD — the WebPage node is emitted ONLY for a
+    // public page (INV-03), so its presence proves the promotion reached the graph.
+    const jsonLd = html.match(
+      /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i,
+    );
+    assert.ok(jsonLd, "homepage emits a JSON-LD data block");
+    const graph = JSON.parse(jsonLd[1]);
+    const types = graph["@graph"].map((node) => node["@type"]);
+    assert.ok(types.includes("Person"), "graph has a Person node");
+    assert.ok(types.includes("WebSite"), "graph has a WebSite node");
+    assert.ok(types.includes("WebPage"), "graph has a WebPage node (public page, INV-03)");
+
+    // JSON-LD is a data block, excluded from the one-behavioral-script contract.
     assertOneNavScript(html);
   });
 
-  test("root / is excluded from the sitemap while noindex", () => {
+  test("root / is included in the sitemap now that the gate promoted it to public", () => {
     const sitemap = fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf-8");
-    // Parse <loc> URLs and assert the exact root canonical is not among them.
-    // Substring matching would false-positive once /about/ exists (it contains
-    // the root origin).
+    // Parse <loc> URLs and assert the exact root canonical IS among them now.
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     assert.ok(
-      !locs.includes("https://example.com/"),
-      "root canonical is not among the sitemap <loc> URLs",
+      locs.includes("https://example.com/"),
+      "root canonical is among the sitemap <loc> URLs",
     );
   });
 });

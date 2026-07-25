@@ -10,18 +10,23 @@
 import { defineRoutes } from "../lib/route-registry.ts";
 import type { RouteDefinition } from "../lib/route-registry.ts";
 import type { Visibility } from "../lib/publishing.ts";
+import { resolveHomeVisibility } from "../lib/home-proof.ts";
 
 // Nav order preserves the shipped visual order (about, services, contact); the
 // numeric gaps leave room for future primary entries (e.g. case-studies at T14)
 // without renumbering.
 const ROUTE_DEFINITIONS: RouteDefinition[] = [
-  // Code-owned root. noindex in first release (excluded from discovery, stays
-  // crawlable); promoted to public when the evidence homepage lands (T16).
+  // Code-owned root. Its visibility is NOT a static literal: it is DERIVED from
+  // the machine-executable homepage proof gate (resolveHomeVisibility, T16). The
+  // gate promotes "/" to public ONLY when the self-project case study is public
+  // with verified, resolvable evidence and every homepage claim carries an
+  // evidence ref; otherwise it stays noindex (fail-closed — crawlable but
+  // excluded from discovery). Flipping the case study to draft keeps "/" noindex.
   {
     id: "home",
     kind: "singleton",
     path: "/",
-    visibility: "noindex",
+    visibility: resolveHomeVisibility(),
     gate: "home-proof",
     navPlacement: "none",
   },
