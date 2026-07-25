@@ -34,9 +34,9 @@ excluded from discovery outputs). See `src/lib/publishing.ts` and
 
 | Route | Status | Visibility | Gate | Notes |
 |---|---|---|---|---|
-| `/` | active | `noindex` | `home-proof` | Minimal shell in first release; crawlable but excluded from discovery. Promoted to `public` when the evidence homepage lands (T16). |
+| `/` | active | `public` | `home-proof` | Minimal shell; crawlable. The home-proof gate has promoted it to `public` (see `src/config/routes.ts` ROOT_ROUTE_POLICY). |
 | `/services/` | active | `public` | `always` | Labeled **Work With Me** in primary navigation. |
-| `/case-studies/` | conditional | `public` | `case-studies-hub` | Hub page built only when at least one public case-study entry exists. Not in primary navigation yet (T14). |
+| `/case-studies/` | conditional | `public` | `case-studies-hub` | Hub page built only when at least one public case-study entry exists. |
 | `/case-studies/[slug]/` | conditional | `public` | `case-studies-hub` | Dynamic entry page; builds only when the case-studies hub gate is satisfied. |
 | `/about/` | active | `public` | `always` | Fixed-id singleton. |
 | `/contact/` | active | `public` | `always` | External scheduler link + email fallback; no form. |
