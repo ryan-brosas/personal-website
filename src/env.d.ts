@@ -1,11 +1,12 @@
 /// <reference types="astro/client" />
 
-// Minimal ambient shim for the one Node builtin used by a type-checked src/*.ts
-// module (src/lib/home-proof.ts reads the tracked self-project case study to
-// derive the homepage promotion decision). @types/node is intentionally not a
-// dependency, so this declares ONLY the single function actually consumed. The
-// Node test runner, Vite/Astro SSG, and the build tooling all provide node:fs at
-// runtime; this declaration is type-only and has zero runtime cost.
+// Minimal ambient declarations for the Node builtins used by home-proof.ts.
+// @types/node is intentionally not a project dependency.
 declare module "node:fs" {
   export function readFileSync(path: string | URL, encoding: "utf-8"): string;
+}
+
+
+declare module "node:url" {
+  export function fileURLToPath(url: URL | string): string;
 }

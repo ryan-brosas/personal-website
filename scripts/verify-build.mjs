@@ -8,7 +8,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { canonicalHref, isHtmlRoute } from "../src/lib/routes.ts";
 import { ROUTE_REGISTRY } from "../src/config/routes.ts";
-import { caseStudyRoutes } from "./collection-records.mjs";
+import { isDiscoverable, isRoutable } from "../src/lib/publishing.ts";
+import { resolveRoutes } from "../src/lib/site-routes.ts";
+import {
+  collectionEntryRoutes,
+  collectionDiscoveryRoutes,
+  readPageVisibilities,
+} from "./collection-records.mjs";
 
 const listFiles = (dir) => {
   const result = [];
@@ -265,55 +271,59 @@ export const verifyBuild = (manifest) => {
   return { ok: errors.length === 0, errors };
 };
 
-// CLI entry: verify the root build. The manifest is DERIVED from ROUTE_REGISTRY
-// (INV-06) — no hard-coded route arrays. Gate filter: only unconditionally
-// enabled routes (gate "always") plus the code-owned noindex root are actual
-// build targets today; the reserved case-studies hub (gate "case-studies-hub")
-// is registered but NOT built until T14, so it is excluded. favicon.svg is a
-// public/ static asset, not a registry route, so it is the one declared literal.
+export const resolveBuildManifest = ({
+  pageVisibilities,
+  collectionEntryRoutes = [],
+  collectionDiscoveryRoutes = [],
+}) => {
+  const definitions = ROUTE_REGISTRY.all();
+  const contentRoutes = resolveRoutes(pageVisibilities);
+  const codeOwnedRoutes = definitions.filter(
+    (definition) =>
+      definition.isDynamic !== true &&
+      isHtmlRoute(definition.path) &&
+      (definition.id === "home" || definition.kind === "hub") &&
+      isRoutable(definition.visibility),
+  );
+  const expectedHtmlRoutes = [
+    ...codeOwnedRoutes.map((route) => route.path),
+    ...contentRoutes.map((route) => route.path),
+    ...collectionEntryRoutes.map((route) => route.path),
+  ];
+  const expectedDiscoverableRoutes = [
+    ...codeOwnedRoutes
+      .filter((route) => isDiscoverable(route.visibility) && route.kind !== "hub")
+      .map((route) => route.path),
+    ...contentRoutes.filter((route) => isDiscoverable(route.visibility)).map((route) => route.path),
+    ...collectionDiscoveryRoutes.map((route) => route.path),
+  ];
+  const expectedFileEndpoints = [
+    ...definitions
+      .filter((definition) => definition.isDynamic !== true && !isHtmlRoute(definition.path))
+      .map((definition) => definition.path.replace(/^\/+/, "")),
+    "favicon.svg",
+  ];
+
+  return {
+    expectedHtmlRoutes: [...new Set(expectedHtmlRoutes)],
+    expectedDiscoverableRoutes: [...new Set(expectedDiscoverableRoutes)],
+    expectedFileEndpoints: [...new Set(expectedFileEndpoints)],
+  };
+};
+
+// The CLI manifest combines code-owned routes with visibility read from content.
+// Public static assets remain explicit because they are not registry routes.
 const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] === __filename) {
   const PLACEHOLDER_ORIGIN = "https://example.com";
   const site = process.env.SITE_ORIGIN ?? PLACEHOLDER_ORIGIN;
 
-  const defs = ROUTE_REGISTRY.all();
-  // Collection-backed routes (case-studies hub + entries) are content-driven, so
-  // they cannot come from the registry alone: they are derived from the tracked
-  // frontmatter through the SAME resolveCollectionRoutes helper the sitemap
-  // endpoint uses (INV-07 min-child gate applied once, in one place). This keeps
-  // the verifier's expected set == the sitemap == the runtime build. No route or
-  // slug literals are hard-coded here.
-  const collectionRoutes = caseStudyRoutes();
-  const collectionPaths = collectionRoutes.map((r) => r.path);
-  const expectedHtmlRoutes = [
-    ...defs
-      .filter(
-        (d) =>
-          d.isDynamic !== true &&
-          isHtmlRoute(d.path) &&
-          // The code-owned root (gate "home-proof") is always a build target in
-          // both dispositions; "always" routes are unconditional; content-driven
-          // noindex pages (e.g. the C2 variant) are routable too.
-          (d.gate === "always" || d.gate === "home-proof" || d.visibility === "noindex"),
-      )
-      .map((d) => d.path),
-    ...collectionPaths,
-  ];
-  const expectedDiscoverableRoutes = [
-    ...ROUTE_REGISTRY.discoverableRoutes()
-      // discoverableRoutes() already filters to public; the home-proof root joins
-      // the "always" routes in discovery ONLY when the gate promoted it to public.
-      .filter((r) => r.gate === "always" || r.gate === "home-proof")
-      .map((r) => r.path),
-    ...collectionPaths,
-  ];
-  const expectedFileEndpoints = [
-    ...defs
-      .filter((d) => d.isDynamic !== true && !isHtmlRoute(d.path))
-      .map((d) => d.path.replace(/^\/+/, "")),
-    "favicon.svg",
-  ];
-
+  const { expectedHtmlRoutes, expectedDiscoverableRoutes, expectedFileEndpoints } =
+    resolveBuildManifest({
+      pageVisibilities: readPageVisibilities(),
+      collectionEntryRoutes: collectionEntryRoutes(),
+      collectionDiscoveryRoutes: collectionDiscoveryRoutes(),
+    });
   const result = verifyBuild({
     distDir: "dist",
     site,

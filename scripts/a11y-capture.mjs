@@ -1,8 +1,8 @@
 // M2 Accessibility Acceptance — A1 evidence capture.
 // Dependency-free: Node 24 built-ins + installed Chromium over the Chrome
 // DevTools Protocol. NO Playwright (not installed). Builds the site, serves it
-// on a loopback preview, and captures real browser evidence across a 45-
-// scenario matrix plus 5 keyboard-focus captures. Fail-closed: any page
+// on a loopback preview, and captures real browser evidence across the registered
+// route matrix plus one keyboard-focus capture per route. Fail-closed: any page
 // console error, failed request, or non-loopback request fails the run.
 // Evidence binaries under gitignored .playwright-mcp/m2-accessibility-acceptance/.
 import { spawn, spawnSync } from "node:child_process";
@@ -29,7 +29,7 @@ const CHROME_CANDIDATES = [
 const EXPECTED = {
   "/": {
     canonical: "https://example.com/",
-    robots: "noindex,follow",
+    robots: null,
     h1: "Ryan Brosas",
     navCurrent: null,
     brandCurrent: true,
@@ -67,6 +67,46 @@ const EXPECTED = {
     sched: true,
     recovery: null,
   },
+  "/case-studies/": {
+    canonical: "https://example.com/case-studies/",
+    robots: null,
+    h1: "Case Studies",
+    navCurrent: "Case Studies",
+    brandCurrent: false,
+    headerCurrent: true,
+    sched: false,
+    recovery: null,
+  },
+  "/case-studies/this-site/": {
+    canonical: "https://example.com/case-studies/this-site/",
+    robots: null,
+    h1: "Building This Website: A Transparent Self-Project",
+    navCurrent: null,
+    brandCurrent: false,
+    headerCurrent: false,
+    sched: false,
+    recovery: null,
+  },
+  "/resources/": {
+    canonical: "https://example.com/resources/",
+    robots: null,
+    h1: "Resources",
+    navCurrent: "Resources",
+    brandCurrent: false,
+    headerCurrent: true,
+    sched: false,
+    recovery: null,
+  },
+  "/resources/ai-workflow-readiness/": {
+    canonical: "https://example.com/resources/ai-workflow-readiness/",
+    robots: null,
+    h1: "AI Workflow Readiness Checklist",
+    navCurrent: null,
+    brandCurrent: false,
+    headerCurrent: false,
+    sched: false,
+    recovery: null,
+  },
   "/404.html": {
     canonical: "https://example.com/404.html",
     robots: "noindex,follow",
@@ -79,6 +119,8 @@ const EXPECTED = {
   },
 };
 const ROUTES = Object.keys(EXPECTED);
+const MATRIX_SCENARIOS = ROUTES.length * 9;
+const STRICT_CAPTURES = MATRIX_SCENARIOS + ROUTES.length;
 const SCHED_HREF = "https://calendly.com/ryanjoserbrosas/30min";
 const SCHED_TEXT = "Schedule a conversation";
 const SCHED_REL = "noopener noreferrer";
@@ -198,15 +240,21 @@ function isExpected404(route, status, type) {
 
 async function selfTest() {
   const mx = buildMatrix();
-  assert.equal(mx.length, 45, "matrix has 45 scenarios");
+  assert.equal(mx.length, MATRIX_SCENARIOS, "matrix covers every route and mode");
   const modes = {};
   for (const s of mx) modes[s.mode] = (modes[s.mode] || 0) + 1;
-  assert.equal(modes.normal, 20, "20 normal/reflow");
-  assert.equal(modes["reduced-motion"], 10, "10 reduced-motion");
-  assert.equal(modes["no-js"], 10, "10 no-js");
-  assert.equal(modes.zoom200, 5, "5 zoom200");
+  assert.equal(modes.normal, ROUTES.length * 4, "four normal/reflow captures per route");
+  assert.equal(modes["reduced-motion"], ROUTES.length * 2, "two reduced-motion captures per route");
+  assert.equal(modes["no-js"], ROUTES.length * 2, "two no-js captures per route");
+  assert.equal(modes.zoom200, ROUTES.length, "one zoom capture per route");
   assert.deepEqual(mx[0], { route: "/", mode: "normal", w: 320, h: 800, dsf: 1 });
-  assert.deepEqual(mx[44], { route: "/404.html", mode: "zoom200", w: 720, h: 450, dsf: 2 });
+  assert.deepEqual(mx[MATRIX_SCENARIOS - 1], {
+    route: "/404.html",
+    mode: "zoom200",
+    w: 720,
+    h: 450,
+    dsf: 2,
+  });
   assert.equal(routeSlug("/"), "root");
   assert.equal(routeSlug("/about/"), "about");
   assert.equal(routeSlug("/404.html"), "404");
@@ -231,7 +279,7 @@ async function selfTest() {
   assert.equal(isExpected404("/404.html", 404, "Document"), true);
   assert.equal(isExpected404("/404.html", 404, "Image"), false);
   assert.equal(isExpected404("/about/", 404, "Document"), false);
-  console.log("self-test: PASS (matrix 45, slugs, path guard, contrast, classify, 404)");
+  console.log(`self-test: PASS (matrix ${MATRIX_SCENARIOS}, routes, path guard, contrast, classify, 404)`);
 }
 // __PART_B__
 async function launchBrowser() {
@@ -1095,8 +1143,8 @@ async function main() {
     browser = await launchBrowser();
     const full = buildMatrix();
     let mx = args.strict ? full : filterMatrix(full, args);
-    if (args.strict && mx.length !== 45) {
-      throw new Error("--strict requires all 45 scenarios, got " + mx.length);
+    if (args.strict && mx.length !== MATRIX_SCENARIOS) {
+      throw new Error(`--strict requires all ${MATRIX_SCENARIOS} scenarios, got ${mx.length}`);
     }
     for (const sc of mx) {
       process.stderr.write(
@@ -1159,9 +1207,14 @@ async function main() {
       " failed",
   );
   if (args.strict) {
-    if (caps.length !== 50 || failed !== 0 || blocked !== 0 || shotCount < 50) {
+    if (
+      caps.length !== STRICT_CAPTURES ||
+      failed !== 0 ||
+      blocked !== 0 ||
+      shotCount < STRICT_CAPTURES
+    ) {
       console.error(
-        "STRICT FAIL: expected 50 captures (45 matrix + 5 keyboard), 0 failures, 0 blocked, >=50 screenshots; got " +
+        `STRICT FAIL: expected ${STRICT_CAPTURES} captures (${MATRIX_SCENARIOS} matrix + ${ROUTES.length} keyboard), 0 failures, 0 blocked, >=${STRICT_CAPTURES} screenshots; got ` +
           caps.length +
           " captures, " +
           failed +

@@ -41,7 +41,13 @@ const graph = buildEntityGraph({
   page: { routeId, title, description, visibility, kind: "article", params },
 });
 ---
-<BaseLayout routeId={routeId} title={title} description={description} noindex={noindex} params={params}>
+<BaseLayout
+  routeId={routeId}
+  title={title}
+  description={description}
+  noindex={noindex ?? visibility === "noindex"}
+  params={params}
+>
   <JsonLd graph={graph} />
   <Breadcrumbs routeId={routeId} params={params} />
   <slot />

@@ -5,50 +5,25 @@
 // is the build gate: it throws on any unresolvable claim so a public page cannot ship
 // a metric/testimonial with a missing or non-approved evidence ref.
 //
-// RECONCILIATION: these ClaimRecord/SourceRecord types are minimal local mirrors of
-// design §12.5 (source `permission` public|redacted|internal-only; claim `kind`
-// fact|metric|testimonial|interpretation|proposal; claim `status` approved|blocked|
-// retired). T7 owns the canonical entity/source/claim types in `src/config/entities.ts`
-// — if T7 lands a shared definition, import it here and delete these local shapes.
+import type {
+  ClaimKind,
+  ClaimRecord,
+  ClaimStatus,
+  SourcePermission,
+  SourceRecord,
+  SourceRegistry,
+  SourceType,
+} from "../config/entities.ts";
 
-export type SourcePermission = "public" | "redacted" | "internal-only";
-
-export type SourceType =
-  | "public-url"
-  | "approved-artifact"
-  | "measurement-export"
-  | "testimonial-approval"
-  | "operator-observation";
-
-export interface SourceRecord {
-  id: string;
-  title: string;
-  type: SourceType;
-  publicUrl?: string;
-  publicSafePath?: string;
-  owner: string;
-  permission: SourcePermission;
-  capturedAt?: string;
-  reviewedAt: string;
-  notes?: string;
-}
-
-export type ClaimKind = "fact" | "metric" | "testimonial" | "interpretation" | "proposal";
-export type ClaimStatus = "approved" | "blocked" | "retired";
-
-export interface ClaimRecord {
-  id: string;
-  statement: string;
-  kind: ClaimKind;
-  sourceIds: string[];
-  disclosure?: string;
-  validFrom?: string;
-  validThrough?: string;
-  status: ClaimStatus;
-}
-
-// The registry is keyed by source id (matches the `src/data/sources.json` shape).
-export type SourceRegistry = Record<string, SourceRecord>;
+export type {
+  ClaimKind,
+  ClaimRecord,
+  ClaimStatus,
+  SourcePermission,
+  SourceRecord,
+  SourceRegistry,
+  SourceType,
+};
 
 // Errors as data: the pure resolvers return a discriminated union; only the
 // build gate (`assertClaimResolvable`) throws.

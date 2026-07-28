@@ -1,5 +1,5 @@
 // W4·T14 (SEO/GEO authority refactor) — case-studies discovery-parity + the
-// hub min-child gate (INV-07). The pure helper `resolveCollectionRoutes` is the
+// hub min-child gate (INV-07). The pure helper `resolveCollectionDiscoveryRoutes` is the
 // ONE source of the case-studies route inventory shared by the sitemap endpoint,
 // the [slug] page, the build verifier, and the shell manifest — so the public
 // canonical set, the sitemap, internal discovery, and the verifier's expected
@@ -7,16 +7,37 @@
 // helpers directly via the ESM-native TypeScript resolution the runner provides.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { resolveCollectionRoutes } from "../src/lib/site-routes.ts";
+import {
+  resolveCollectionEntryRoutes,
+  resolveCollectionDiscoveryRoutes,
+} from "../src/lib/site-routes.ts";
 import { caseStudyRoutes, readCaseStudyRecords } from "../scripts/collection-records.mjs";
 
 const CS = "case-studies";
 
-describe("T14 resolveCollectionRoutes — hub min-child gate (INV-07)", () => {
+describe("collection entry routing", () => {
+  test("public and noindex entries are routable while drafts are excluded", () => {
+    assert.deepEqual(
+      resolveCollectionEntryRoutes({
+        [CS]: [
+          { slug: "public-entry", visibility: "public" },
+          { slug: "private-preview", visibility: "noindex" },
+          { slug: "unfinished", visibility: "draft" },
+        ],
+      }),
+      [
+        { path: "/case-studies/private-preview/", visibility: "noindex" },
+        { path: "/case-studies/public-entry/", visibility: "public" },
+      ],
+    );
+  });
+});
+
+describe("T14 resolveCollectionDiscoveryRoutes — hub min-child gate (INV-07)", () => {
   test("zero public entries → no hub, no children (hub not discoverable)", () => {
     // A collection with only non-public records must yield an EMPTY inventory:
     // the hub is gated off (INV-07) and no child route is discoverable.
-    const routes = resolveCollectionRoutes({
+    const routes = resolveCollectionDiscoveryRoutes({
       [CS]: [
         { slug: "draft-one", visibility: "draft" },
         { slug: "hidden-one", visibility: "noindex" },
@@ -26,12 +47,12 @@ describe("T14 resolveCollectionRoutes — hub min-child gate (INV-07)", () => {
   });
 
   test("empty collection map → []", () => {
-    assert.deepEqual(resolveCollectionRoutes({}), []);
-    assert.deepEqual(resolveCollectionRoutes({ [CS]: [] }), []);
+    assert.deepEqual(resolveCollectionDiscoveryRoutes({}), []);
+    assert.deepEqual(resolveCollectionDiscoveryRoutes({ [CS]: [] }), []);
   });
 
   test("≥1 public entry → parent hub route + one child route per public entry", () => {
-    const routes = resolveCollectionRoutes({
+    const routes = resolveCollectionDiscoveryRoutes({
       [CS]: [{ slug: "this-site", visibility: "public" }],
     });
     assert.deepEqual(routes, [
@@ -41,7 +62,7 @@ describe("T14 resolveCollectionRoutes — hub min-child gate (INV-07)", () => {
   });
 
   test("draft/noindex entries are excluded even when a public sibling exists", () => {
-    const routes = resolveCollectionRoutes({
+    const routes = resolveCollectionDiscoveryRoutes({
       [CS]: [
         { slug: "beta", visibility: "public" },
         { slug: "alpha", visibility: "draft" },
@@ -56,7 +77,7 @@ describe("T14 resolveCollectionRoutes — hub min-child gate (INV-07)", () => {
   });
 
   test("multiple public entries → deterministic, slug-sorted children", () => {
-    const routes = resolveCollectionRoutes({
+    const routes = resolveCollectionDiscoveryRoutes({
       [CS]: [
         { slug: "zeta", visibility: "public" },
         { slug: "alpha", visibility: "public" },

@@ -1,0 +1,62 @@
+---
+import { getCollection } from "astro:content";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import JsonLd from "../../components/JsonLd.astro";
+import { ROUTE_REGISTRY } from "../../config/routes.ts";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { isDiscoverable } from "../../lib/publishing.ts";
+import { buildEntityGraph } from "../../lib/structured-data.ts";
+
+const routeId = "resources";
+const title = "Resources";
+const description =
+  "Practical guides, checklists, templates, and references for building dependable AI workflows.";
+const entries = (await getCollection("resources"))
+  .filter((entry) => isDiscoverable(entry.data.visibility))
+  .sort((a, b) => a.data.title.localeCompare(b.data.title));
+const visibility = entries.length > 0 ? "public" : "noindex";
+const site = Astro.site?.href ?? "https://example.com";
+const graph = buildEntityGraph({
+  site,
+  page: { routeId, title, description, visibility },
+});
+---
+<BaseLayout
+  routeId={routeId}
+  title={title}
+  description={description}
+  noindex={visibility === "noindex"}
+>
+  <JsonLd graph={graph} />
+  <Breadcrumbs routeId={routeId} />
+
+  <section class="page-shell" aria-labelledby="resources-title">
+    <header class="page-header">
+      <p class="eyebrow">Useful systems, made reusable</p>
+      <h1 id="resources-title">{title}</h1>
+      <p class="page-lead">{description}</p>
+    </header>
+
+    {
+      entries.length === 0 ? (
+        <p class="empty-state">The first resources are being prepared.</p>
+      ) : (
+        <ul class="case-grid">
+          {entries.map((entry) => (
+            <li class="case-card">
+              <p class="case-meta">{entry.data.format} · {entry.data.pillar.replaceAll("-", " ")}</p>
+              <div>
+                <h2>
+                  <a href={ROUTE_REGISTRY.pathFor("resources-slug", { slug: entry.data.slug })}>
+                    {entry.data.title}
+                  </a>
+                </h2>
+                <p>{entry.data.description}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</BaseLayout>

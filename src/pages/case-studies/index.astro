@@ -1,13 +1,4 @@
 ---
-// W4·T14 (SEO/GEO authority refactor) — the case-studies HUB. A listing WebPage,
-// NOT an Article: it carries a WebPage + BreadcrumbList entity graph (no Article
-// node), so the structured data matches the visible content (a list of entries),
-// never asserting article authorship for a directory page. The min-child gate
-// (INV-07) is enforced for DISCOVERY by resolveCollectionRoutes — the hub is
-// only advertised in the sitemap/nav/verifier when ≥1 public entry exists — and
-// the visible list here is built from the same isDiscoverable filter, so an
-// empty hub can never list a non-public entry. Links are registry-derived
-// (pathFor), never hard-coded.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import JsonLd from "../../components/JsonLd.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
@@ -19,31 +10,51 @@ import { ROUTE_REGISTRY } from "../../config/routes.ts";
 const routeId = "case-studies";
 const title = "Case Studies";
 const description =
-  "Selected build write-ups — transparent, evidence-backed accounts of systems and how they were made.";
+  "Transparent, evidence-backed accounts of systems, trade-offs, and how the work was made.";
 
 const entries = (await getCollection("case-studies"))
   .filter((entry) => isDiscoverable(entry.data.visibility))
   .sort((a, b) => a.data.slug.localeCompare(b.data.slug));
 
+const visibility = entries.length > 0 ? "public" : "noindex";
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({
   site,
-  page: { routeId, title, description, visibility: "public" },
+  page: { routeId, title, description, visibility },
 });
 ---
-<BaseLayout routeId={routeId} title={title} description={description}>
+<BaseLayout
+  routeId={routeId}
+  title={title}
+  description={description}
+  noindex={visibility === "noindex"}
+>
   <JsonLd graph={graph} />
   <Breadcrumbs routeId={routeId} />
-  <h1>{title}</h1>
-  <ul>
-    {
-      entries.map((entry) => (
-        <li>
-          <a href={ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: entry.data.slug })}>
-            {entry.data.title}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
+
+  <section class="page-shell" aria-labelledby="case-studies-title">
+    <header class="page-header">
+      <p class="eyebrow">The work, with the wiring exposed</p>
+      <h1 id="case-studies-title">{title}</h1>
+      <p class="page-lead">{description}</p>
+    </header>
+
+    <ul class="case-grid">
+      {
+        entries.map((entry) => (
+          <li class="case-card">
+            <p class="case-meta">{entry.data.kind.replace("-", " ")} · {entry.data.pillar.replaceAll("-", " ")}</p>
+            <div>
+              <h2>
+                <a href={ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: entry.data.slug })}>
+                  {entry.data.title}
+                </a>
+              </h2>
+              <p>{entry.data.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
 </BaseLayout>

@@ -12,14 +12,13 @@ import type { RouteDefinition } from "../lib/route-registry.ts";
 import type { Visibility } from "../lib/publishing.ts";
 import { resolveHomeVisibility } from "../lib/home-proof.ts";
 
-// Nav order preserves the shipped visual order (about, services, contact); the
-// numeric gaps leave room for future primary entries (e.g. case-studies at T14)
-// without renumbering.
+// Numeric order leaves room to add gated sections without renumbering existing
+// primary navigation.
 const ROUTE_DEFINITIONS: RouteDefinition[] = [
   // Code-owned root. Its visibility is NOT a static literal: it is DERIVED from
   // the machine-executable homepage proof gate (resolveHomeVisibility, T16). The
   // gate promotes "/" to public ONLY when the self-project case study is public
-  // with verified, resolvable evidence and every homepage claim carries an
+  // with verified, resolvable evidence and every registered homepage proof claim carries an
   // evidence ref; otherwise it stays noindex (fail-closed — crawlable but
   // excluded from discovery). Flipping the case study to draft keeps "/" noindex.
   {
@@ -40,11 +39,8 @@ const ROUTE_DEFINITIONS: RouteDefinition[] = [
     navLabelKey: "services",
     navOrder: 20,
   },
-  // Case-studies hub (T14). Primary-nav, slotted between services (20) and
-  // contact (30). Discovery still honours the INV-07 min-child gate: the hub is
-  // only advertised in the sitemap/nav/verifier when ≥1 public entry exists —
-  // that gate is applied by resolveCollectionRoutes over the collection records,
-  // not by this static registry entry.
+  // Collection hubs are public-capable registry entries. Runtime discovery
+  // advertises each hub only when its collection has a public child.
   {
     id: "case-studies",
     kind: "hub",
@@ -64,6 +60,27 @@ const ROUTE_DEFINITIONS: RouteDefinition[] = [
     navPlacement: "none",
     collection: "case-studies",
     parent: "case-studies",
+    isDynamic: true,
+  },
+  {
+    id: "resources",
+    kind: "hub",
+    path: "/resources/",
+    visibility: "public",
+    gate: "resources-hub",
+    navPlacement: "primary",
+    navLabelKey: "resources",
+    navOrder: 27,
+  },
+  {
+    id: "resources-slug",
+    kind: "collection",
+    path: "/resources/[slug]/",
+    visibility: "public",
+    gate: "resources-hub",
+    navPlacement: "none",
+    collection: "resources",
+    parent: "resources",
     isDynamic: true,
   },
   {

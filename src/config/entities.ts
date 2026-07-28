@@ -7,7 +7,7 @@
 // external testimonials, metrics, or `sameAs` profiles. Only owner-verified, public-safe
 // records may be seeded (D-15 deferred — `sameAs` stays empty until profiles are confirmed).
 import { z } from "astro/zod";
-import type { SourceRegistry, ValidateResult } from "../lib/publishing.ts";
+import type { ValidateResult } from "../lib/publishing.ts";
 import { TopicPillarSchema } from "../lib/content-schemas.ts";
 
 // §12.4 owner-verified external profile. `sameAs` is never inferred from a name match;
@@ -62,6 +62,8 @@ export type SourceRecord = {
   readonly notes?: string;
 };
 
+export type SourceRegistry = Record<string, SourceRecord>;
+
 // §12.5 claim kinds/status.
 export type ClaimKind = "fact" | "metric" | "testimonial" | "interpretation" | "proposal";
 export type ClaimStatus = "approved" | "blocked" | "retired";
@@ -109,6 +111,13 @@ export const parseSourceRegistry = (input: unknown): ValidateResult => {
   if (!parsed.success) return { ok: false, error: parsed.error.message };
   for (const [key, record] of Object.entries(parsed.data)) {
     if (record.id !== key) return { ok: false, error: "id-key-mismatch" };
+    if (
+      record.permission === "public" &&
+      record.publicUrl === undefined &&
+      record.publicSafePath === undefined
+    ) {
+      return { ok: false, error: "public-source-requires-location" };
+    }
   }
   return { ok: true };
 };
@@ -143,7 +152,7 @@ export const PERSON_ENTITY: PersonEntity = {
   alternateNames: [],
   role: "AI workflow systems designer",
   summary:
-    "Designs and implements reliable AI workflow systems — explicit context, checks, human handoffs, and recovery paths — for founder-led teams.",
+    "Works on AI workflow systems with explicit context, checks, human handoffs, and recovery paths for founder-led teams.",
   location: { countryCode: "PH", remote: true },
   sameAs: [],
   knowsAbout: TOPIC_PILLARS,

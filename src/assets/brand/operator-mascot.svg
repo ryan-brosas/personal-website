@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="The Operator: a deadpan Filipino character on a signal-yellow field">
+  <title>The Operator</title>
+  <rect x="0" y="0" width="320" height="320" fill="#ecc90f"/>
+
+  <g stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" fill="none">
+    <path d="M40 180 q-10 -13 2 -23"/>
+    <path d="M282 110 q10 -13 -2 -23"/>
+    <path d="M280 234 q12 -12 0 -22"/>
+  </g>
+
+  <ellipse cx="68" cy="168" rx="12" ry="17" fill="#fdf9e5" stroke="#1a1a1a" stroke-width="6"/>
+  <ellipse cx="252" cy="168" rx="12" ry="17" fill="#fdf9e5" stroke="#1a1a1a" stroke-width="6"/>
+
+  <path d="M136 214 L184 214 L184 256 L136 256 Z" fill="#fdf9e5" stroke="#1a1a1a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M28 320 L28 296 Q28 260 96 248 L224 248 Q292 260 292 296 L292 320 Z" fill="#ff5555" stroke="#1a1a1a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M110 250 q50 28 100 0" fill="none" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round"/>
+  <rect x="128" y="284" width="64" height="22" fill="#1a1a1a"/>
+  <text x="160" y="300" text-anchor="middle" fill="#fdf9e5" font-family="Cascadia Mono, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="700" letter-spacing="0.12em">OPR</text>
+
+  <path d="M72 158 C72 100 108 68 160 68 C212 68 248 100 248 158 C248 210 212 246 160 246 C108 246 72 210 72 158 Z" fill="#fdf9e5" stroke="#1a1a1a" stroke-width="6" stroke-linejoin="round"/>
+
+  <path d="M74 156 C74 96 110 60 160 60 C210 60 246 96 246 156 L246 138 L232 144 L88 144 L74 138 Z" fill="#1a1a1a"/>
+  <path d="M74 138 L74 182 L88 174 L88 144 Z" fill="#1a1a1a"/>
+  <path d="M246 138 L246 182 L232 174 L232 144 Z" fill="#1a1a1a"/>
+
+  <g stroke="#1a1a1a" stroke-width="6" stroke-linecap="round" fill="none">
+    <path d="M106 166 L140 166"/>
+    <path d="M180 166 L214 166"/>
+  </g>
+
+  <path d="M104 186 Q123 178 142 186 Q123 198 104 186 Z" fill="#1a1a1a"/>
+  <path d="M178 186 Q197 178 216 186 Q197 198 178 186 Z" fill="#1a1a1a"/>
+
+  <ellipse cx="97" cy="204" rx="13" ry="7" fill="#ff5555"/>
+  <ellipse cx="223" cy="204" rx="13" ry="7" fill="#ff5555"/>
+
+  <path d="M160 194 L160 205 Q166 208 170 204" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M143 224 L177 224" fill="none" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round"/>
+</svg>

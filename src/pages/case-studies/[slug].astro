@@ -1,35 +1,22 @@
 ---
-// W4·T14 (SEO/GEO authority refactor) — the case-study ENTRY route. One static
-// path per PUBLIC case-study record (getStaticPaths filters on the shared
-// isDiscoverable policy, so draft/noindex records emit no route — the min-child
-// gate's per-record half). Rendered through CaseStudyLayout (kind:"article"),
-// which — for a public page — emits the Article + BreadcrumbList JSON-LD keyed
-// off the entry's canonical. The registry slug param flows through so the
-// canonical and @id anchors resolve to /case-studies/<slug>/.
 import type { GetStaticPaths } from "astro";
 import { getCollection, render } from "astro:content";
 import CaseStudyLayout from "../../layouts/CaseStudyLayout.astro";
 import EvidenceNote from "../../components/EvidenceNote.astro";
-import { isDiscoverable } from "../../lib/publishing.ts";
+import { isRoutable } from "../../lib/publishing.ts";
+import { resolvePublicClaim } from "../../lib/evidence.ts";
 import type { ClaimRecord, SourceRegistry } from "../../lib/evidence.ts";
 import sourcesJson from "../../data/sources.json" with { type: "json" };
 
 export const getStaticPaths = (async () => {
   const entries = await getCollection("case-studies");
   return entries
-    .filter((entry) => isDiscoverable(entry.data.visibility))
+    .filter((entry) => isRoutable(entry.data.visibility))
     .map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
 }) satisfies GetStaticPaths;
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-
-// T14 evidence surface. The entry's single `evidence` object (T6 schema) becomes
-// an approved factual claim so EvidenceNote can resolve its public-safe backing
-// source through the SAME authority seam (resolvePublicClaim). Only verified
-// evidence yields a claim; proposed/open evidence (or none) leaves `claim`
-// undefined and EvidenceNote renders NOTHING. When the claim IS built, EvidenceNote
-// still renders nothing if the source is unresolvable or internal-only.
 const registry = sourcesJson as unknown as SourceRegistry;
 const evidence = entry.data.evidence;
 const claim: ClaimRecord | undefined =
@@ -42,6 +29,17 @@ const claim: ClaimRecord | undefined =
         status: "approved",
       }
     : undefined;
+
+// Fail-closed: a PUBLIC case study must ship with resolvable public-safe evidence.
+// A verified claim whose sourceId is absent from the registry, or backed only by an
+// internal-only source, fails the build rather than silently rendering no evidence.
+if (entry.data.visibility === "public") {
+  if (!claim || !resolvePublicClaim(claim, registry).ok) {
+    throw new Error(
+      `public case study "${entry.data.slug}" does not resolve to a public-safe evidence source`,
+    );
+  }
+}
 ---
 <CaseStudyLayout
   routeId="case-studies-slug"
@@ -50,7 +48,17 @@ const claim: ClaimRecord | undefined =
   visibility={entry.data.visibility}
   params={{ slug: entry.data.slug }}
 >
-  <h1>{entry.data.title}</h1>
-  <Content />
-  {claim && <EvidenceNote claim={claim} registry={registry} />}
+  <article class="case-study-shell">
+    <header class="case-study-header">
+      <p class="eyebrow">Case study · {entry.data.pillar.replaceAll("-", " ")}</p>
+      <h1>{entry.data.title}</h1>
+      <p class="case-study-lead">{entry.data.description}</p>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {claim && <EvidenceNote claim={claim} registry={registry} />}
+  </article>
 </CaseStudyLayout>

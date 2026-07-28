@@ -6,6 +6,7 @@
     "owner": "ryan",
     "permission": "public",
     "reviewedAt": "2026-07-25T00:00:00.000Z",
-    "notes": "Self-referential, directly observable evidence: the committed static output and its public source repository. No metrics, testimonials, or client data are asserted."
+    "notes": "Self-referential, directly observable evidence: the committed static output and its public source repository. No metrics, testimonials, or client data are asserted.",
+    "publicUrl": "https://github.com/ryan-brosas/personal-website"
   }
 }

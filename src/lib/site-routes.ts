@@ -27,17 +27,28 @@ export interface CollectionRecord {
   visibility: Visibility;
 }
 
-// Resolve the discoverable route inventory for content-backed collection routes.
-// For EVERY dynamic collection route in the registry, take the injected records
-// for that route's collection and apply the hub min-child gate (INV-07): when at
-// least one PUBLIC record exists, emit the parent hub route plus one child route
-// per public record; when zero public records exist, emit nothing (the hub is
-// not discoverable). Children are slug-sorted for deterministic output. This is
-// the ONE source of the collection route set — the sitemap endpoint, the [slug]
-// page, the build verifier, and the shell manifest all route through it so the
-// public canonical set, the sitemap, and the verifier's expected routes stay in
-// lockstep. Fully registry-derived: no hub/slug/path literals are baked in.
-export const resolveCollectionRoutes = (
+/** Resolves dynamic collection entries that produce HTML routes. */
+export const resolveCollectionEntryRoutes = (
+  recordsByCollection: Record<string, CollectionRecord[]>,
+): ResolvedRoute[] => {
+  const routes: ResolvedRoute[] = [];
+  for (const definition of ROUTE_REGISTRY.all()) {
+    if (definition.isDynamic !== true || definition.collection === undefined) continue;
+    const records = recordsByCollection[definition.collection] ?? [];
+    for (const record of [...records]
+      .filter((candidate) => isRoutable(candidate.visibility))
+      .sort((a, b) => a.slug.localeCompare(b.slug))) {
+      routes.push({
+        path: ROUTE_REGISTRY.pathFor(definition.id, { slug: record.slug }),
+        visibility: record.visibility,
+      });
+    }
+  }
+  return routes;
+};
+
+/** Resolves public collection entries and their gated hub for discovery. */
+export const resolveCollectionDiscoveryRoutes = (
   recordsByCollection: Record<string, CollectionRecord[]>,
 ): ResolvedRoute[] => {
   const routes: ResolvedRoute[] = [];

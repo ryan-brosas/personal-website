@@ -1,24 +1,9 @@
 ---
-// W4·T15 (SEO/GEO authority refactor) — the registry singleton page route. Serves
-// the three commercial-shell singletons (about/services/contact) through
-// CommercialLayout so every one carries an entity graph: services is a Service
-// (kind:"service"), about/contact are plain WebPages (kind:"webpage" — a Service
-// node would misdescribe a non-service page). getStaticPaths is NARROWED to the
-// registry's primary-nav singletons: it iterates ROUTE_REGISTRY, joins each id to
-// its `pages` content entry, and emits a route ONLY when a routable record exists.
-// A content file whose id is not a registered singleton (or a removed/orphan
-// route like /projects/) therefore produces NO build output — route truth stays
-// in the ONE registry (INV-06), never in the content glob.
-//
-// The noindex meta is driven by the CONTENT record's visibility (not the registry
-// default) so demoting a page to noindex in frontmatter flips its robots policy
-// without a registry edit. Contact is the only page that surfaces settings-driven
-// actions: the scheduler link + email fallback come from settings.data.contact
-// (single source of truth), rendered by the template after <Content/> — never
-// authored in markdown — so body copy and action destinations cannot drift.
 import type { GetStaticPaths } from "astro";
 import { getCollection, getEntry, render } from "astro:content";
 import CommercialLayout from "../layouts/CommercialLayout.astro";
+import HeroOperator from "../assets/brand/operator-mascot.svg";
+import HeroSystemMap from "../assets/brand/hero-system-conductor.svg";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 import { isRoutable } from "../lib/publishing.ts";
 import { assertMarkdownRendered } from "../lib/markdown-safety.ts";
@@ -26,24 +11,19 @@ import type { EntityGraphPageKind } from "../lib/structured-data.ts";
 
 export const getStaticPaths = (async () => {
   const entries = await getCollection("pages");
-  // Assert every entry rendered before filtering — makes glob-swallowed
-  // markdown-safety errors fatal rather than emitting blank content.
   for (const entry of entries) {
     assertMarkdownRendered(entry);
   }
-  const entriesById = new Map(entries.map((e) => [e.id, e]));
+  const entriesById = new Map(entries.map((entry) => [entry.id, entry]));
 
-  // Registry-ID-only narrowing: only primary-nav singleton routes (about,
-  // services, contact) are content-backed pages. Each must have a `pages` entry
-  // AND be routable (draft excluded). Orphan/removed routes cannot render.
   return ROUTE_REGISTRY.all()
-    .filter((def) => def.kind === "singleton" && def.navPlacement === "primary")
-    .flatMap((def) => {
-      const entry = entriesById.get(def.id);
+    .filter((definition) => definition.kind === "singleton" && definition.navPlacement === "primary")
+    .flatMap((definition) => {
+      const entry = entriesById.get(definition.id);
       if (!entry || !isRoutable(entry.data.visibility)) return [];
-      const match = def.path.match(/^\/([^/?#]+)\/$/);
+      const match = definition.path.match(/^\/([^/?#]+)\/$/);
       if (!match) {
-        throw new Error(`Route ${def.path} for "${def.id}" is not a single-segment HTML path`);
+        throw new Error(`Route ${definition.path} for "${definition.id}" is not a single-segment HTML path`);
       }
       return [{ params: { page: match[1] }, props: { entry } }];
     });
@@ -51,22 +31,19 @@ export const getStaticPaths = (async () => {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-
-// The services page is a Service; about/contact are plain WebPages (no Service
-// node on non-service content). buildEntityGraph gates the page node on public
-// visibility (INV-03) inside CommercialLayout.
 const kind: EntityGraphPageKind = entry.id === "services" ? "service" : "webpage";
-
-// Contact surfaces settings-driven actions; other pages need no settings.
-// Throw at build time if the contact contract is missing so links are never
-// silently omitted.
 const contact =
   entry.id === "contact" ? (await getEntry("settings", "site"))?.data.contact : undefined;
 if (entry.id === "contact" && !contact) {
   throw new Error("contact entry requires a validated settings.data.contact block");
 }
----
 
+const eyebrows: Record<string, string> = {
+  about: "The operator behind the systems",
+  services: "Design · Build · Handoff",
+  contact: "Start with the recurring work",
+};
+---
 <CommercialLayout
   routeId={entry.id}
   title={entry.data.title}
@@ -75,18 +52,71 @@ if (entry.id === "contact" && !contact) {
   noindex={entry.data.visibility === "noindex"}
   kind={kind}
 >
-  <h1>{entry.data.title}</h1>
-  <Content />
-  {contact && (
-    <>
-      <p>
-        <a href={contact.schedulerUrl} rel="noopener noreferrer">
-          Schedule a conversation
-        </a>
-      </p>
-      <p>
-        <a href={`mailto:${contact.emailFallback}`}>{contact.emailFallback}</a>
-      </p>
-    </>
-  )}
+  <article class={`page-shell page-shell--${entry.id}`}>
+    <header class="page-header commercial-hero">
+      <div class="page-header__copy">
+        <p class="eyebrow">{eyebrows[entry.id] ?? "Ryan Brosas"}</p>
+        <h1>{entry.data.title}</h1>
+        <p class="page-lead">{entry.data.description}</p>
+      </div>
+
+      {
+        entry.id === "about" && (
+          <aside class="page-visual page-visual--about" aria-label="Operator profile">
+            <HeroOperator aria-hidden="true" focusable="false" />
+            <dl>
+              <div><dt>Based</dt><dd>Philippines</dd></div>
+              <div><dt>Mode</dt><dd>Remote</dd></div>
+              <div><dt>Focus</dt><dd>Recurring operations</dd></div>
+            </dl>
+          </aside>
+        )
+      }
+
+      {
+        entry.id === "services" && (
+          <aside class="page-visual page-visual--services" aria-label="System design options">
+            <HeroSystemMap aria-hidden="true" focusable="false" />
+            <ul class="system-form-list" aria-label="Possible system forms">
+              <li>Agent</li>
+              <li>Script</li>
+              <li>Process</li>
+            </ul>
+          </aside>
+        )
+      }
+
+      {
+        entry.id === "contact" && (
+          <aside class="page-visual page-visual--contact" aria-label="What to bring to the first conversation">
+            <p>Bring one stubborn loop</p>
+            <ol class="intake-sequence">
+              <li><span>01</span><strong>Recurring work</strong></li>
+              <li><span>02</span><strong>Current workaround</strong></li>
+              <li><span>03</span><strong>Breaking point</strong></li>
+            </ol>
+          </aside>
+        )
+      }
+    </header>
+
+    <div class="commercial-body">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        contact && (
+          <div class="contact-actions">
+            <a class="button button--primary" href={contact.schedulerUrl} rel="noopener noreferrer">
+              Schedule a conversation
+            </a>
+            <a class="button button--secondary" href={`mailto:${contact.emailFallback}`}>
+              {contact.emailFallback}
+            </a>
+          </div>
+        )
+      }
+    </div>
+  </article>
 </CommercialLayout>

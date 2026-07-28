@@ -133,6 +133,15 @@ describe("ROUTE_REGISTRY derived helpers", () => {
     );
   });
 
+  test("Resources owns a canonical hub and entry pattern", () => {
+    assert.equal(ROUTE_REGISTRY.pathFor("resources"), "/resources/");
+    assert.equal(
+      ROUTE_REGISTRY.pathFor("resources-slug", { slug: "workflow-checklist" }),
+      "/resources/workflow-checklist/",
+    );
+    assert.equal(ROUTE_REGISTRY.parentFor("resources-slug")?.id, "resources");
+  });
+
   test("pathFor throws when a required dynamic param is missing", () => {
     assert.throws(() => ROUTE_REGISTRY.pathFor("case-studies-slug"), /missing route param "slug"/);
   });
@@ -151,13 +160,10 @@ describe("ROUTE_REGISTRY derived helpers", () => {
     );
   });
 
-  test("navItems yields the primary order with case-studies slotted (T14)", () => {
-    // T14 promotes case-studies to primary nav at navOrder 25 — between
-    // services (20) and contact (30), preserving the shipped about/services/contact
-    // order around it.
+  test("navItems yields the primary order for public-capable sections", () => {
     assert.deepEqual(
       ROUTE_REGISTRY.navItems().map((r) => r.id),
-      ["about", "services", "case-studies", "contact"],
+      ["about", "services", "case-studies", "resources", "contact"],
     );
   });
 
@@ -180,13 +186,20 @@ describe("ROUTE_REGISTRY derived helpers", () => {
     assert.deepEqual(ROUTE_REGISTRY.breadcrumbsFor("about"), [{ id: "about", path: "/about/" }]);
   });
 
-  test("discoverableRoutes = public, non-dynamic, HTML only (home included once gate-promoted; no endpoints/slug)", () => {
+  test("discoverableRoutes lists public-capable static HTML routes", () => {
     const paths = ROUTE_REGISTRY.discoverableRoutes()
       .map((r) => r.path)
       .sort();
     // The homepage "/" is gate-promoted to public (T16), so it now joins the
     // discoverable set; file endpoints and the dynamic [slug] pattern stay out.
-    assert.deepEqual(paths, ["/", "/about/", "/case-studies/", "/contact/", "/services/"]);
+    assert.deepEqual(paths, [
+      "/",
+      "/about/",
+      "/case-studies/",
+      "/contact/",
+      "/resources/",
+      "/services/",
+    ]);
   });
 
   test("expectedBuildManifest lists static route paths, excludes the dynamic pattern", () => {

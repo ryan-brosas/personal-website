@@ -1,49 +1,79 @@
-// W4·T14 (SEO/GEO authority refactor) — Node-side frontmatter reader for the
-// case-studies collection. The Astro-runtime consumers (sitemap endpoint, the
-// [slug] page, SiteHeader) discover records via getCollection; the build tooling
-// (scripts/verify-build.mjs) and tests (tests/shell.test.mjs) cannot call the
-// astro:content virtual module, so they read the tracked markdown frontmatter
-// here and feed it through the SAME pure `resolveCollectionRoutes` helper. That
-// keeps the verifier's expected route set, the sitemap, and the runtime build in
-// lockstep from ONE derivation (no hard-coded route/slug literals).
+// Reads the content fields needed by Node-side build tooling. Collection names
+// come from the route registry so adding a routed collection updates the build
+// manifest without another case-specific branch.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveCollectionRoutes } from "../src/lib/site-routes.ts";
+import { ROUTE_REGISTRY } from "../src/config/routes.ts";
+import {
+  resolveCollectionDiscoveryRoutes,
+  resolveCollectionEntryRoutes,
+  resolveRoutes,
+} from "../src/lib/site-routes.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.join(HERE, "..");
-const CASE_STUDIES_DIR = path.join(REPO_ROOT, "src", "content", "case-studies");
+const CONTENT_ROOT = path.join(REPO_ROOT, "src", "content");
+const PAGES_DIR = path.join(CONTENT_ROOT, "pages");
 const CASE_STUDIES_COLLECTION = "case-studies";
 
-// Extract a scalar frontmatter value (quotes optional). Returns undefined when
-// the key is absent so the caller can apply a fail-closed default.
+const collectionNames = () =>
+  [...new Set(
+    ROUTE_REGISTRY.all()
+      .filter((route) => route.isDynamic === true && route.collection !== undefined)
+      .map((route) => route.collection),
+  )].sort();
+
 const frontmatterValue = (block, key) => {
   const match = block.match(new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?\\s*$`, "m"));
   return match ? match[1].trim() : undefined;
 };
 
-// Read the tracked case-study records as { slug, visibility }. Fail-closed: a
-// file with no frontmatter or no visibility is treated as draft (never
-// discoverable), and the slug falls back to the filename. .gitkeep and non-.md
-// files are ignored.
-export const readCaseStudyRecords = (dir = CASE_STUDIES_DIR) => {
+const readRecords = (dir) => {
   if (!fs.existsSync(dir)) return [];
   const records = [];
   for (const name of fs.readdirSync(dir).sort()) {
     if (!name.endsWith(".md")) continue;
     const raw = fs.readFileSync(path.join(dir, name), "utf-8");
-    const fm = raw.match(/^---\n([\s\S]*?)\n---/);
-    if (!fm) continue;
-    const block = fm[1];
-    const slug = frontmatterValue(block, "slug") ?? name.replace(/\.md$/, "");
-    const visibility = frontmatterValue(block, "visibility") ?? "draft";
-    records.push({ slug, visibility });
+    const frontmatter = raw.match(/^---\n([\s\S]*?)\n---/);
+    if (!frontmatter) continue;
+    records.push({
+      slug: frontmatterValue(frontmatter[1], "slug") ?? name.replace(/\.md$/, ""),
+      visibility: frontmatterValue(frontmatter[1], "visibility") ?? "draft",
+    });
   }
   return records;
 };
 
-// The discoverable case-study route inventory derived from tracked content +
-// the registry — the single value the verifier and shell manifest consume.
-export const caseStudyRoutes = (dir = CASE_STUDIES_DIR) =>
-  resolveCollectionRoutes({ [CASE_STUDIES_COLLECTION]: readCaseStudyRecords(dir) });
+export const readPageVisibilities = (dir = PAGES_DIR) => {
+  if (!fs.existsSync(dir)) return {};
+  const visibilities = {};
+  for (const name of fs.readdirSync(dir).sort()) {
+    if (!name.endsWith(".md")) continue;
+    const raw = fs.readFileSync(path.join(dir, name), "utf-8");
+    const frontmatter = raw.match(/^---\n([\s\S]*?)\n---/);
+    if (!frontmatter) continue;
+    const id = name.replace(/\.md$/, "");
+    visibilities[id] = frontmatterValue(frontmatter[1], "visibility") ?? "draft";
+  }
+  return visibilities;
+};
+
+export const pageRoutes = (dir = PAGES_DIR) => resolveRoutes(readPageVisibilities(dir));
+
+export const readCollectionRecords = (contentRoot = CONTENT_ROOT) =>
+  Object.fromEntries(
+    collectionNames().map((name) => [name, readRecords(path.join(contentRoot, name))]),
+  );
+
+export const collectionEntryRoutes = (contentRoot = CONTENT_ROOT) =>
+  resolveCollectionEntryRoutes(readCollectionRecords(contentRoot));
+
+export const collectionDiscoveryRoutes = (contentRoot = CONTENT_ROOT) =>
+  resolveCollectionDiscoveryRoutes(readCollectionRecords(contentRoot));
+
+export const readCaseStudyRecords = (dir = path.join(CONTENT_ROOT, CASE_STUDIES_COLLECTION)) =>
+  readRecords(dir);
+
+export const caseStudyRoutes = (dir = path.join(CONTENT_ROOT, CASE_STUDIES_COLLECTION)) =>
+  resolveCollectionDiscoveryRoutes({ [CASE_STUDIES_COLLECTION]: readRecords(dir) });

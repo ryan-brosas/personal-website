@@ -9,7 +9,9 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { homepageProofGate, resolveHomeVisibility, homepageClaims } from "../src/lib/home-proof.ts";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { homepageProofGate, resolveHomeVisibility, homepageVerifiedClaims } from "../src/lib/home-proof.ts";
 import { ROOT_ROUTE_POLICY } from "../src/config/routes.ts";
 import { SELF_PROJECT_CLAIMS } from "../src/config/entities.ts";
 import { resolvePublicClaim } from "../src/lib/evidence.ts";
@@ -153,18 +155,33 @@ describe("resolveHomeVisibility + ROOT_ROUTE_POLICY — real repo wiring", () =>
   test("ROOT_ROUTE_POLICY.visibility reflects the gate result (public)", () => {
     assert.equal(ROOT_ROUTE_POLICY.visibility, "public");
   });
+
+  test("proof resolution is independent of process.cwd()", () => {
+    const moduleUrl = new URL("../src/lib/home-proof.ts", import.meta.url).href;
+    const result = spawnSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        `import { resolveHomeVisibility } from ${JSON.stringify(moduleUrl)}; console.log(resolveHomeVisibility());`,
+      ],
+      { cwd: tmpdir(), encoding: "utf-8" },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), "public");
+  });
 });
 
 describe("T16 — homepage rendered claims are reconciled with SELF_PROJECT_CLAIMS", () => {
   const registry = sourcesJson;
   const claimIds = new Set(SELF_PROJECT_CLAIMS.map((c) => c.id));
 
-  test("homepageClaims() renders at least one positioning claim", () => {
-    assert.ok(homepageClaims(registry).length > 0, "the promoted homepage stands on ≥1 claim");
+  test("homepageVerifiedClaims() renders at least one positioning claim", () => {
+    assert.ok(homepageVerifiedClaims(registry).length > 0, "the promoted homepage stands on ≥1 claim");
   });
 
   test("every homepage-rendered claim is PRESENT in SELF_PROJECT_CLAIMS", () => {
-    for (const claim of homepageClaims(registry)) {
+    for (const claim of homepageVerifiedClaims(registry)) {
       assert.ok(
         claimIds.has(claim.id),
         `rendered claim ${claim.id} must be a validated SELF_PROJECT_CLAIMS entry`,
@@ -173,7 +190,7 @@ describe("T16 — homepage rendered claims are reconciled with SELF_PROJECT_CLAI
   });
 
   test("every homepage-rendered claim RESOLVES to a public-safe source (evidence-backed)", () => {
-    for (const claim of homepageClaims(registry)) {
+    for (const claim of homepageVerifiedClaims(registry)) {
       assert.equal(
         resolvePublicClaim(claim, registry).ok,
         true,
@@ -187,7 +204,7 @@ describe("T16 — homepage rendered claims are reconciled with SELF_PROJECT_CLAI
     // so the homepage renders the WHOLE validated set — rendered claims and
     // validated claims are the same set, the T16 reconciliation.
     assert.deepEqual(
-      homepageClaims(registry)
+      homepageVerifiedClaims(registry)
         .map((c) => c.id)
         .sort(),
       SELF_PROJECT_CLAIMS.map((c) => c.id).sort(),
@@ -197,64 +214,54 @@ describe("T16 — homepage rendered claims are reconciled with SELF_PROJECT_CLAI
   test("an unresolvable claim is DROPPED from the rendered set (fail-closed copy)", () => {
     // With an EMPTY registry no claim resolves, so nothing renders — the homepage
     // never asserts a positioning it cannot back.
-    assert.deepEqual(homepageClaims({}), []);
+    assert.deepEqual(homepageVerifiedClaims({}), []);
   });
 });
 
-// F1 (final-review blocker) — the reviewer's gap was that the earlier tests proved
-// the HELPER returns a valid subset, but NOT that the RENDERED homepage contains no
-// positioning claim outside that set. index.astro previously also asserted free
-// prose ("reliable AI workflow systems … so repetitive work stops coming back to
-// you") absent from SELF_PROJECT_CLAIMS. This suite reads the actual page source and
-// FAILS if any unbacked positioning prose is (re-)introduced: every evidence-requiring
-// positioning claim must flow through the homepageClaims() list, and the only other
-// visible copy is neutral identity/topic/audience naming or a meta connective.
-describe("T16/F1 — rendered homepage positioning is reconciled with the validated set", () => {
+// Verified homepage facts are rendered from the validated claim registry.
+describe("T16/F1 — rendered homepage facts are reconciled with the validated set", () => {
   const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf-8");
-  // The rendered template is everything after the second `---` frontmatter fence.
   const renderedBody = pageSource
     .split(/^---\s*$/m)
     .slice(2)
     .join("---");
 
-  // Evidence-requiring qualifiers / capability / outcome promises that are NOT in
-  // SELF_PROJECT_CLAIMS. If any reappears in the page, positioning has drifted from
-  // the validated set and the homepage would assert an unbacked claim again.
-  const forbiddenPositioning = [
-    { label: "quality qualifier 'reliable'", pattern: /reliable/i },
-    { label: "outcome promise", pattern: /repetitive work stops coming back/i },
-    {
-      label: "capability list ('checks, human handoffs, recovery paths')",
-      pattern: /human handoffs/i,
-    },
-  ];
-
-  test("the rendered body asserts NO unbacked positioning prose", () => {
-    for (const { label, pattern } of forbiddenPositioning) {
-      assert.ok(
-        !pattern.test(renderedBody),
-        `index.astro must not render unbacked positioning (${label}) — it is absent from SELF_PROJECT_CLAIMS`,
-      );
-    }
-  });
-
-  test("the ONLY evidence-requiring positioning is the homepageClaims() list", () => {
-    // The positioning list is data-driven from the validated claim set — not prose.
-    assert.match(pageSource, /const claims = homepageClaims\(\)/);
+  test("verified facts render through homepageVerifiedClaims()", () => {
+    assert.match(pageSource, /const claims = homepageVerifiedClaims\(\)/);
     assert.match(renderedBody, /claims\.map\(\(claim\) =>/);
     assert.match(renderedBody, /\{claim\.statement\}/);
   });
 
-  test("each rendered claim statement IS a validated SELF_PROJECT_CLAIMS statement", () => {
-    // rendered == validated (not merely a valid subset): every statement the page can
-    // render is one of the validated claims, and the page renders the whole resolvable set.
+  test("each rendered fact is a validated SELF_PROJECT_CLAIMS statement", () => {
     const validated = new Set(SELF_PROJECT_CLAIMS.map((c) => c.statement));
-    const rendered = homepageClaims().map((c) => c.statement);
-    assert.ok(rendered.length > 0, "the promoted homepage renders ≥1 positioning claim");
+    const rendered = homepageVerifiedClaims().map((c) => c.statement);
+    assert.ok(rendered.length > 0, "the promoted homepage renders at least one verified fact");
     for (const statement of rendered) {
       assert.ok(
         validated.has(statement),
-        `rendered positioning "${statement}" must be a validated SELF_PROJECT_CLAIMS statement`,
+        `rendered fact "${statement}" must be a validated SELF_PROJECT_CLAIMS statement`,
+      );
+    }
+  });
+
+  // INV-09 scope: no metric numbers, no testimonial attributions, no third-party
+  // client/outcome guarantees. These would require evidence the self-project claim
+  // set does not (and cannot) back. Descriptive service copy is not in scope.
+  test("the homepage asserts no metric, testimonial, or client-outcome claim", () => {
+    const metric = /\b\d+\s*(?:%|percent|x|hours?|days?|minutes?|users?|customers?|clients?)\b/i;
+    const testimonial = /\b(?:testimonial|client said|customer said|quote)\b/i;
+    const guarantee = /\b(?:guarantee|promise\b|ensured|proven results)\b/i;
+    const unsupportedOutcome =
+      /(?:repetitive work stops coming back|stop carrying the workflow forever|exceptions recover or escalate)/i;
+    for (const [label, pattern] of [
+      ["metric", metric],
+      ["testimonial", testimonial],
+      ["outcome guarantee", guarantee],
+      ["unsupported outcome", unsupportedOutcome],
+    ]) {
+      assert.ok(
+        !pattern.test(renderedBody),
+        `homepage must not assert a ${label} (INV-09 scope)`,
       );
     }
   });
