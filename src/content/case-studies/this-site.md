@@ -1,6 +1,6 @@
 ---
-title: "Building This Website"
-description: "How a placeholder portfolio became a static Astro site with one route source, fail-closed publishing, and a build verifier."
+title: "A Portfolio That Checks Its Work"
+description: "How a rough portfolio became a clear site with shared rules, build checks, and a safe deploy."
 visibility: public
 owner: ryan
 kind: case-study
@@ -11,137 +11,165 @@ evidence:
   sourceId: source-self-project-build-001
 ---
 
-This is a self-project, not a client success story. There is no borrowed
-quote, no conversion claim, and no invented metrics. This study shows how I turned an
-unclear site plan into a clear, checked build process. It also shows what the
-repo can prove and what is still unknown.
+This is a self-project, not a client success story. There are no invented metrics,
+borrowed quotes, or sales claims. The live site and public code are the proof.
+They show what I built, how I checked it, and what is still unknown.
 
 ## The starting point
 
-I needed a portfolio I could show before I added the résumé assistant. I also
-had work that I could not share without consent.
+I needed a portfolio I could show before I added a résumé assistant. Some past
+work could not be shared without consent. The site had to earn trust through its
+own work first.
 
-The first site had pages and ideas. Yet a polished page was not enough. A
-founder or operator should be able to trust the way the site works. Routes
-should not drift. Draft work should not leak into search. Each public claim
-should link back to proof.
+The early build had pages, rules, and good ideas. The home page set a clear
+standard. The rest did not yet feel like the same product. Some pages were too
+plain. Useful links were hard to scan. The Contact page asked people to act, but
+put the real actions near the end.
 
-I did not need a full tool for web publishing. I needed a sound static site. It
-also had to make room for checked work later.
+There was a second risk under the design. A page could look done while its route,
+claim, or deploy step still lived in my memory. That would make each change
+slower and less safe.
+
+I did not need a large web app. I needed a clear static site with rules that
+could hold up as the content grew.
 
 ## What had to be true
 
-I set five rules for the build.
+I set five rules for the work.
 
-- **The full page must work without JavaScript.** The menu, text, site search
-  paths, and main next step must still work.
-- **Routes need one owner.** A route is a page path. Its path, main web address,
-  menu link, and parent link should come from one source.
-- **Publishing must fail closed.** If a page has no clear public state, the site
-  must keep it private.
-- **Public claims need safe proof.** Draft copy may state what I plan to offer.
-  A fact must point to proof that is safe to share.
-- **The final files must pass checks.** A clean Astro build is not enough when
-  the files break a publish rule.
+- **The full site must work without JavaScript.** People must still read every
+  page, use the menu, browse the resources, and reach the main action.
+- **Routes need one owner.** The path, menu link, main web address, and parent
+  link must come from one source.
+- **Public claims need proof.** A fact must point to a source that is safe to
+  share. Draft work must not leak into public lists.
+- **Shared patterns stay shared.** A fix to a button, page title, card, or next
+  step should reach every place that uses it.
+- **Only checked files go live.** The release must use the same output that
+  passed the build and policy checks.
 
-These rules kept the site static. The work did not show a need for a live
-server, a content system, or a web app that runs the page in the browser.
+These rules kept the site small. They also gave each later design choice a clear
+place to live.
 
 ## What I built
 
-### One route registry
+### A publishing core
 
-One route list owns each public path. It also owns the ending slash, menu order,
-parent link, and rules for pages made from a set of content.
+One route list owns the public paths. It also sets the menu order, ending slash,
+parent links, page trails, and the files expected after a build.
 
-Pages use this list instead of making their own links. The same list sets page
-trails, planned build files, and which pages search tools may find. A route
-change starts in one known place.
-
-### A fail-closed publishing flow
-
-Each item has one of three states.
+Each content item has one of three states.
 
 - `draft` makes no page.
-- `noindex` makes a page that people can visit, but leaves it out of site search
-  lists.
-- `public` may place the page in the menu and site map.
+- `noindex` makes a page that people can visit, but keeps it out of public lists.
+- `public` may place the page in the site map and other public lists.
 
-A group page stays out of those lists until it has a public child page. This
-keeps an empty part of the site from looking done.
+A group page stays out of those lists until it has a public child. This keeps an
+empty area from looking complete.
 
-### Proof before a page goes public
+The home page also has a proof gate. It becomes public only when this case study,
+its source, and the approved home claim all resolve. If one part fails, the home
+page falls back to `noindex`.
 
-The home page does not go public just because its file exists. A proof gate
-checks this case study, the list of proof sources, and the approved claims about
-this project. If one link in that chain fails, the home page falls back to
-`noindex`.
+### A shared visual system
 
-This rule is more strict than the current copy needs. It gives later studies a
-safe place for numbers, quotes, and consent notes. Those checks stay in one
-place instead of being spread through the site.
+Astro builds plain HTML. Plain CSS holds the type, color, space, layout, and
+motion rules. Shared components own repeated page parts such as headings,
+cards, work steps, proof notes, and calls to action.
 
-### A clear page with small add-ons
+A local Brand Lab shows those parts together. It is not part of the public site.
+It gives me one place to inspect a shared change before it reaches many pages.
 
-Astro makes plain HTML with named page parts and plain CSS. This gives the page
-a sound base before scripts run.
+The main content and menu work before scripts run. One small browser script adds
+the mobile menu, list filters, and scroll motion. If that script fails, the full
+content stays on the page. Motion also stops when a person asks for less motion.
 
-One small script runs the mobile menu and scroll effects. The browser tool
-`IntersectionObserver` tells the script when an item comes into view. If the
-script or that tool does not work, the text stays in view and the menu still
-works. The page also stays still when a person asks for less motion.
+### Resources that help before a call
 
-### Checks on the final site
+The Resources area became more than a row of links. It now has a plain-language
+wiki, a tool directory, short guides, and checklists.
 
-The build check reads the final files. It does not trust the source code alone.
-It checks planned routes, main web addresses, the site map, rules for search
-bots, and files that should not exist.
+The full lists are in the HTML. A small filter helps people scan them when
+JavaScript works. Without it, every entry is still there.
 
-Browser checks cover the keyboard, screen sizes, and low-motion settings. They
-also look for script errors and failed file requests.
+This gives a reader a useful next step before asking for a call. It also shows
+how the site can grow without adding a new route system for each content type.
+
+### A direct way to start
+
+The Contact page puts both ways to start in the first screen. A person can book a
+call or use email. The page then asks for one repeated task, how it works now,
+and where it breaks.
+
+Both links come from checked site settings. The same action component also owns
+button markup in other page sections and in the Brand Lab.
+
+### A checked release path
+
+The build check reads the final site files. It checks routes, main web addresses,
+the site map, search rules, and files that should not exist.
+
+CI checks the source, builds the production site, runs the tests, and checks the
+final output. It saves that output only after all steps pass.
+
+The deploy job sends those same checked files to a folder named for the commit.
+It then switches the live `current` link in one move. Caddy serves that release
+with compressed files, security headers, and a controlled not-found page.
 
 ## What changed during the build
 
-The core plan held up, but parts of the design did not.
+The core rules held up. Several first design choices did not.
 
-The home page had a stronger look than the first inner pages. I did not copy its
-code into each page. I moved shared title, card, work step, and closing link
-parts into shared site parts and the local Brand Lab.
+The first inner pages did not match the home page. I did not copy the home code
+into each route. I moved the useful parts into shared components, then gave each
+page its own clear job.
 
-The first scroll effect used a CSS view timeline. It worked in the test browser
-but failed in the browser used for the demo. I changed it to
-`IntersectionObserver` in the same small script. The page still showed all text
-without JavaScript. I also matched the timing to the brand motion rules.
+The first resource layouts used too much card-like space. The wiki and directory
+became denser lists. This made more links easy to scan while keeping each entry
+clear.
 
-The first study page was too narrow on a wide screen. It left a large blank
-space. The new page gives the title and short summary more room. The body text
-stays at an easy line width. I also cut the long title down to **Building This
-Website**.
+The first Contact hero was a dark tile that repeated the prompt. The real links
+came much later. I replaced the tile with the booking and email actions. I also
+removed the repeated opening and closing copy.
 
-These fixes came from use in a real browser. A source check alone would not have
-found all of them.
+The first scroll effect used a CSS view timeline. It passed in one browser but
+failed in the demo browser. I moved the effect to `IntersectionObserver` in the
+existing small script. The no-script view stayed complete.
+
+The first warm paper color looked too yellow across full pages. I kept a small
+amount of warmth but moved the canvas close to white. Contrast checks guard the
+new paper tones.
+
+Each of these changes came from looking at the real page on wide and narrow
+screens. Source checks alone would not have found them.
 
 ## The result
 
-The site now makes static pages from shared rules. Those rules set the menu,
-main web addresses, page trails, search files, page data for search tools, and
-publish state.
+The site is now a complete first public version. It has a clear home page,
+service path, About page, case study, resource library, and direct Contact path.
+The parts look and act like one product.
 
-Draft work makes no route. Public claims about this project point to the listed
-source. The build check reads the final files before they count as a release.
+The publishing rules set routes, public lists, page trails, search files, page
+data, and claim proof. Shared components keep repeated design fixes in one
+place.
 
-This does not prove more traffic or sales. It proves that I can show and test the
-steps used to publish the site. A founder or operator can see where key choices
-live, how checks fail, and which claims have proof.
+Every push to `main` must pass the production build, tests, and final-file check
+before deploy can start. The same checked files become the live release. The
+public source shows each part of that path.
+
+This does not prove more traffic, leads, or sales. It does not predict the result
+of another project. It proves that I can turn a rough plan into a working site,
+find weak parts through use, and leave a clear way to test and ship the next
+change.
 
 ## What remains unfinished
 
-Most proof for the rest of the portfolio still needs to be added. There are no
-client result claims, approved client quotes, or made-up case study numbers to
-fill the gaps.
+The rest of the portfolio still needs more public proof. There are no client
+result claims, approved client quotes, or made-up case study numbers filling the
+gaps.
 
-The résumé assistant is still a future service. It stays apart from the static
-Astro site until its web request rules are ready.
+The résumé assistant is still a later service. It stays apart from the static
+site until its web request rules and safe failure path are ready.
 
-The gaps stay in view on purpose. The next step is to add one more piece of work
-with a clear claim, source, and consent trail. More pages can wait.
+This version is a base, not an end state. The next useful step is another piece
+of work with a clear claim, source, and consent trail.

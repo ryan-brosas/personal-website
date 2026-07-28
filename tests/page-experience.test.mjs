@@ -453,7 +453,7 @@ test("entry pages use the full editorial width and concise case-study naming", (
     path.join(repoRoot, "src", "content", "case-studies", "this-site.md"),
     "utf-8",
   );
-  assert.match(caseStudy, /^title: "Building This Website"$/m);
+  assert.match(caseStudy, /^title: "A Portfolio That Checks Its Work"$/m);
   assert.doesNotMatch(caseStudy, /Transparent Self Project/);
   assert.match(css, /\.case-study-shell\s*\{[^}]*width:\s*100%/s);
   assert.match(css, /\.case-study-header\s*\{[^}]*grid-template-columns:/s);
@@ -476,6 +476,8 @@ test("the self-project case study tells a challenge-to-result story without inve
   }
   assert.match(caseStudy, /self-project, not a client success story/i);
   assert.match(caseStudy, /no invented metrics/i);
+  assert.match(caseStudy, /same checked files/i);
+  assert.match(caseStudy, /Contact page puts both ways to start in the first screen/i);
 });
 
 test("display headings use a readable shared measure without empty grid tracks", () => {
