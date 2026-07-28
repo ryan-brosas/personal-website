@@ -180,10 +180,22 @@ describe("ROUTE_REGISTRY derived helpers", () => {
 
   test("breadcrumbsFor builds hub→leaf trail and suppresses home", () => {
     assert.deepEqual(ROUTE_REGISTRY.breadcrumbsFor("case-studies-slug", { slug: "example" }), [
-      { id: "case-studies", path: "/case-studies/" },
-      { id: "case-studies-slug", path: "/case-studies/example/" },
+      { id: "case-studies", path: "/case-studies/", label: "Case Studies" },
+      { id: "case-studies-slug", path: "/case-studies/example/", label: "Case Studies Slug" },
     ]);
-    assert.deepEqual(ROUTE_REGISTRY.breadcrumbsFor("about"), [{ id: "about", path: "/about/" }]);
+    assert.deepEqual(ROUTE_REGISTRY.breadcrumbsFor("about"), [
+      { id: "about", path: "/about/", label: "About" },
+    ]);
+  });
+
+  test("a leaf label override renames only the leaf, never an ancestor", () => {
+    // Without it a collection entry renders its route pattern id verbatim.
+    const trail = ROUTE_REGISTRY.breadcrumbsFor(
+      "case-studies-slug",
+      { slug: "example" },
+      "Rebuilding this site",
+    );
+    assert.deepEqual(trail.map((c) => c.label), ["Case Studies", "Rebuilding this site"]);
   });
 
   test("discoverableRoutes lists public-capable static HTML routes", () => {

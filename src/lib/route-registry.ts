@@ -10,7 +10,7 @@
 //   INV-02 file endpoints carry NO trailing slash
 //   INV-06 ALL route truth from ONE registry
 //   INV-07 a hub declares a min-child gate
-import { canonicalHref, isHtmlRoute, isFileEndpoint } from "./routes.ts";
+import { canonicalHref, isHtmlRoute, isFileEndpoint, labelFromRouteId } from "./routes.ts";
 import { isRoutable } from "./publishing.ts";
 import type { Visibility } from "./publishing.ts";
 
@@ -70,6 +70,9 @@ export interface NavItem {
 export interface Breadcrumb {
   id: string;
   path: string;
+  /** Display copy. Derived from the route id, or the leaf override for a
+   * collection entry whose id is a pattern name ("case-studies-slug"). */
+  label: string;
 }
 
 export interface RouteRegistry {
@@ -79,7 +82,11 @@ export interface RouteRegistry {
   pathFor(id: string, params?: Record<string, string>): string;
   canonicalFor(id: string, params: Record<string, string> | undefined, origin?: string): string;
   parentFor(id: string): RouteDefinition | undefined;
-  breadcrumbsFor(id: string, params?: Record<string, string>): Breadcrumb[];
+  breadcrumbsFor(
+    id: string,
+    params?: Record<string, string>,
+    leafLabel?: string,
+  ): Breadcrumb[];
   discoverableRoutes(): RouteDefinition[];
   expectedBuildManifest(): string[];
 }
@@ -225,13 +232,23 @@ export const defineRoutes = (defs: readonly RouteDefinition[]): RouteRegistry =>
 
   // Ancestor→self trail for breadcrumb UIs. The code-owned root ("home") is
   // suppressed (it owns the brand link, not a breadcrumb crumb).
-  const breadcrumbsFor = (id: string, params?: Record<string, string>): Breadcrumb[] => {
+  const breadcrumbsFor = (
+    id: string,
+    params?: Record<string, string>,
+    leafLabel?: string,
+  ): Breadcrumb[] => {
     const trail: Breadcrumb[] = [];
     let current: RouteDefinition | undefined = require(id);
     let cursorParams: Record<string, string> | undefined = params;
     while (current) {
       if (current.id !== "home") {
-        trail.unshift({ id: current.id, path: substituteParams(current.path, cursorParams) });
+        trail.unshift({
+          id: current.id,
+          path: substituteParams(current.path, cursorParams),
+          // Only the leaf may be overridden; ancestors are static hubs whose id
+          // already titlecases correctly.
+          label: (current.id === id ? leafLabel : undefined) ?? labelFromRouteId(current.id),
+        });
       }
       // Ancestors are static hubs/singletons; their patterns take no params.
       cursorParams = undefined;

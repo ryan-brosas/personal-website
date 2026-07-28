@@ -43,7 +43,21 @@ describe("T9 buildPageMetadata", () => {
     assert.equal(meta.description, "What I do");
     assert.equal(meta.og.title, "Services");
     assert.equal(meta.og.description, "What I do");
-    assert.equal(meta.og.image, undefined);
+    // Every route inherits the shared card, so no link ships unpreviewable.
+    assert.equal(meta.og.image, "https://example.com/og-default.png");
+    assert.equal(meta.og.type, "website");
+    assert.equal(meta.og.siteName, "Ryan Brosas");
+  });
+
+  test("og.image tracks the canonical origin and ogType is overridable", () => {
+    const meta = buildPageMetadata("case-studies-slug", {
+      title: "A case study",
+      description: "d",
+      params: { slug: "example" },
+      ogType: "article",
+    });
+    assert.equal(meta.og.type, "article");
+    assert.equal(new URL(meta.og.image).origin, new URL(meta.canonical).origin);
   });
 
   test("throws on an unknown route id (fail-fast)", () => {

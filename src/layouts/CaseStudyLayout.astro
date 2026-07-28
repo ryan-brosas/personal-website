@@ -47,8 +47,13 @@ const graph = buildEntityGraph({
   description={description}
   noindex={noindex ?? visibility === "noindex"}
   params={params}
+  ogType="article"
 >
   <JsonLd graph={graph} />
-  <Breadcrumbs routeId={routeId} params={params} />
+  <Breadcrumbs
+    routeId={routeId}
+    params={params}
+    leafLabel={params === undefined ? undefined : title}
+  />
   <slot />
 </BaseLayout>

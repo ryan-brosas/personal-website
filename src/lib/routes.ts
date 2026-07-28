@@ -23,6 +23,14 @@ export const isFileEndpoint = (path: string): boolean => {
 
 export const isHtmlRoute = (path: string): boolean => !isFileEndpoint(path);
 
+// Human display copy from a route id ("case-studies" → "Case Studies"). The one
+// definition: the breadcrumb trail and its JSON-LD must never disagree.
+export const labelFromRouteId = (id: string): string =>
+  id
+    .split("-")
+    .map((part) => (part.length === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join(" ");
+
 // Build an absolute canonical URL from the configured site origin + a route
 // path. HTML routes get a trailing slash; file endpoints stay slashless. The
 // origin's trailing slash is normalized so the join never produces "//".

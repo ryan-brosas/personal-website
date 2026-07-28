@@ -38,7 +38,7 @@ const graph = buildEntityGraph({
   noindex={entry.data.visibility === "noindex"}
 >
   <JsonLd graph={graph} />
-  <Breadcrumbs routeId={routeId} params={params} />
+  <Breadcrumbs routeId={routeId} params={params} leafLabel={entry.data.title} />
 
   <article class="case-study-shell">
     <header class="case-study-header">

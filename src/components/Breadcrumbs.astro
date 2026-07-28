@@ -11,18 +11,13 @@ interface Props {
   // Dynamic-route params (e.g. { slug }) so the leaf crumb's [param] segment
   // resolves. Static routes omit this (breadcrumbsFor tolerates undefined).
   params?: Record<string, string>;
+  // Leaf display copy for a collection entry, whose route id is a pattern name
+  // ("case-studies-slug") and would otherwise render as "Case Studies Slug".
+  leafLabel?: string;
 }
 
-const { routeId, params } = Astro.props;
-const trail = ROUTE_REGISTRY.breadcrumbsFor(routeId, params);
-
-// Human label from a route id (the registry stores no crumb copy):
-// "case-studies" → "Case Studies", "about" → "About".
-const labelFor = (id: string): string =>
-  id
-    .split("-")
-    .map((part) => (part.length === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
-    .join(" ");
+const { routeId, params, leafLabel } = Astro.props;
+const trail = ROUTE_REGISTRY.breadcrumbsFor(routeId, params, leafLabel);
 ---
 {
   trail.length > 0 && (
@@ -33,9 +28,9 @@ const labelFor = (id: string): string =>
           return (
             <li>
               {isCurrent ? (
-                <span aria-current="page">{labelFor(crumb.id)}</span>
+                <span aria-current="page">{crumb.label}</span>
               ) : (
-                <a href={crumb.path}>{labelFor(crumb.id)}</a>
+                <a href={crumb.path}>{crumb.label}</a>
               )}
             </li>
           );

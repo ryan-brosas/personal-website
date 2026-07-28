@@ -13,6 +13,7 @@
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 import { PERSON_ENTITY } from "../config/entities.ts";
 import type { Breadcrumb } from "./route-registry.ts";
+import { canonicalHref } from "./routes.ts";
 import type { Visibility } from "./publishing.ts";
 
 // A JSON-LD node is an open string-keyed object; values are schema.org content.
@@ -53,14 +54,6 @@ export interface BuildEntityGraphInput {
 // Normalise the passed origin: strip a trailing slash so `${origin}/#person`
 // never doubles the slash before the anchor.
 const toOrigin = (site: string): string => site.replace(/\/+$/, "");
-
-// A human breadcrumb label from a route id (registry stores no crumb copy):
-// "case-studies" → "Case Studies", "about" → "About".
-const labelFromId = (id: string): string =>
-  id
-    .split("-")
-    .map((part) => (part.length === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
-    .join(" ");
 
 // ─── Graph builders ──────────────────────────────────────────────────────────
 
@@ -125,14 +118,19 @@ const buildArticleNode = (
   isPartOf: { "@id": `${origin}/#website` },
 });
 
-const buildBreadcrumbListNode = (canonical: string, trail: Breadcrumb[]): JsonLdNode => ({
+const buildBreadcrumbListNode = (
+  origin: string,
+  canonical: string,
+  trail: Breadcrumb[],
+): JsonLdNode => ({
   "@type": "BreadcrumbList",
   "@id": `${canonical}#breadcrumb`,
   itemListElement: trail.map((crumb, index) => ({
     "@type": "ListItem",
     position: index + 1,
-    name: labelFromId(crumb.id),
-    item: crumb.path,
+    name: crumb.label,
+    // schema.org requires an absolute URL; a relative path is not resolvable.
+    item: canonicalHref(crumb.path, origin),
   })),
 });
 
@@ -156,7 +154,13 @@ export const buildEntityGraph = ({ site, page }: BuildEntityGraphInput): JsonLdG
   // INV-03: only a public page contributes a page node to the graph.
   if (page.visibility === "public") {
     const canonical = ROUTE_REGISTRY.canonicalFor(page.routeId, page.params, origin);
-    const trail = ROUTE_REGISTRY.breadcrumbsFor(page.routeId, page.params);
+    // A collection entry's route id is a pattern name, so the leaf takes the
+    // page title. Static routes titlecase their id correctly and pass nothing.
+    const trail = ROUTE_REGISTRY.breadcrumbsFor(
+      page.routeId,
+      page.params,
+      page.params === undefined ? undefined : page.title,
+    );
     const hasBreadcrumb = trail.length > 0;
 
     graph.push(buildWebPageNode(origin, canonical, page, hasBreadcrumb));
@@ -168,7 +172,7 @@ export const buildEntityGraph = ({ site, page }: BuildEntityGraphInput): JsonLdG
     }
 
     if (hasBreadcrumb) {
-      graph.push(buildBreadcrumbListNode(canonical, trail));
+      graph.push(buildBreadcrumbListNode(origin, canonical, trail));
     }
   }
 

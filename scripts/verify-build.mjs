@@ -302,6 +302,7 @@ export const resolveBuildManifest = ({
       .filter((definition) => definition.isDynamic !== true && !isHtmlRoute(definition.path))
       .map((definition) => definition.path.replace(/^\/+/, "")),
     "favicon.svg",
+    "og-default.png",
   ];
 
   return {

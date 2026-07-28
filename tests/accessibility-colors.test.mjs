@@ -83,4 +83,12 @@ describe("semantic color contrast", () => {
     assert.ok(contrast(token("brand"), token("canvas")) < 4.5, "coral on paper is not body-text-safe");
   });
 
+  test("--brand-strong never carries or backs text", () => {
+    // It reads as a safe "darker coral" but fails AA in both directions, so
+    // the guard is structural rather than a reviewer remembering to check.
+    assert.ok(contrast(token("text-inverse"), token("brand-strong")) < 4.5);
+    assert.ok(contrast(token("brand-strong"), token("canvas")) < 4.5);
+    assert.doesNotMatch(css, /(?:^|[;{]\s*)(?:background|color):\s*var\(--brand-strong\)/m);
+  });
+
 });

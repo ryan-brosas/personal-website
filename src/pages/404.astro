@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { ROOT_ROUTE } from "../lib/routes.ts";
 
 const title = "Page not found | Ryan Brosas";
 const description = "The page you were looking for could not be found.";
@@ -11,6 +12,6 @@ const description = "The page you were looking for could not be found.";
       <h1>Page not found</h1>
       <p class="page-lead">This route ended without a useful result. The home page is the safe fallback.</p>
     </header>
-    <a class="button button--primary" href="/">Return to the home page</a>
+    <a class="button button--primary" href={ROOT_ROUTE}>Return to the home page</a>
   </section>
 </BaseLayout>

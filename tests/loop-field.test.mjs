@@ -55,6 +55,9 @@ test("loop motion is decorative and stops for reduced motion", () => {
   assert.match(css, /@keyframes handoff-drift/);
   const reduced = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/);
   assert.ok(reduced, "a reduced-motion block exists");
-  assert.match(reduced[1], /\.loop-field__orbit/);
   assert.match(reduced[1], /\.loop-field__track i/);
+  // The stage tick animates on a pseudo-element, so only the universal rule
+  // can stop it. A per-figure selector silently misses it.
+  assert.match(reduced[1], /animation-duration:\s*0\.01ms\s*!important/);
+  assert.match(reduced[1], /animation-iteration-count:\s*1\s*!important/);
 });

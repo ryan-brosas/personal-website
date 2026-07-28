@@ -7,13 +7,23 @@
 // as its ONLY prop, so canonical and robots policy can never drift from the
 // registry. Pure module (no astro runtime imports, no `any`) — Node-testable.
 import { ROUTE_REGISTRY } from "../config/routes.ts";
+import { PERSON_ENTITY } from "../config/entities.ts";
+import { canonicalHref } from "./routes.ts";
+
+// The shared social card. A static asset in public/ — no per-page generation,
+// so it stays inside the static contract. scripts/verify-build.mjs allow-lists
+// public assets by name, so renaming this file must be a two-file change.
+const DEFAULT_OG_IMAGE_PATH = "/og-default.png";
 
 // Open Graph projection. title/description default to the page's own
-// title/description; image is optional (no generated OG images in this release).
+// title/description; image always resolves so no route ships an unpreviewable
+// link. `type` distinguishes editorial records from ordinary pages.
 export interface PageOgMetadata {
   title: string;
   description: string;
-  image?: string;
+  image: string;
+  type: "website" | "article";
+  siteName: string;
 }
 
 // The complete, pre-resolved SEO head contract. canonical is an absolute URL
@@ -37,6 +47,7 @@ export interface PageMetadataOverrides {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  ogType?: "website" | "article";
   // Dynamic-route params (e.g. { slug }) filling the route's [param] segments.
   // Static routes omit this; canonicalFor tolerates undefined. Required for a
   // collection route (case-studies-slug) whose canonical needs the slug.
@@ -73,7 +84,11 @@ export const buildPageMetadata = (
     og: {
       title: overrides.ogTitle ?? title,
       description: overrides.ogDescription ?? description,
-      image: overrides.ogImage,
+      // The canonical already carries the resolved origin, so the card URL
+      // cannot drift from it or re-read the environment.
+      image: overrides.ogImage ?? canonicalHref(DEFAULT_OG_IMAGE_PATH, new URL(canonical).origin),
+      type: overrides.ogType ?? "website",
+      siteName: PERSON_ENTITY.name,
     },
   };
 };

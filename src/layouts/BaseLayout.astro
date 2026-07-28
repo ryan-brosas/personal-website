@@ -22,10 +22,13 @@ interface Props {
   // Dynamic-route params (e.g. { slug }) so the canonical resolves for a
   // collection entry. Static routes omit this.
   params?: Record<string, string>;
+  // Editorial records ("article") vs ordinary pages. Mirrors the JSON-LD kind so
+  // the card and the entity graph describe the page the same way.
+  ogType?: "website" | "article";
 }
 
-const { routeId, title, description, noindex, params } = Astro.props;
-const metadata = buildPageMetadata(routeId, { title, description, noindex, params });
+const { routeId, title, description, noindex, params, ogType } = Astro.props;
+const metadata = buildPageMetadata(routeId, { title, description, noindex, params, ogType });
 ---
 <!doctype html>
 <html lang="en">

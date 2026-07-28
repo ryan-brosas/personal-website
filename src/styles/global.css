@@ -43,6 +43,8 @@
 
   /* Brand accents. Coral is the repeatable accent; yellow is a scarce signal. */
   --brand: #ff5555;
+  /* Decorative only. At 3.67:1 behind --text-inverse and 3.89:1 on paper it
+   * fails AA for text, so it must never back or carry body copy. */
   --brand-strong: #e04545;
   --signal: #ecc90f;
 
@@ -373,9 +375,9 @@ a:hover {
 }
 
 .site-header nav a.nav-cta:hover {
-  background: var(--brand-strong);
-  color: var(--text-inverse);
-  border-bottom-color: var(--brand-strong);
+  background: var(--brand);
+  color: var(--text-1);
+  border-bottom-color: var(--text-1);
 }
 
 .nav-toggle {
@@ -492,9 +494,9 @@ main a {
 }
 
 .button--primary:hover {
-  background: var(--brand-strong);
-  color: var(--text-inverse);
-  border-color: var(--brand-strong);
+  background: var(--brand);
+  color: var(--text-1);
+  border-color: var(--text-1);
 }
 
 .button--secondary {
@@ -1145,9 +1147,9 @@ main a {
 }
 
 .cta-panel .button--primary:hover {
-  background: var(--brand-strong);
-  color: var(--text-inverse);
-  border-color: var(--brand-strong);
+  background: var(--brand);
+  color: var(--text-1);
+  border-color: var(--text-1);
 }
 
 /* ---------- Page / case-study shells ---------- */
@@ -1641,7 +1643,7 @@ footer nav a {
 }
 
 .proof-strip span {
-  color: var(--brand-strong);
+  color: var(--text-2);
   font-family: var(--font-mono);
   font-size: 0.7rem;
   letter-spacing: 0.08em;
@@ -1895,7 +1897,6 @@ footer nav a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loop-field__orbit,
   .loop-field__track i {
     animation: none;
   }
@@ -1919,5 +1920,7 @@ footer nav a {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
