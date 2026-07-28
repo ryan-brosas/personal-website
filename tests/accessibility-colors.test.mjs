@@ -58,8 +58,8 @@ describe("semantic color contrast", () => {
       /:focus-visible\s*\{[^}]*outline:[^;]*var\(--text-1\)[^}]*box-shadow:[^;]*var\(--canvas\)/s,
     );
   });
-  test("the original four pigments keep distinct semantic roles", () => {
-    assert.equal(token("canvas"), "#fdf9e5");
+  test("the registered core pigments keep distinct semantic roles", () => {
+    assert.equal(token("canvas"), "#fdfcf7");
     assert.equal(token("surface-dark"), "#1a1a1a");
     assert.equal(token("brand"), "#ff5555");
     assert.equal(token("signal"), "#ecc90f");

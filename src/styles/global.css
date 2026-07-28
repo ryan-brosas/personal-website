@@ -21,13 +21,13 @@
   --color-charcoal: #1a1a1a;
   --color-coral: #ff5555;
   --color-signal: #ecc90f;
-  --color-paper: #fdf9e5;
-  --color-raised: #fefdf4;
+  --color-paper: #fdfcf7;
+  --color-raised: #fffefa;
 
   /* Contrast-critical semantic surfaces (literal hex — read by contrast tests). */
-  --canvas: #fdf9e5;
-  --surface: #fefdf4;
-  --surface-muted: #f1ecda;
+  --canvas: #fdfcf7;
+  --surface: #fffefa;
+  --surface-muted: #f2f0e8;
   --surface-dark: #1a1a1a;
   --text-3: #5c5c54;
 
@@ -35,8 +35,8 @@
   --text-1: #1a1a1a;
   --text-2: #43423f;
   --text-inverse: #f7f2e1;
-  --line: #d8d2be;
-  --line-strong: #b7b0a0;
+  --line: #dedbd2;
+  --line-strong: #b9b5aa;
 
   /* Brand accents. Coral is the repeatable accent; yellow is a scarce signal. */
   --brand: #ff5555;
@@ -46,18 +46,18 @@
   --signal: #ecc90f;
 
   /* Navigation. */
-  --nav-bg: #fdf9e5;
-  --nav-border: #d8d2be;
+  --nav-bg: #fdfcf7;
+  --nav-border: #dedbd2;
   --nav-fg: #1a1a1a;
   --nav-hover-fg: #1a1a1a;
-  --nav-hover-bg: #f1ecda;
+  --nav-hover-bg: #f2f0e8;
   --nav-current-fg: #1a1a1a;
   --nav-current-rule: #ff5555;
 
   /* Links and controls. */
   --link-fg: #1a1a1a;
   --link-decoration: #ff5555;
-  --control-bg: #fefdf4;
+  --control-bg: #fffefa;
   --control-fg: #1a1a1a;
   --control-border: #8a8574;
 
