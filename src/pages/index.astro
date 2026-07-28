@@ -12,10 +12,10 @@ import { ROUTE_REGISTRY } from "../config/routes.ts";
 
 const routeId = "home";
 const showBrandLab = import.meta.env.DEV && import.meta.env.PUBLIC_BRAND_LAB === "true";
-const title = showBrandLab ? "Ryan Brosas | Brand Lab" : "Ryan Brosas | AI workflow systems for founder-led teams";
+const title = showBrandLab ? "Ryan Brosas | Brand Lab" : "Ryan Brosas | Clear systems for work that keeps coming back";
 const description = showBrandLab
   ? "Local working reference for the Ryan Brosas brand system and website components."
-  : "Ryan Brosas builds AI workflow systems for founder-led teams, with clear context, checks, handoffs, and a way to recover.";
+  : "I turn one repeated task into a clear system your team can run, check, and fix.";
 
 const home = ROUTE_REGISTRY.byId("home");
 const visibility = home?.visibility ?? "noindex";
@@ -51,15 +51,15 @@ const BrandSystemLab = showBrandLab
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero__copy">
       <BrandHeading level={1} role="h1" class="hero__title" id="hero-title">
-        Work that runs <span class="brand-highlight">without you.</span>
+        Stop doing the same work <span class="brand-highlight">every week.</span>
       </BrandHeading>
       <p class="hero__intro">
-        Bring me one job that keeps coming back. I trace it, rebuild it, and hand it back so your
-        team can run it.
+        If one task still needs your memory, your checks, and your rescue, it is not a system yet.
+        I help you fix that loop.
       </p>
       <div class="button-row hero__actions">
-        <a class="button button--primary" href={contactHref}>Bring me the stubborn work</a>
-        <a class="button button--secondary" href={caseStudyHref}>See the work</a>
+        <a class="button button--primary" href={contactHref}>Fix one stuck task</a>
+        <a class="button button--secondary" href={caseStudyHref}>See a real build</a>
       </div>
     </div>
 
@@ -116,47 +116,46 @@ const BrandSystemLab = showBrandLab
   <section class="home-section" aria-labelledby="friction-title">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">The signal</p>
-        <h2 id="friction-title">You do not need another tool.</h2>
+        <p class="eyebrow">The problem</p>
+        <h2 id="friction-title">The work runs only while you watch it.</h2>
       </div>
       <p>
-        You need the work to stop leaning on one person. Someone who recalls every detail, checks
-        every output, and saves every odd case.
+        Facts hide in chats and files. Odd cases come back to you. No clear check shows if the
+        work is safe to use.
       </p>
     </div>
 
     <ol class="signal-list">
       <li>
         <span class="signal-number">01</span>
-        <strong>The brief gets rebuilt</strong>
-        <p>Key facts sit in chats, files, and one person’s head.</p>
+        <strong>The task starts from scratch</strong>
+        <p>Someone gathers the same facts again.</p>
       </li>
       <li>
         <span class="signal-number">02</span>
-        <strong>Automation makes cleanup</strong>
-        <p>The easy path runs. Odd cases and review still land on you.</p>
+        <strong>The easy path works</strong>
+        <p>Then one odd case needs you to clean it up.</p>
       </li>
       <li>
         <span class="signal-number">03</span>
-        <strong>Nobody trusts the handoff</strong>
-        <p>There is no proof of what ran, what passed, or what needs a person.</p>
+        <strong>The team does not trust the handoff</strong>
+        <p>No clear check shows what ran or what needs help.</p>
       </li>
     </ol>
 
     <div class="button-row section-actions">
-      <a class="button button--secondary" href={resourcesHref}>Check your readiness</a>
+      <a class="button button--secondary" href={resourcesHref}>Check one task</a>
     </div>
   </section>
 
   <section class="home-section" aria-labelledby="method-title">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">The method</p>
-        <h2 id="method-title">Find the loop. Build the system.</h2>
+        <p class="eyebrow">The fix</p>
+        <h2 id="method-title">Turn one stuck task into a clear loop.</h2>
       </div>
       <p>
-        The answer may be an agent, a script, or a change in process. The build follows the work,
-        not the hype.
+        The answer may be an agent, a script, or a new step. We choose after we map the work.
       </p>
     </div>
 
@@ -166,69 +165,24 @@ const BrandSystemLab = showBrandLab
         <li>
           <span>01</span>
           <b>Trace</b>
-          <small>Follow the trigger, the calls, the source files, the handoffs, and the break points as they are today.</small>
+          <small>Find the start, the facts, the choices, the checks, and the breaks.</small>
         </li>
         <li>
           <span>02</span>
           <b>Design</b>
-          <small>Set what the system may decide, what must be checked, and where a person stays in charge.</small>
+          <small>Make the smallest system that can do the job and ask for help.</small>
         </li>
         <li class="is-proven">
           <span>03</span>
           <b>Prove</b>
-          <small>Run the smallest loop on real work. Check the proof. Fix only what the result shows.</small>
+          <small>Run it on real work. Check the result. Fix the gaps.</small>
         </li>
       </ol>
-      <figcaption>Nothing ships until the loop runs on real work and shows its proof.</figcaption>
+      <figcaption>The loop must run on real work before it can earn more scope.</figcaption>
     </figure>
 
     <div class="button-row section-actions">
-      <a class="button button--secondary" href={servicesHref}>How I work</a>
-    </div>
-  </section>
-
-  <section class="home-section" aria-labelledby="fit-title">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">The engagement</p>
-        <h2 id="fit-title">What you get, and who it&#8217;s for.</h2>
-      </div>
-      <p>
-        One job that keeps coming back, traced and rebuilt so someone else can run it.
-      </p>
-    </div>
-
-    <div class="dual-list">
-      <div>
-        <h3>What you get</h3>
-        <ul>
-          <li>
-            <strong>A traced workflow</strong>
-            <p>The real path from start to finish, with the calls, checks, handoffs, and odd cases.</p>
-          </li>
-          <li>
-            <strong>The smallest useful system</strong>
-            <p>An agent, a plain script, a review step, or all three. Whatever the work needs.</p>
-          </li>
-          <li>
-            <strong>A handoff that works</strong>
-            <p>Checks you can see, safe behavior when it fails, and notes someone else can run it from.</p>
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h3>Who it&#8217;s for</h3>
-        <ul>
-          <li><strong>The same task eats your attention every week.</strong></li>
-          <li><strong>Key facts are scattered, so someone rebuilds them each time.</strong></li>
-          <li><strong>Your automation handles the easy path but leaves you cleaning up.</strong></li>
-          <li><strong>You want one real workflow fixed before you commit to more.</strong></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="button-row section-actions">
-      <a class="button button--secondary" href={servicesHref}>See the full engagement</a>
+      <a class="button button--secondary" href={servicesHref}>See how I work</a>
     </div>
   </section>
 
@@ -236,13 +190,13 @@ const BrandSystemLab = showBrandLab
     <div class="case-feature">
       <div class="case-feature__copy">
         <div>
-          <p class="eyebrow">Transparent self-project</p>
-          <h2 id="case-title">A portfolio built like a publishing system.</h2>
+          <p class="eyebrow">Proof you can inspect</p>
+          <h2 id="case-title">This site shows how the rules work.</h2>
         </div>
         <div>
           <p>
-            This site runs on one route list, strict publish rules, claims that need proof, and a
-            build check that must pass.
+            This site uses one route list, clear rules for what goes live, proof checks, and build
+            tests that must pass.
           </p>
           <div class="button-row case-feature__actions">
             <a class="button button--secondary" href={caseStudyHref}>Read the case study</a>
@@ -271,15 +225,60 @@ const BrandSystemLab = showBrandLab
     }
   </section>
 
+  <section class="home-section" aria-labelledby="fit-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">What changes</p>
+        <h2 id="fit-title">Your team gets a system it can use.</h2>
+      </div>
+      <p>
+        One task no longer rests on one person. Your team can run it, check it, and fix it.
+      </p>
+    </div>
+
+    <div class="dual-list">
+      <div>
+        <h3>What you get</h3>
+        <ul>
+          <li>
+            <strong>A clear map</strong>
+            <p>The path from start to finish, with each check and odd case.</p>
+          </li>
+          <li>
+            <strong>A small working system</strong>
+            <p>An agent, a script, a review step, or a mix that fits the task.</p>
+          </li>
+          <li>
+            <strong>A safe handoff</strong>
+            <p>Clear checks, a safe stop, and notes your team can use.</p>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h3>Who it&#8217;s for</h3>
+        <ul>
+          <li><strong>The same task eats your attention every week.</strong></li>
+          <li><strong>Key facts are scattered, so someone rebuilds them each time.</strong></li>
+          <li><strong>Your automation handles the easy path but leaves you cleaning up.</strong></li>
+          <li><strong>You want one real workflow fixed before you commit to more.</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="button-row section-actions">
+      <a class="button button--secondary" href={servicesHref}>See the full engagement</a>
+    </div>
+  </section>
+
   <section class="home-section" aria-labelledby="entry-title">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">Where to next</p>
-        <h2 id="entry-title">Pick the door that fits.</h2>
+        <p class="eyebrow">Choose a next step</p>
+        <h2 id="entry-title">Start where you are.</h2>
       </div>
       <p>
-        Not ready to talk? Start where you are. Read the method, see the proof, or run a check on
-        your own work.
+        You do not need to talk yet. See the method, read the proof, or run a check on your own
+        work.
       </p>
     </div>
 
@@ -287,25 +286,25 @@ const BrandSystemLab = showBrandLab
       <li>
         <a href={servicesHref}>
           <strong>How I work</strong>
-          <span>How I work, and what you get.</span>
+          <span>See how one task becomes a clear loop.</span>
         </a>
       </li>
       <li>
         <a href={caseStudiesHref}>
           <strong>Case studies</strong>
-          <span>Systems built, with the proof attached.</span>
+          <span>See what was built and why.</span>
         </a>
       </li>
       <li>
         <a href={resourcesHref}>
           <strong>Resources</strong>
-          <span>Checks you can run yourself.</span>
+          <span>Run a simple check on your own work.</span>
         </a>
       </li>
       <li>
         <a href={aboutHref}>
           <strong>About</strong>
-          <span>Who I am and how I got here.</span>
+          <span>Learn what guides the work.</span>
         </a>
       </li>
     </ul>
@@ -315,10 +314,10 @@ const BrandSystemLab = showBrandLab
     <div class="cta-panel">
       <div>
         <p class="eyebrow">Start with one stubborn loop</p>
-        <h2 id="contact-title">What keeps coming back to you?</h2>
-        <p>Bring the job that keeps coming back, how you handle it now, and where it breaks.</p>
+        <h2 id="contact-title">Which task keeps coming back?</h2>
+        <p>Bring one task, how it works now, and where it gets stuck.</p>
       </div>
-      <a class="button button--primary" href={contactHref}>Start a conversation</a>
+      <a class="button button--primary" href={contactHref}>Start with one task</a>
     </div>
   </section>
       </>

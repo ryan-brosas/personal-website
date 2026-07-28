@@ -934,6 +934,9 @@ main a {
   background: var(--surface);
 }
 
+.workflow-rail > .eyebrow {
+  margin-block-end: var(--space-3);
+}
 
 .workflow-rail__steps {
   display: grid;

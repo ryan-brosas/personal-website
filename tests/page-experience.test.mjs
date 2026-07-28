@@ -77,6 +77,7 @@ test("the workflow rail is a static ordered sequence, not fake live progress", (
   assert.doesNotMatch(component, /Live path|data-page-motion|workflow-rail__progress/);
   assert.doesNotMatch(css, /\.workflow-rail__progress/);
   assert.match(component, /<ol class="workflow-rail__steps">/);
+  assert.match(css, /\.workflow-rail > \.eyebrow\s*\{[^}]*margin-block-end:\s*var\(--space-3\)/s);
 });
 
 test("page motion progressively enhances scrolling and interaction", () => {
@@ -133,4 +134,35 @@ test("page patterns contain no stale wrappers or unused selector contracts", () 
   assert.doesNotMatch(css, /\.hero__kicker|\.hero__visual\s*>\s*svg|\.contact-actions|\.commercial-body|Method grid/);
   assert.doesNotMatch(page, /commercial-body/);
   assert.doesNotMatch(cta, /secondaryRel/);
+});
+
+test("the About page is reader-focused without repeating the site owner's name", () => {
+  const about = fs.readFileSync(
+    path.join(repoRoot, "src", "content", "pages", "about.md"),
+    "utf-8",
+  );
+  assert.match(about, /^title: "About"$/m);
+  assert.doesNotMatch(about, /Ryan(?: Brosas)?/i);
+  const sectionCount = [...about.matchAll(/^## /gm)].length;
+  assert.ok(sectionCount >= 2 && sectionCount <= 3);
+  assert.match(about, /recurring work/i);
+  assert.match(about, /Philippines/);
+  assert.match(about, /published case study/i);
+  assert.match(about, /see how the work moves/i);
+});
+
+test("Work With Me stays reader-first and closes with a usable next step", () => {
+  const services = readRoute("/services/");
+  const proseStart = services.indexOf('class="prose"');
+  const fit = services.indexOf("The same task eats your attention every week");
+  const scope = services.indexOf("The scope stays small");
+  const handoff = services.indexOf("Done means your team can run it");
+  const cta = services.indexOf('id="services-next-step"');
+  assert.ok([proseStart, fit, scope, handoff, cta].every((position) => position >= 0));
+  assert.deepEqual(
+    [proseStart, fit, scope, handoff, cta],
+    [proseStart, fit, scope, handoff, cta].toSorted((a, b) => a - b),
+  );
+  assert.match(services.slice(cta), /href="\/contact\/"[^>]*>Start with one task<\/a>/);
+  assert.match(services.slice(cta), /href="\/case-studies\/"[^>]*>\s*See a real build\s*<\/a>/);
 });

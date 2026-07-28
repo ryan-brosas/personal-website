@@ -61,6 +61,20 @@ describe("T14 resolveCollectionDiscoveryRoutes — hub min-child gate (INV-07)",
     ]);
   });
 
+  test("a public nested collection includes every ancestor hub once", () => {
+    assert.deepEqual(
+      resolveCollectionDiscoveryRoutes({
+        resources: [],
+        tools: [{ slug: "watcher", visibility: "public" }],
+      }),
+      [
+        { path: "/resources/", visibility: "public" },
+        { path: "/resources/tools/", visibility: "public" },
+        { path: "/resources/tools/watcher/", visibility: "public" },
+      ],
+    );
+  });
+
   test("draft/noindex entries are excluded even when a public sibling exists", () => {
     const routes = resolveCollectionDiscoveryRoutes({
       [CS]: [

@@ -28,6 +28,8 @@ import {
   ServiceRecordSchema,
   CaseStudyRecordSchema,
   ResourceRecordSchema,
+  EditorialResourceRecordSchema,
+  ToolRecordSchema,
 } from "../src/lib/content-schemas.ts";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
 import markdownSafety, { assertMarkdownRendered } from "../src/lib/markdown-safety.ts";
@@ -496,6 +498,8 @@ describe("T3 routes and canonical helpers", () => {
       "robots",
       "services",
       "sitemap",
+      "tools",
+      "tools-slug",
     ]);
   });
 
@@ -758,6 +762,13 @@ describe("T6 read-only build verifier", () => {
     expectedFileEndpoints: [],
     allowEmptySitemap: false,
   });
+  const resourceFixtureManifest = (distDir) => ({
+    distDir,
+    site,
+    expectedHtmlRoutes: ["/resources/probe/"],
+    expectedFileEndpoints: [],
+    allowEmptySitemap: false,
+  });
 
   test("root context (empty sitemap + robots) passes", () => {
     const dir = makeTempDist({ "sitemap.xml": emptyUrlset, "robots.txt": robots });
@@ -871,6 +882,65 @@ describe("T6 read-only build verifier", () => {
       assert.equal(result.ok, false);
       assert.ok(
         result.errors.some((e) => e.includes("unexpected")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a rendered resource may declare a downloadable artifact", () => {
+    const dir = makeTempDist({
+      "resources/probe/index.html": htmlWithCanonicals(
+        "https://example.com/resources/probe/",
+      ).replace(
+        "</body>",
+        '<a data-resource-download href="/downloads/probe/worksheet.pdf">Download</a></body>',
+      ),
+      "downloads/probe/worksheet.pdf": "fixture-pdf",
+    });
+    try {
+      const result = verifyBuild(resourceFixtureManifest(dir));
+      assert.ok(result.ok, `expected ok: ${result.errors.join(", ")}`);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a rendered resource cannot declare a missing download", () => {
+    const dir = makeTempDist({
+      "resources/probe/index.html": htmlWithCanonicals(
+        "https://example.com/resources/probe/",
+      ).replace(
+        "</body>",
+        '<a data-resource-download href="/downloads/probe/missing.pdf">Download</a></body>',
+      ),
+    });
+    try {
+      const result = verifyBuild(resourceFixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((error) => error.includes("missing-download")),
+        `errors: ${result.errors.join(", ")}`,
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a non-resource page cannot declare a downloadable artifact", () => {
+    const dir = makeTempDist({
+      "probe/index.html": htmlWithCanonicals("https://example.com/probe/").replace(
+        "</body>",
+        '<a data-resource-download href="/downloads/probe/worksheet.pdf">Download</a></body>',
+      ),
+      "downloads/probe/worksheet.pdf": "fixture-pdf",
+    });
+    try {
+      const result = verifyBuild(fixtureManifest(dir));
+      assert.equal(result.ok, false);
+      assert.ok(
+        result.errors.some((error) => error.includes("unexpected-file")),
         `errors: ${result.errors.join(", ")}`,
       );
     } finally {
@@ -1641,9 +1711,75 @@ describe("Resources content model", () => {
     assert.equal(ResourceRecordSchema.safeParse(resource).success, true);
   });
 
-  test("rejects an unknown resource format", () => {
+  test("accepts interactive tools as Resources entries", () => {
+    assert.equal(ResourceRecordSchema.safeParse({ ...resource, format: "tool" }).success, true);
+  });
+
+  test("keeps editorial resources and tools in their own collections", () => {
+    assert.equal(EditorialResourceRecordSchema.safeParse(resource).success, true);
+    assert.equal(
+      EditorialResourceRecordSchema.safeParse({ ...resource, format: "tool" }).success,
+      false,
+    );
+    assert.equal(ToolRecordSchema.safeParse({ ...resource, format: "tool" }).success, true);
+    assert.equal(ToolRecordSchema.safeParse({ ...resource, format: "article" }).success, false);
+  });
+
+  test("accepts article resources and optional downloadable attachments", () => {
+    const parsed = ResourceRecordSchema.safeParse({
+      ...resource,
+      format: "article",
+      attachments: [
+        {
+          label: "Download the worksheet",
+          path: "/downloads/workflow-readiness/worksheet.xlsx",
+          mediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          license: "CC-BY-4.0",
+        },
+      ],
+    });
+
+    assert.equal(parsed.success, true, parsed.success ? "" : JSON.stringify(parsed.error.issues));
+  });
+
+  test("rejects unknown formats and unsafe attachment paths", () => {
     assert.equal(
       ResourceRecordSchema.safeParse({ ...resource, format: "video" }).success,
+      false,
+    );
+    for (const attachmentPath of [
+      "https://files.example.com/worksheet.pdf",
+      "/downloads/../private/worksheet.pdf",
+      "/uploads/worksheet.pdf",
+    ]) {
+      assert.equal(
+        ResourceRecordSchema.safeParse({
+          ...resource,
+          attachments: [
+            {
+              label: "Download",
+              path: attachmentPath,
+              mediaType: "application/pdf",
+            },
+          ],
+        }).success,
+        false,
+        attachmentPath,
+      );
+    }
+  });
+
+  test("rejects duplicate attachment paths within one resource", () => {
+    const attachment = {
+      label: "Download",
+      path: "/downloads/workflow-readiness/checklist.pdf",
+      mediaType: "application/pdf",
+    };
+    assert.equal(
+      ResourceRecordSchema.safeParse({
+        ...resource,
+        attachments: [attachment, { ...attachment, label: "Duplicate" }],
+      }).success,
       false,
     );
   });

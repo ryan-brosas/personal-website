@@ -142,6 +142,22 @@ describe("ROUTE_REGISTRY derived helpers", () => {
     assert.equal(ROUTE_REGISTRY.parentFor("resources-slug")?.id, "resources");
   });
 
+  test("Tools own a nested Resources hub and entry pattern", () => {
+    assert.equal(ROUTE_REGISTRY.pathFor("tools"), "/resources/tools/");
+    assert.equal(
+      ROUTE_REGISTRY.pathFor("tools-slug", { slug: "llm-watcher" }),
+      "/resources/tools/llm-watcher/",
+    );
+    assert.equal(ROUTE_REGISTRY.parentFor("tools")?.id, "resources");
+    assert.equal(ROUTE_REGISTRY.parentFor("tools-slug")?.id, "tools");
+    assert.deepEqual(
+      ROUTE_REGISTRY
+        .breadcrumbsFor("tools-slug", { slug: "resume-bot" }, "Résumé Bot")
+        .map((crumb) => crumb.path),
+      ["/resources/", "/resources/tools/", "/resources/tools/resume-bot/"],
+    );
+  });
+
   test("pathFor throws when a required dynamic param is missing", () => {
     assert.throws(() => ROUTE_REGISTRY.pathFor("case-studies-slug"), /missing route param "slug"/);
   });
@@ -210,6 +226,7 @@ describe("ROUTE_REGISTRY derived helpers", () => {
       "/case-studies/",
       "/contact/",
       "/resources/",
+      "/resources/tools/",
       "/services/",
     ]);
   });

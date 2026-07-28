@@ -1,24 +1,34 @@
 ---
-title: "About Ryan Brosas"
-description: "Ryan Brosas builds AI work systems with clear context, checks, handoffs, and a way to recover."
+title: "About"
+description: "A clear way to turn recurring work into a system with facts, checks, handoffs, and a safe way to recover."
 visibility: public
 ---
 
-I am Ryan Brosas. I build AI systems for work that keeps coming back. My job is to make four things clear. What the system knows. What it checks. When it hands work to a person. What happens when it breaks.
+If the same task keeps coming back to you, a new AI tool may not fix it. You need
+a system your team can see, check, and take over.
 
-I live in the Philippines and work with small, founder-led teams. I focus on the layer around the AI. That means the facts it gets, the calls it may make, the proof it shows, and the path it takes when things go wrong.
+That is the work I want to help with. I turn recurring work into small, clear
+systems. People stay in control.
 
-## The work behind the agent
+## The operator behind the systems
 
-A useful agent is rarely just a prompt. It needs source material, limits, checks, tools, human calls, and a way to recover. I build those parts as one working system. I do not hope the model will guess them right each time.
+I work from the Philippines with small teams. I focus on the parts around AI.
+What facts does it need? What can it do? How do we check its work? When should a
+person step in?
 
-## How I think
+I am sharing this site in stages. I will not fill the gaps with claims I cannot
+prove. The first published case study shows how this site works. It covers one
+route list, clear rules for what goes live, proof checks, and build tests.
 
-- **Start with the work that repeats.** The tool follows the real loop, not the other way around.
-- **Keep human calls visible.** A person should see what the system chose, why, and when it needs help.
-- **Make failure fixable.** Odd cases need a route, not a dead end.
-- **Prove the smallest loop first.** Real output teaches you more than a big plan.
+I will add client results, quotes, and numbers only when each one has a clear
+source and can be shared. Until then, the work on this site is the proof you can
+check.
 
-## What I am building toward
+My rule is simple. Make the facts clear. Show each key choice. Keep a safe way
+for a person to step in.
 
-Systems that let small teams do more without losing control of their own work.
+## See how the work moves
+
+Do you have one task that still lives in your head or needs you to catch each
+mistake? The Services page shows how I map the task, test a small fix, and hand
+it back in a form your team can use. The next step below takes you there.

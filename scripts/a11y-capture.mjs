@@ -30,9 +30,9 @@ const EXPECTED = {
   "/": {
     canonical: "https://example.com/",
     robots: "index,follow",
-    h1: "Ryan Brosas",
-    navCurrent: null,
-    brandCurrent: true,
+    h1: "Stop doing the same work every week.",
+    navCurrent: "Home",
+    brandCurrent: false,
     headerCurrent: true,
     sched: false,
     recovery: null,
@@ -40,7 +40,7 @@ const EXPECTED = {
   "/about/": {
     canonical: "https://example.com/about/",
     robots: "index,follow",
-    h1: "About Ryan Brosas",
+    h1: "About",
     navCurrent: "About",
     brandCurrent: false,
     headerCurrent: true,
@@ -101,6 +101,36 @@ const EXPECTED = {
     canonical: "https://example.com/resources/ai-workflow-readiness/",
     robots: "index,follow",
     h1: "AI Workflow Readiness Checklist",
+    navCurrent: null,
+    brandCurrent: false,
+    headerCurrent: false,
+    sched: false,
+    recovery: null,
+  },
+  "/resources/tools/": {
+    canonical: "https://example.com/resources/tools/",
+    robots: "noindex,follow",
+    h1: "Tools & Demos",
+    navCurrent: null,
+    brandCurrent: false,
+    headerCurrent: false,
+    sched: false,
+    recovery: null,
+  },
+  "/resources/tools/llm-watcher/": {
+    canonical: "https://example.com/resources/tools/llm-watcher/",
+    robots: "noindex,follow",
+    h1: "LLM Watcher",
+    navCurrent: null,
+    brandCurrent: false,
+    headerCurrent: false,
+    sched: false,
+    recovery: null,
+  },
+  "/resources/tools/resume-bot/": {
+    canonical: "https://example.com/resources/tools/resume-bot/",
+    robots: "noindex,follow",
+    h1: "Résumé Bot",
     navCurrent: null,
     brandCurrent: false,
     headerCurrent: false,
@@ -595,6 +625,25 @@ async function runScenario(browser, sc, origin) {
     check("navCurrent", exp.navCurrent, dom.navCurrent);
     check("brandCurrent", exp.brandCurrent, dom.brandCurrent);
     check("headerCurrent", exp.headerCurrent, dom.headerCurrent);
+    if (sc.mode === "no-js") {
+      const baseline = JSON.parse(
+        await evalJs(`(function(){
+          const visible = (el) => !!el && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden";
+          const navLinks = Array.from(document.querySelectorAll('nav[aria-label="Primary"] a'));
+          const headings = Array.from(document.querySelectorAll('main h2')).map((el) => el.textContent.trim());
+          return JSON.stringify({
+            primaryLinksVisible: navLinks.length > 0 && navLinks.every(visible),
+            toggleHidden: !visible(document.querySelector('.nav-toggle')),
+            ctaVisible: visible(document.querySelector('.page-cta, .cta-panel')) && visible(document.querySelector('.page-cta .button--primary, .cta-panel .button--primary')),
+            aboutComplete: headings.includes('The operator behind the systems') && headings.includes('See how the work moves'),
+          });
+        })()`),
+      );
+      check("no-js-primary-links-visible", true, baseline.primaryLinksVisible);
+      check("no-js-toggle-hidden", true, baseline.toggleHidden);
+      check("no-js-cta-visible", true, baseline.ctaVisible);
+      if (sc.route === "/about/") check("no-js-about-content-complete", true, baseline.aboutComplete);
+    }
     const overflowOk = dom.scrollWidth <= dom.clientWidth + 1;
     cap.assertions.push({
       id: "no-horizontal-overflow",

@@ -4,9 +4,10 @@ import type { CollectionRecord } from "../lib/site-routes.ts";
 export const getCollectionRouteRecords = async (): Promise<
   Record<string, CollectionRecord[]>
 > => {
-  const [caseStudies, resources] = await Promise.all([
+  const [caseStudies, resources, tools] = await Promise.all([
     getCollection("case-studies"),
     getCollection("resources"),
+    getCollection("tools"),
   ]);
   return {
     "case-studies": caseStudies.map((entry) => ({
@@ -14,6 +15,10 @@ export const getCollectionRouteRecords = async (): Promise<
       visibility: entry.data.visibility,
     })),
     resources: resources.map((entry) => ({
+      slug: entry.data.slug,
+      visibility: entry.data.visibility,
+    })),
+    tools: tools.map((entry) => ({
       slug: entry.data.slug,
       visibility: entry.data.visibility,
     })),

@@ -10,9 +10,11 @@ describe("content-driven build manifest", () => {
     const records = await import("../scripts/collection-records.mjs");
     assert.ok("readCollectionRecords" in records);
     const inventory = records.readCollectionRecords();
-    assert.deepEqual(Object.keys(inventory).sort(), ["case-studies", "resources"]);
-    assert.equal(inventory.resources[0].slug, "ai-workflow-readiness");
+    assert.deepEqual(Object.keys(inventory).sort(), ["case-studies", "resources", "tools"]);
+    assert.deepEqual(inventory.resources.map((entry) => entry.slug), ["ai-workflow-readiness"]);
     assert.equal(inventory.resources[0].visibility, "public");
+    assert.deepEqual(inventory.tools.map((entry) => entry.slug), ["llm-watcher", "resume-bot"]);
+    assert.ok(inventory.tools.every((entry) => entry.visibility === "noindex"));
   });
 
   test("page visibility IDs come from filenames, not frontmatter slugs", async () => {

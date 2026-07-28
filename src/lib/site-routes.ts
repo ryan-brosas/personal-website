@@ -52,17 +52,23 @@ export const resolveCollectionDiscoveryRoutes = (
   recordsByCollection: Record<string, CollectionRecord[]>,
 ): ResolvedRoute[] => {
   const routes: ResolvedRoute[] = [];
+  const addRoute = (route: ResolvedRoute): void => {
+    if (!routes.some((existing) => existing.path === route.path)) routes.push(route);
+  };
   for (const def of ROUTE_REGISTRY.all()) {
     if (def.isDynamic !== true || def.collection === undefined) continue;
     const records = recordsByCollection[def.collection] ?? [];
     const publicRecords = records.filter((record) => isDiscoverable(record.visibility));
     if (publicRecords.length === 0) continue;
-    const hub = def.parent === undefined ? undefined : ROUTE_REGISTRY.byId(def.parent);
-    if (hub !== undefined) {
-      routes.push({ path: hub.path, visibility: hub.visibility });
+    const ancestors = [];
+    let ancestor = def.parent === undefined ? undefined : ROUTE_REGISTRY.byId(def.parent);
+    while (ancestor !== undefined) {
+      ancestors.unshift(ancestor);
+      ancestor = ancestor.parent === undefined ? undefined : ROUTE_REGISTRY.byId(ancestor.parent);
     }
+    for (const hub of ancestors) addRoute({ path: hub.path, visibility: hub.visibility });
     for (const record of [...publicRecords].sort((a, b) => a.slug.localeCompare(b.slug))) {
-      routes.push({
+      addRoute({
         path: ROUTE_REGISTRY.pathFor(def.id, { slug: record.slug }),
         visibility: "public",
       });

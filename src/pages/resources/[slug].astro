@@ -38,6 +38,7 @@ const graph = buildEntityGraph({
   title={entry.data.title}
   description={entry.data.description}
   noindex={entry.data.visibility === "noindex"}
+  ogType={entry.data.format === "article" ? "article" : "website"}
 >
   <JsonLd graph={graph} />
   <Breadcrumbs routeId={routeId} params={params} leafLabel={entry.data.title} />
@@ -51,6 +52,30 @@ const graph = buildEntityGraph({
     <div class="prose">
       <Content />
     </div>
+
+    {
+      entry.data.attachments && (
+        <section class="prose" aria-labelledby="resource-downloads-title">
+          <h2 id="resource-downloads-title">Downloads</h2>
+          <ul>
+            {entry.data.attachments.map((attachment) => (
+              <li>
+                <a
+                  href={attachment.path}
+                  type={attachment.mediaType}
+                  download
+                  data-resource-download
+                >
+                  {attachment.label}
+                </a>
+                {attachment.description && <p>{attachment.description}</p>}
+                {attachment.license && <p class="case-meta">License: {attachment.license}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
     <PageCta
       id="resource-next-step"

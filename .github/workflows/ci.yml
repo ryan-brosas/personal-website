@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Check Astro and TypeScript
+        run: npm run check
+
+      # Build precedes tests: several suites read dist/ at import time, so
+      # running them first would assert against the previous run's output.
+      - name: Build production site
+        env:
+          SITE_ORIGIN: https://ryanjosebrosas.dev
+          PRODUCTION_BUILD: "true"
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify build output
+        env:
+          SITE_ORIGIN: https://ryanjosebrosas.dev
+        run: npm run verify
+
+      - name: Preserve production build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Download verified build
+        uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: dist
+
+      - name: Configure deployment SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Publish atomic release
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          remote="${DEPLOY_USER}@${DEPLOY_HOST}"
+          release="/srv/personal-website/releases/${GITHUB_SHA}"
+          ssh "$remote" "mkdir -p '$release'"
+          rsync -az --delete dist/ "${remote}:${release}/"
+          ssh "$remote" "ln -sfn '$release' /srv/personal-website/.next && mv -Tf /srv/personal-website/.next /srv/personal-website/current"

@@ -42,7 +42,7 @@ if (entry.id === "contact" && !contact) {
 
 const eyebrows: Record<string, string> = {
   about: "The operator behind the systems",
-  services: "Design · Build · Handoff",
+  services: "One task · One clear loop",
   contact: "Start with the recurring work",
 };
 
@@ -50,25 +50,25 @@ const contactHref = ROUTE_REGISTRY.pathFor("contact");
 const caseStudiesHref = ROUTE_REGISTRY.pathFor("case-studies");
 const servicesHref = ROUTE_REGISTRY.pathFor("services");
 const serviceRail = {
-  label: "How the work moves",
+  label: "How one task moves",
   steps: [
-    { label: "Trace", detail: "Follow the job as it runs now." },
+    { label: "Trace", detail: "See how the task runs now." },
     { label: "Build", detail: "Make the smallest useful system." },
-    { label: "Prove", detail: "Check the output on real work." },
-    { label: "Hand off", detail: "Leave a path someone else can run." },
+    { label: "Prove", detail: "Test it on real work." },
+    { label: "Hand off", detail: "Leave a path your team can run." },
   ],
-  caption: "The build follows the work, not the tool.",
+  caption: "The task picks the tool.",
 };
 
 const pageCta = {
   services: {
-    eyebrow: "Start with one stubborn loop",
-    title: "What keeps landing back on you?",
-    body: "Bring the repeated job, the current workaround, and the point where it breaks.",
+    eyebrow: "Start with one task",
+    title: "Which task keeps pulling you back in?",
+    body: "Bring the task, how it works now, and where it gets stuck.",
     primaryHref: contactHref,
-    primaryLabel: "Bring me the work",
+    primaryLabel: "Start with one task",
     secondaryHref: caseStudiesHref,
-    secondaryLabel: "See the proof first",
+    secondaryLabel: "See a real build",
   },
   about: {
     eyebrow: "See the approach in practice",

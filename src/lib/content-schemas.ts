@@ -209,8 +209,35 @@ export const CaseStudyRecordSchema = PublicationRecordSchema.merge(SeoFieldsSche
   });
 export type CaseStudyRecord = z.infer<typeof CaseStudyRecordSchema>;
 
-export const ResourceFormatSchema = z.enum(["guide", "checklist", "template", "reference"]);
+export const ResourceFormatSchema = z.enum([
+  "article",
+  "guide",
+  "checklist",
+  "template",
+  "reference",
+  "tool",
+]);
 export type ResourceFormat = z.infer<typeof ResourceFormatSchema>;
+
+export const ResourceAttachmentSchema = z.object({
+  label: z.string().min(1),
+  path: z
+    .string()
+    .regex(
+      /^\/downloads\/[A-Za-z0-9][A-Za-z0-9._~/-]*$/,
+      "attachment path must be a safe site-local /downloads/ path",
+    )
+    .refine(
+      (value) => value.split("/").every((segment) => segment !== "." && segment !== ".."),
+      "attachment path must not contain traversal segments",
+    ),
+  mediaType: z
+    .string()
+    .regex(/^[A-Za-z0-9][A-Za-z0-9.+-]*\/[A-Za-z0-9][A-Za-z0-9.+-]*$/),
+  description: z.string().min(1).optional(),
+  license: z.string().min(1).optional(),
+});
+export type ResourceAttachment = z.infer<typeof ResourceAttachmentSchema>;
 
 export const ResourceRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchema)
   .merge(TopicFieldsSchema)
@@ -218,8 +245,33 @@ export const ResourceRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchem
     kind: z.literal("resource"),
     format: ResourceFormatSchema,
     slug: z.string().min(1),
+    attachments: z.array(ResourceAttachmentSchema).min(1).optional(),
+  })
+  .superRefine((resource, ctx) => {
+    const paths = new Set<string>();
+    resource.attachments?.forEach((attachment, index) => {
+      if (paths.has(attachment.path)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["attachments", index, "path"],
+          message: "attachment paths must be unique within a resource",
+        });
+      }
+      paths.add(attachment.path);
+    });
   });
 export type ResourceRecord = z.infer<typeof ResourceRecordSchema>;
+
+export const EditorialResourceRecordSchema = ResourceRecordSchema.refine(
+  (resource) => resource.format !== "tool",
+  { message: "editorial resources cannot use the tool format", path: ["format"] },
+);
+
+export const ToolRecordSchema = ResourceRecordSchema.refine(
+  (resource) => resource.format === "tool",
+  { message: "tools must use the tool format", path: ["format"] },
+);
+export type ToolRecord = z.infer<typeof ToolRecordSchema>;
 
 // A homepage evidence-rail figure. sourceId is required, so a proof point with
 // no backing source cannot be authored at all; lib/proof-points.ts additionally

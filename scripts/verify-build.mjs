@@ -47,6 +47,19 @@ const extractCanonicals = (html) => {
   return canonicals;
 };
 
+const extractDeclaredDownloads = (html) => {
+  const downloads = [];
+  for (const match of html.matchAll(/<a\s[^>]*>/gi)) {
+    const tag = match[0];
+    if (!/(?<=\s)data-resource-download(?:\s|=|>)/i.test(tag)) continue;
+    const href = tag.match(/(?<=\s)href\s*=\s*["']([^"']+)["']/i)?.[1];
+    if (!href || !/^\/downloads\/[A-Za-z0-9][A-Za-z0-9._~/-]*$/.test(href)) continue;
+    if (href.split("/").some((segment) => segment === "." || segment === "..")) continue;
+    downloads.push(href.replace(/^\/+/, ""));
+  }
+  return downloads;
+};
+
 // Narrow _astro/ asset allowlist: only bundled CSS/SVG/image/font extensions are
 // accepted. HTML and JS are rejected (M2 has no client scripts; a later plan
 // that adds them must explicitly extend this set).
@@ -81,6 +94,18 @@ export const verifyBuild = (manifest) => {
   }
 
   const errors = [];
+  const declaredDownloads = new Set();
+  for (const relPath of listFiles(distDir)) {
+    const normalized = relPath.replace(/\\/g, "/");
+    if (!/^resources\/[^/]+\/index\.html$/.test(normalized)) continue;
+    const html = fs.readFileSync(path.join(distDir, relPath), "utf-8");
+    for (const download of extractDeclaredDownloads(html)) declaredDownloads.add(download);
+  }
+  for (const download of declaredDownloads) {
+    if (!fs.existsSync(path.join(distDir, download))) {
+      errors.push(`missing-download: ${download}`);
+    }
+  }
 
   // 1. Check expected HTML routes: each must have index.html with exactly one
   //    self-canonical matching <site><route> with a trailing slash.
@@ -189,6 +214,8 @@ export const verifyBuild = (manifest) => {
         errors.push(`unexpected-asset: ${normalized} (disallowed _astro/ extension ${ext})`);
       }
       // Allowed _astro/ extensions are silently accepted (bundled CSS/SVG/image).
+    } else if (declaredDownloads.has(normalized)) {
+      continue;
     } else if (!expectedFileEndpoints.includes(normalized)) {
       errors.push(`unexpected-file: ${normalized}`);
     }

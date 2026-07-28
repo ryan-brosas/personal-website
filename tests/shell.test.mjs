@@ -175,8 +175,8 @@ describe("B1 root shell", () => {
 
     // Proof-led positioning + the self-project case study link (its evidence).
     assert.ok(
-      /AI workflow systems for founder-led teams/i.test(html),
-      "homepage carries the proof-led positioning",
+      /clear systems for work that keeps coming back/i.test(html),
+      "homepage carries the reader-focused positioning",
     );
     assert.ok(
       /<a[^>]+href="\/case-studies\/this-site\/"[^>]*>/i.test(html),
@@ -406,8 +406,8 @@ describe("C2 about route", () => {
       aboutH1[1]
         .replace(/<[^>]+>/g, "")
         .trim()
-        .includes("About Ryan Brosas"),
-      "about h1 includes the approved title",
+        .includes("About"),
+      "about h1 uses the concise approved title",
     );
 
     // The approved body paragraph renders — proves <Content/> is wired, not blank.
@@ -1431,8 +1431,8 @@ test("homepage uses the hero composition and approved local typography", () => {
   const html = readHtml(distDir, "/");
   assert.match(html, /class="hero"/);
   // The hero headline names the visitor's outcome; the highlight carries the promise.
-  assert.match(html, /Work that runs/);
-  assert.match(html, /class="brand-highlight">without you\.<\/span>/);
+  assert.match(html, /Stop doing the same work/);
+  assert.match(html, /class="brand-highlight">every week\.<\/span>/);
   assert.match(html, /class="hero__visual"/);
   assert.match(html, /class="loop-field"/);
   assert.ok(!html.includes("<title>The Operator</title>"), "homepage reserves the mascot for supporting pages");

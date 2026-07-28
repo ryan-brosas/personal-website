@@ -12,10 +12,28 @@ import { buildEntityGraph } from "../../lib/structured-data.ts";
 const routeId = "resources";
 const title = "Resources";
 const description =
-  "Practical guides, checklists, templates, and references for building dependable AI workflows.";
-const entries = (await getCollection("resources"))
+  "Tools, articles, guides, checklists, templates, and references for building dependable AI workflows.";
+const [resourceEntries, toolEntries] = await Promise.all([
+  getCollection("resources"),
+  getCollection("tools"),
+]);
+const entries = [...resourceEntries, ...toolEntries]
   .filter((entry) => isDiscoverable(entry.data.visibility))
   .sort((a, b) => a.data.title.localeCompare(b.data.title));
+const resourceSections = [
+  { format: "tool", title: "Tools & Demos", eyebrow: "Try the working system" },
+  { format: "article", title: "Articles", eyebrow: "Ideas and field notes" },
+  { format: "guide", title: "Guides", eyebrow: "Work through a system" },
+  { format: "checklist", title: "Checklists", eyebrow: "Check a decision quickly" },
+  { format: "template", title: "Templates", eyebrow: "Start from a reusable structure" },
+  { format: "reference", title: "References", eyebrow: "Keep useful details close" },
+] as const;
+const resourceGroups = resourceSections
+  .map((section) => ({
+    ...section,
+    entries: entries.filter((entry) => entry.data.format === section.format),
+  }))
+  .filter((section) => section.entries.length > 0);
 const visibility = entries.length > 0 ? "public" : "noindex";
 const contactHref = ROUTE_REGISTRY.pathFor("contact");
 const site = Astro.site?.href ?? "https://example.com";
@@ -54,23 +72,38 @@ const graph = buildEntityGraph({
       entries.length === 0 ? (
         <p class="empty-state">The first resources are being prepared.</p>
       ) : (
-        <ul class="case-grid">
-          {entries.map((entry) => (
-            <li>
-              <article class="case-card">
-                <p class="case-meta">{entry.data.format} · {entry.data.pillar.replaceAll("-", " ")}</p>
-                <div>
-                  <h2>
-                    <a href={ROUTE_REGISTRY.pathFor("resources-slug", { slug: entry.data.slug })}>
-                      {entry.data.title}
-                    </a>
-                  </h2>
-                  <p>{entry.data.description}</p>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
+        resourceGroups.map((group) => (
+          <section class="resource-group" aria-labelledby={`resources-${group.format}`}>
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">{group.eyebrow}</p>
+                <h2 id={`resources-${group.format}`}>{group.title}</h2>
+              </div>
+            </div>
+            <ul class="case-grid">
+              {group.entries.map((entry) => (
+                <li>
+                  <article class="case-card">
+                    <p class="case-meta">{entry.data.format} · {entry.data.pillar.replaceAll("-", " ")}</p>
+                    <div>
+                      <h3>
+                        <a
+                            href={ROUTE_REGISTRY.pathFor(
+                              entry.data.format === "tool" ? "tools-slug" : "resources-slug",
+                              { slug: entry.data.slug },
+                            )}
+                          >
+                          {entry.data.title}
+                        </a>
+                      </h3>
+                      <p>{entry.data.description}</p>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
       )
     }
 

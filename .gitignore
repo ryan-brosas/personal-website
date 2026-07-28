@@ -1,5 +1,6 @@
 # Fallow static-analysis cache
 .fallow/
+/.fallowrc.json
 
 # OpenCode runtime dependencies (not source)
 .opencode/node_modules/
@@ -22,3 +23,13 @@ dist/
 
 # Pi project-local state
 /.pi/
+
+# Local agent policy
+/AGENTS.md
+/src/AGENTS.md
+
+# Local brand source archive
+/Ryan-Brosas-Brand-System-Design-System/
+
+# Test artifacts
+/test-results/
