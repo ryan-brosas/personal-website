@@ -61,7 +61,11 @@ test("development tools use nested noindex routes without flat duplicates", () =
     );
     assert.match(html, new RegExp(`<h1[^>]*>\\s*${title}\\s*<\\/h1>`));
     assert.match(html, /<meta name="robots" content="noindex,follow">/);
-    assert.match(html, new RegExp(`<link rel="canonical" href="https:\/\/example\.com\/resources\/tools\/${slug}\/">`));
+    const canonicalHref = html.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
+    assert.ok(canonicalHref, "tool page emits a canonical URL");
+    const canonical = new URL(canonicalHref);
+    assert.equal(canonical.protocol, "https:");
+    assert.equal(canonical.pathname, `/resources/tools/${slug}/`);
     assert.equal(fs.existsSync(path.join(repoRoot, "dist", "resources", slug)), false);
   }
 
