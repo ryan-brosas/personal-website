@@ -27,6 +27,7 @@ import {
   TopicFieldsSchema,
   ServiceRecordSchema,
   CaseStudyRecordSchema,
+  ResourceRecordSchema,
 } from "../src/lib/content-schemas.ts";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
 import markdownSafety, { assertMarkdownRendered } from "../src/lib/markdown-safety.ts";
@@ -39,7 +40,12 @@ import {
   isReviewStale,
   reviewStateFor,
 } from "../src/lib/freshness.ts";
-import { PERSON_ENTITY, SELF_PROJECT_CLAIMS, resolveClaimSources } from "../src/config/entities.ts";
+import {
+  PERSON_ENTITY,
+  SELF_PROJECT_CLAIMS,
+  parseSourceRegistry,
+  resolveClaimSources,
+} from "../src/config/entities.ts";
 
 describe("T2 publishing policy", () => {
   test("default visibility is draft (fail-closed)", () => {
@@ -181,6 +187,21 @@ describe("T2 publishing policy", () => {
 describe("T7 person entity + source/claim registry", () => {
   const anySourceId = Object.keys(sourcesRegistry)[0];
 
+  test("public evidence requires an inspectable public location", () => {
+    const result = parseSourceRegistry({
+      source: {
+        id: "source",
+        title: "Unlocatable public source",
+        type: "approved-artifact",
+        owner: "ryan",
+        permission: "public",
+        reviewedAt: "2026-07-25T00:00:00.000Z",
+      },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.error, "public-source-requires-location");
+  });
+
   test("PERSON_ENTITY carries the fixed identity and topic pillars", () => {
     assert.equal(PERSON_ENTITY.id, "ryan-brosas");
     assert.deepEqual(PERSON_ENTITY.sameAs, [], "no unverified sameAs profiles (D-15 deferred)");
@@ -303,10 +324,12 @@ describe("M2 content schemas (A1)", () => {
   const validSettings = (contact = lockedContact) => ({
     siteTitle: "Ryan Brosas",
     navLabels: {
+      home: "Home",
       about: "About",
       services: "Work With Me",
       contact: "Contact",
       caseStudies: "Case Studies",
+      resources: "Resources",
     },
     contact: { ...contact },
   });
@@ -468,6 +491,8 @@ describe("T3 routes and canonical helpers", () => {
       "case-studies-slug",
       "contact",
       "home",
+      "resources",
+      "resources-slug",
       "robots",
       "services",
       "sitemap",
@@ -1597,6 +1622,30 @@ export const collections = { pages };
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
+  });
+});
+
+describe("Resources content model", () => {
+  const resource = {
+    kind: "resource",
+    format: "checklist",
+    slug: "workflow-readiness",
+    visibility: "draft",
+    owner: "ryan",
+    title: "Workflow Readiness",
+    description: "A practical readiness checklist.",
+    pillar: "ai-workflow-systems",
+  };
+
+  test("accepts a valid resource record", () => {
+    assert.equal(ResourceRecordSchema.safeParse(resource).success, true);
+  });
+
+  test("rejects an unknown resource format", () => {
+    assert.equal(
+      ResourceRecordSchema.safeParse({ ...resource, format: "video" }).success,
+      false,
+    );
   });
 });
 

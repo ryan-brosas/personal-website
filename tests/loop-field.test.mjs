@@ -1,0 +1,60 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import test from "node:test";
+
+const repoRoot = path.resolve(import.meta.dirname, "..");
+const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+const html = fs.readFileSync(path.join(repoRoot, "dist", "index.html"), "utf-8");
+
+test("the hero shows the two loops and the handoff between them", () => {
+  assert.match(html, /class="loop-field"/);
+  assert.equal((html.match(/class="loop-field__cycle"/g) || []).length, 2, "two cycles");
+  assert.match(html, /class="loop-field__bridge"/);
+  // Both loops are named in text, not implied by shape alone.
+  assert.match(html, /Agent loop/i);
+  assert.match(html, /Human loop/i);
+});
+
+test("the figure sizes to its container, not the viewport", () => {
+  assert.match(css, /\.figure-frame \{[^}]*container-type: inline-size/s);
+  assert.match(css, /@container \(max-width: [0-9.]+rem\)\s*\{[\s\S]*?\.loop-field \{/);
+  // The stage tick must never collapse when a label is long.
+  assert.match(css, /\.loop-field__cycle li:not\(\.loop-field__actor\)::before \{[^}]*flex: 0 0 auto/s);
+});
+
+test("every loop field carries its container frame", () => {
+  // An element cannot query itself, so a loop field rendered without a
+  // .figure-frame ancestor silently ignores every @container rule and clips.
+  for (const file of [
+    path.join(repoRoot, "src", "pages", "index.astro"),
+    path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
+  ]) {
+    const source = fs.readFileSync(file, "utf-8");
+    const fields = (source.match(/<div class="loop-field">/g) || []).length;
+    const frames = (source.match(/<div class="figure-frame">\s*<div class="loop-field">/g) || []).length;
+    assert.equal(frames, fields, `${path.basename(file)} wraps every loop field in a figure frame`);
+  }
+});
+
+test("the figure is drawn in this system's geometry, not borrowed", () => {
+  const field = css.slice(css.indexOf("/* ---------- Loop field"), css.indexOf("/* ---------- Process diagram"));
+  assert.doesNotMatch(field, /border-radius: 50%/, "no orbs; this system is rectilinear");
+  // Ambient timing derives from the interaction base unit, not per-figure magic numbers.
+  assert.match(css, /--motion-ambient: calc\(var\(--motion-fast\)/);
+  assert.match(css, /--motion-signal: calc\(var\(--motion-fast\)/);
+  assert.doesNotMatch(field, /[0-9.]+s\s/, "durations come from motion tokens");
+});
+
+test("the old generic system diagram is gone from the hero", () => {
+  assert.doesNotMatch(html, /viewBox="0 0 1000 520"/);
+});
+
+test("loop motion is decorative and stops for reduced motion", () => {
+  assert.match(css, /@keyframes cycle-step/);
+  assert.match(css, /@keyframes handoff-drift/);
+  const reduced = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/);
+  assert.ok(reduced, "a reduced-motion block exists");
+  assert.match(reduced[1], /\.loop-field__orbit/);
+  assert.match(reduced[1], /\.loop-field__track i/);
+});

@@ -1,67 +1,327 @@
 ---
-// W4·T16 (SEO/GEO authority refactor) — the proof-gated public homepage.
-// The homepage is promoted to public ONLY through the machine-executable proof
-// gate (src/lib/home-proof.ts → resolveHomeVisibility → the registry "home"
-// entry). This page reads that ONE registry visibility, so its robots policy
-// (via buildPageMetadata in BaseLayout), its sitemap inclusion, and the JSON-LD
-// WebPage node here can never drift from the gate: if the self-project case
-// study were flipped to draft, the gate would keep "/" noindex and the WebPage
-// node would disappear (INV-03). Proof-led positioning links the self-project
-// case study as the evidence behind the homepage claim. No client script; the
-// ADR-004 Signal Path homepage motion is a later plan and is not introduced here.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import JsonLd from "../components/JsonLd.astro";
+import BrandHeading from "../components/brand/BrandHeading.astro";
 import { buildEntityGraph } from "../lib/structured-data.ts";
-import { homepageClaims } from "../lib/home-proof.ts";
+import { homepageVerifiedClaims } from "../lib/home-proof.ts";
+import { selectPublicProofPoints } from "../lib/proof-points.ts";
+import { getCollection } from "astro:content";
+import sourcesJson from "../data/sources.json" with { type: "json" };
+import type { SourceRegistry } from "../lib/evidence.ts";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 
 const routeId = "home";
-// Neutral identity + topic + audience naming only (F1 reconciliation). The
-// title/description assert NO capability/quality/outcome claim — the only
-// evidence-requiring positioning the homepage carries is the homepageClaims()
-// list below, which is asserted subset-equal to the validated SELF_PROJECT_CLAIMS
-// set. "AI workflow systems for founder-led teams" names the subject and audience;
-// it is not a claim requiring evidence (and no "reliable"/outcome promise remains).
-const title = "Ryan Brosas — AI workflow systems for founder-led teams";
-const description =
-  "Ryan Brosas — AI workflow systems for founder-led teams. Every claim on this site is evidence-backed.";
+const showBrandLab = import.meta.env.DEV && import.meta.env.PUBLIC_BRAND_LAB === "true";
+const title = showBrandLab ? "Ryan Brosas | Brand Lab" : "Ryan Brosas | AI workflow systems for founder-led teams";
+const description = showBrandLab
+  ? "Local working reference for the Ryan Brosas brand system and website components."
+  : "Ryan Brosas builds AI workflow systems for founder-led teams, with clear context, checks, handoffs, and a way to recover.";
 
-// The homepage's disposition is the gate result carried by the registry "home"
-// entry; the WebPage node is emitted only when the gate promoted "/" to public.
 const home = ROUTE_REGISTRY.byId("home");
 const visibility = home?.visibility ?? "noindex";
-
-// Registry-derived link to the self-project case study (never a hard-coded path).
+const servicesHref = ROUTE_REGISTRY.pathFor("services");
+const contactHref = ROUTE_REGISTRY.pathFor("contact");
+const caseStudiesHref = ROUTE_REGISTRY.pathFor("case-studies");
 const caseStudyHref = ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: "this-site" });
+const resourcesHref = ROUTE_REGISTRY.pathFor("resources");
+const aboutHref = ROUTE_REGISTRY.pathFor("about");
+const claims = homepageVerifiedClaims();
 
-// T16 — the ONLY factual positioning the homepage asserts. Sourced from the
-// single validated claim set (SELF_PROJECT_CLAIMS) via `homepageClaims`, filtered
-// to claims whose evidence resolves public-safe. Rendered claims therefore ==
-// validated claims by construction: the copy can never assert an unbacked
-// positioning, and every statement shown is evidence-gated (INV-09, T16).
-const claims = homepageClaims();
+// Evidence rail. Entries are content (src/content/proof/*.md) but only reach the
+// page through the shared evidence kernel, so an unbacked figure never renders.
+const proofPoints = selectPublicProofPoints(
+  (await getCollection("proof")).map((entry) => ({ id: entry.id, ...entry.data })),
+  sourcesJson as unknown as SourceRegistry,
+);
 
-// Astro.site is the real origin from astro.config; buildEntityGraph normalises
-// the trailing slash. Fall back to the placeholder so a mis-set config never
-// throws at render time.
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({ site, page: { routeId, title, description, visibility } });
+const BrandSystemLab = showBrandLab
+  ? (await import("../components/brand/BrandSystemLab.astro")).default
+  : undefined;
 ---
 <BaseLayout routeId={routeId} title={title} description={description}>
   <JsonLd graph={graph} />
-  <h1>Ryan Brosas</h1>
-  <p><strong>AI workflow systems for founder-led teams</strong></p>
-  <p>
-    Every claim here is evidence-backed. See how this site itself is built:
-    <a href={caseStudyHref}>Building This Website</a>.
-  </p>
+
   {
-    claims.length > 0 && (
-      <ul class="homepage-claims">
-        {claims.map((claim) => (
-          <li>{claim.statement}</li>
-        ))}
-      </ul>
+    showBrandLab && BrandSystemLab ? (
+      <BrandSystemLab />
+    ) : (
+      <>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__copy">
+      <BrandHeading level={1} role="h1" class="hero__title" id="hero-title">
+        Work that runs <span class="brand-highlight">without you.</span>
+      </BrandHeading>
+      <p class="hero__intro">
+        Bring me one job that keeps coming back. I trace it, rebuild it, and hand it back so your
+        team can run it.
+      </p>
+      <div class="button-row hero__actions">
+        <a class="button button--primary" href={contactHref}>Bring me the stubborn work</a>
+        <a class="button button--secondary" href={caseStudyHref}>See the work</a>
+      </div>
+    </div>
+
+    <figure class="hero__visual">
+      <div class="figure-frame">
+      <div class="loop-field">
+        <div class="loop-field__loop">
+          <p class="loop-field__label">Agent loop</p>
+          <ul class="loop-field__cycle">
+            <li>Context</li>
+            <li>Run</li>
+            <li>Check</li>
+            <li>Tools</li>
+            <li class="loop-field__actor">Agent</li>
+          </ul>
+        </div>
+
+        <div class="loop-field__bridge">
+          <span>Handoff</span>
+          <span class="loop-field__track" aria-hidden="true"><i></i></span>
+        </div>
+
+        <div class="loop-field__loop">
+          <p class="loop-field__label">Human loop</p>
+          <ul class="loop-field__cycle">
+            <li>Judgment</li>
+            <li>Steer</li>
+            <li>Approve</li>
+            <li>Recover</li>
+            <li class="loop-field__actor">You</li>
+          </ul>
+        </div>
+      </div>
+      </div>
+    </figure>
+  </section>
+
+  {
+    proofPoints.length > 0 && (
+      <section class="home-section">
+        <ul class="proof-strip" aria-label="Verified numbers">
+          {proofPoints.map((point) => (
+            <li>
+              <span>{point.label}</span>
+              <strong>{point.value}</strong>
+              <p>{point.detail}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="home-section" aria-labelledby="friction-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">The signal</p>
+        <h2 id="friction-title">You do not need another tool.</h2>
+      </div>
+      <p>
+        You need the work to stop leaning on one person. Someone who recalls every detail, checks
+        every output, and saves every odd case.
+      </p>
+    </div>
+
+    <ol class="signal-list">
+      <li>
+        <span class="signal-number">01</span>
+        <strong>The brief gets rebuilt</strong>
+        <p>Key facts sit in chats, files, and one person’s head.</p>
+      </li>
+      <li>
+        <span class="signal-number">02</span>
+        <strong>Automation makes cleanup</strong>
+        <p>The easy path runs. Odd cases and review still land on you.</p>
+      </li>
+      <li>
+        <span class="signal-number">03</span>
+        <strong>Nobody trusts the handoff</strong>
+        <p>There is no proof of what ran, what passed, or what needs a person.</p>
+      </li>
+    </ol>
+
+    <div class="button-row section-actions">
+      <a class="button button--secondary" href={resourcesHref}>Check your readiness</a>
+    </div>
+  </section>
+
+  <section class="home-section" aria-labelledby="method-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">The method</p>
+        <h2 id="method-title">Find the loop. Build the system.</h2>
+      </div>
+      <p>
+        The answer may be an agent, a script, or a change in process. The build follows the work,
+        not the hype.
+      </p>
+    </div>
+
+    <figure class="process-diagram">
+      <div class="process-rail" aria-hidden="true"><i></i></div>
+      <ol class="process-stages">
+        <li>
+          <span>01</span>
+          <b>Trace</b>
+          <small>Follow the trigger, the calls, the source files, the handoffs, and the break points as they are today.</small>
+        </li>
+        <li>
+          <span>02</span>
+          <b>Design</b>
+          <small>Set what the system may decide, what must be checked, and where a person stays in charge.</small>
+        </li>
+        <li class="is-proven">
+          <span>03</span>
+          <b>Prove</b>
+          <small>Run the smallest loop on real work. Check the proof. Fix only what the result shows.</small>
+        </li>
+      </ol>
+      <figcaption>Nothing ships until the loop runs on real work and shows its proof.</figcaption>
+    </figure>
+
+    <div class="button-row section-actions">
+      <a class="button button--secondary" href={servicesHref}>How I work</a>
+    </div>
+  </section>
+
+  <section class="home-section" aria-labelledby="fit-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">The engagement</p>
+        <h2 id="fit-title">What you get, and who it&#8217;s for.</h2>
+      </div>
+      <p>
+        One job that keeps coming back, traced and rebuilt so someone else can run it.
+      </p>
+    </div>
+
+    <div class="dual-list">
+      <div>
+        <h3>What you get</h3>
+        <ul>
+          <li>
+            <strong>A traced workflow</strong>
+            <p>The real path from start to finish, with the calls, checks, handoffs, and odd cases.</p>
+          </li>
+          <li>
+            <strong>The smallest useful system</strong>
+            <p>An agent, a plain script, a review step, or all three. Whatever the work needs.</p>
+          </li>
+          <li>
+            <strong>A handoff that works</strong>
+            <p>Checks you can see, safe behavior when it fails, and notes someone else can run it from.</p>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h3>Who it&#8217;s for</h3>
+        <ul>
+          <li><strong>The same task eats your attention every week.</strong></li>
+          <li><strong>Key facts are scattered, so someone rebuilds them each time.</strong></li>
+          <li><strong>Your automation handles the easy path but leaves you cleaning up.</strong></li>
+          <li><strong>You want one real workflow fixed before you commit to more.</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="button-row section-actions">
+      <a class="button button--secondary" href={servicesHref}>See the full engagement</a>
+    </div>
+  </section>
+
+  <section class="home-section" aria-labelledby="case-title">
+    <div class="case-feature">
+      <div class="case-feature__copy">
+        <div>
+          <p class="eyebrow">Transparent self-project</p>
+          <h2 id="case-title">A portfolio built like a publishing system.</h2>
+        </div>
+        <div>
+          <p>
+            This site runs on one route list, strict publish rules, claims that need proof, and a
+            build check that must pass.
+          </p>
+          <div class="button-row case-feature__actions">
+            <a class="button button--secondary" href={caseStudyHref}>Read the case study</a>
+            <a href={caseStudiesHref}>All case studies</a>
+          </div>
+        </div>
+      </div>
+      <div class="case-feature__visual" aria-hidden="true">
+        <div class="architecture-map">
+          <div><strong>Content</strong><span>validated</span></div>
+          <div><strong>Route registry</strong><span>canonical</span></div>
+          <div><strong>Evidence policy</strong><span>fail-closed</span></div>
+          <div><strong>Static build</strong><span>verified</span></div>
+        </div>
+      </div>
+    </div>
+
+    {
+      claims.length > 0 && (
+        <ul class="homepage-claims" aria-label="Verified project facts">
+          {claims.map((claim) => (
+            <li>{claim.statement}</li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  <section class="home-section" aria-labelledby="entry-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Where to next</p>
+        <h2 id="entry-title">Pick the door that fits.</h2>
+      </div>
+      <p>
+        Not ready to talk? Start where you are. Read the method, see the proof, or run a check on
+        your own work.
+      </p>
+    </div>
+
+    <ul class="entry-points">
+      <li>
+        <a href={servicesHref}>
+          <strong>How I work</strong>
+          <span>How I work, and what you get.</span>
+        </a>
+      </li>
+      <li>
+        <a href={caseStudiesHref}>
+          <strong>Case studies</strong>
+          <span>Systems built, with the proof attached.</span>
+        </a>
+      </li>
+      <li>
+        <a href={resourcesHref}>
+          <strong>Resources</strong>
+          <span>Checks you can run yourself.</span>
+        </a>
+      </li>
+      <li>
+        <a href={aboutHref}>
+          <strong>About</strong>
+          <span>Who I am and how I got here.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="home-section" aria-labelledby="contact-title">
+    <div class="cta-panel">
+      <div>
+        <p class="eyebrow">Start with one stubborn loop</p>
+        <h2 id="contact-title">What keeps coming back to you?</h2>
+        <p>Bring the job that keeps coming back, how you handle it now, and where it breaks.</p>
+      </div>
+      <a class="button button--primary" href={contactHref}>Start a conversation</a>
+    </div>
+  </section>
+      </>
     )
   }
 </BaseLayout>

@@ -1,0 +1,19 @@
+---
+import type { HTMLTag } from "astro/types";
+
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+type HeadingRole = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "campaign";
+
+interface Props {
+  level?: HeadingLevel;
+  role?: HeadingRole;
+  id?: string;
+  class?: string;
+}
+
+const { level = 2, role = `h${level}` as HeadingRole, id, class: className } = Astro.props;
+const Tag = `h${level}` as HTMLTag;
+---
+<Tag id={id} class:list={["brand-heading", `brand-heading--${role}`, className]}>
+  <slot />
+</Tag>

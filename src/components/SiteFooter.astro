@@ -1,14 +1,25 @@
 ---
-// M2 (Plan 03, Child 2) — shared footer. Copyright and a secondary navigation
-// with a normal Home link. No inactive or privacy links (privacy route is owned
-// by Plan 10; Contact by the contact child). No brand tokens.
+// Footer navigation mirrors the primary nav from the one shared resolver, plus
+// the site root. A new registry entry or a settings label change lands here
+// without a second edit.
 import { ROOT_ROUTE } from "../lib/routes.ts";
+import { resolveSiteNavigation } from "../lib/navigation.ts";
+
+const { primary } = await resolveSiteNavigation();
+const year = new Date().getFullYear();
 ---
-<footer>
-  <p>© Ryan Brosas</p>
-  <nav aria-label="Footer">
-    <ul>
-      <li><a href={ROOT_ROUTE}>Home</a></li>
-    </ul>
-  </nav>
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <p class="site-footer__statement">Design the workflow. Make the handoff explicit.</p>
+    <div class="site-footer__meta">
+      <nav aria-label="Footer">
+        <ul>
+          {primary.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <small>© Ryan Brosas {year} · Remote from the Philippines</small>
+    </div>
+  </div>
 </footer>

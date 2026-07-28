@@ -1,16 +1,13 @@
-// M2 (Plan 03, Child 1) content adapter. Thin wiring over the shared content
-// schemas in ./lib/content-schemas.ts (which compose the policy kernel in
-// ./lib/publishing.ts). Registers the launch collections (empty until content
-// arrives; glob() warns but does not throw) and the settings singleton.
-// Runtime-only astro:content / astro:loaders imports are gated by
-// `astro check` + `astro build`, not Node behavioral tests.
+// Astro content adapter for pages, case studies, resources, and site settings. Record
+// validation remains in lib/content-schemas.ts.
 import { defineCollection } from "astro:content";
 import { glob, file } from "astro/loaders";
 import {
   PageSchema,
   SettingsDataSchema,
-  ServiceRecordSchema,
   CaseStudyRecordSchema,
+  ResourceRecordSchema,
+  ProofPointRecordSchema,
 } from "./lib/content-schemas.ts";
 
 const pages = defineCollection({
@@ -26,18 +23,22 @@ const pages = defineCollection({
   schema: PageSchema,
 });
 
-// SEO/GEO authority launch collections (Plan seo-geo-authority-refactor, T6).
-// Empty until content arrives; the .gitkeep-tracked dirs suppress glob's
-// missing-base warnings. These replace the earlier M2 scaffold collections in
-// the same commit — no orphan window.
-const services = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/services" }),
-  schema: ServiceRecordSchema,
-});
-
+// Public case studies carry the richer publishing and evidence contract.
 const caseStudies = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/case-studies" }),
   schema: CaseStudyRecordSchema,
+});
+
+const resources = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/resources" }),
+  schema: ResourceRecordSchema,
+});
+
+// Homepage evidence rail. Adding a figure means adding a file here; it only
+// reaches the page once its sourceId resolves public-safe (lib/proof-points.ts).
+const proof = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/proof" }),
+  schema: ProofPointRecordSchema,
 });
 
 const settings = defineCollection({
@@ -47,7 +48,8 @@ const settings = defineCollection({
 
 export const collections = {
   pages,
-  services,
   "case-studies": caseStudies,
+  resources,
+  proof,
   settings,
 };

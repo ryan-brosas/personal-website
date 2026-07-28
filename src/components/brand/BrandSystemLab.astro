@@ -1,0 +1,898 @@
+---
+import BrandHeading from "./BrandHeading.astro";
+import BrandLogo from "../../assets/brand/logo-charcoal.svg";
+import OperatorMascot from "../../assets/brand/operator-mascot.svg";
+import SystemConductor from "../../assets/brand/hero-system-conductor.svg";
+import iconSprite from "../../assets/brand/icons.svg?raw";
+import { readFileSync } from "node:fs";
+
+const sourceDirectory = "Ryan-Brosas-Brand-System-Design-System/";
+type Section = readonly [id: string, label: string];
+type SectionGroup = Readonly<{ label: string; sections: ReadonlyArray<Section> }>;
+
+const sectionGroups: ReadonlyArray<SectionGroup> = [
+  { label: "Foundations", sections: [["identity", "Identity"], ["foundations", "Color"], ["contrast", "Contrast"], ["typography", "Typography"], ["layout", "Layout"], ["motion", "Motion"], ["tokens", "Tokens"]] },
+  { label: "Components", sections: [["assets", "Assets"], ["actions", "Actions"], ["forms", "Forms"], ["states", "States"]] },
+  { label: "Compositions", sections: [["patterns", "Patterns"], ["voice", "Voice"], ["copy", "Copy"]] },
+  { label: "Build", sections: [["inventory", "Inventory"], ["gallery", "Gallery"], ["recipes", "Recipes"]] },
+  { label: "Operations", sections: [["governance", "Governance"], ["checklist", "Checklist"]] },
+];
+const sections = sectionGroups.flatMap((group) => group.sections);
+const tokenGroups = (() => {
+  const globalCss = readFileSync(new URL("../../styles/global.css", import.meta.url), "utf-8");
+  const root = globalCss.slice(globalCss.indexOf(":root"), globalCss.indexOf("}", globalCss.indexOf(":root")));
+  const tokens = [...root.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)].map(
+    ([, name, value]) => ({ name: `--${name}`, value: value.trim() }),
+  );
+  const buckets: Record<string, string[]> = {
+    Color: ["color-", "canvas", "surface", "text-", "line", "brand", "signal", "nav-", "link-", "control-", "focus-"],
+    Type: ["font-", "type-"],
+    Space: ["space-"],
+    Layout: ["content-", "measure-", "prose-", "grid-", "radius-", "canvas-grid"],
+    Motion: ["motion-"],
+  };
+  return Object.entries(buckets).map(([label, prefixes]) => ({
+    label,
+    tokens: tokens.filter((token) =>
+      prefixes.some((prefix) => token.name.startsWith(`--${prefix}`)),
+    ),
+  }));
+})();
+const iconNames = [...iconSprite.matchAll(/<symbol id="(icon-[a-z-]+)"/g)].map((match) => match[1]);
+const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) => sectionId === id) + 1).padStart(2, "0");
+---
+<section class="brand-lab" data-brand-lab aria-labelledby="brand-lab-title">
+  <header class="brand-lab__header">
+    <div>
+      <p class="eyebrow">Local design system</p>
+      <BrandHeading level={1} role="h2" class="brand-lab__title" id="brand-lab-title">Brand Lab</BrandHeading>
+      <p class="brand-lab__lede">
+        The working reference for Ryan Brosas identity, foundations, components, states, patterns,
+        and voice. Change a shared token or component here, then verify it on the website.
+      </p>
+    </div>
+    <p class="brand-lab__status">Development only / never published</p>
+  </header>
+
+  <div class="brand-lab__architecture" aria-label="Design system organization">
+    <article><span>01</span><strong>Foundations</strong><p>Identity, color, contrast, type, spacing, and grid establish constraints.</p></article>
+    <article><span>02</span><strong>Components</strong><p>Assets and controls consume foundation tokens rather than raw values.</p></article>
+    <article><span>03</span><strong>Compositions</strong><p>Patterns combine components into recognizable page and content structures.</p></article>
+    <article><span>04</span><strong>Build</strong><p>Inventory and recipes name the exact modules and steps a new page uses.</p></article>
+    <article><span>05</span><strong>Operations</strong><p>Governance verifies changes against accessibility and production behavior.</p></article>
+  </div>
+
+  <nav class="brand-lab__nav" aria-label="Brand Lab sections">
+    <div class="brand-lab__nav-track">
+      {sectionGroups.map((group) => (
+        <div class="brand-lab__nav-group">
+          <strong>{group.label}</strong>
+          <ol>
+            {group.sections.map(([id, label]) => (
+              <li><a href={`#brand-${id}`}><span>{sectionNumber(id)}</span>{label}</a></li>
+            ))}
+          </ol>
+        </div>
+      ))}
+    </div>
+  </nav>
+
+  <div class="brand-lab__workspace">
+    <section class="brand-lab__section brand-lab__identity" id="brand-identity" aria-labelledby="brand-identity-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">01 / Identity</p>
+        <div>
+          <BrandHeading level={2} role="h2" id="brand-identity-title">Ryan Brosas</BrandHeading>
+          <p>Agent Systems Builder</p>
+        </div>
+      </div>
+      <div class="brand-lab__identity-grid">
+        <div class="brand-lab__logo-lockup">
+          <BrandLogo aria-label="Ryan Brosas adopted charcoal symbol" />
+          <div><strong>Ryan Brosas</strong><span>Agent Systems Builder</span></div>
+        </div>
+        <blockquote>
+          <p>I build agent systems so repetitive work stops coming back to you.</p>
+          <cite>Primary positioning statement</cite>
+        </blockquote>
+        <dl class="brand-lab__principles">
+          <div><dt>01</dt><dd>Systems before spectacle.</dd></div>
+          <div><dt>02</dt><dd>Useful before impressive.</dd></div>
+          <div><dt>03</dt><dd>Honest about failure.</dd></div>
+          <div><dt>04</dt><dd>Share the process.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-foundations" aria-labelledby="brand-foundations-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">02 / Foundations</p>
+        <div><BrandHeading level={2} role="h3" id="brand-foundations-title">Color, rhythm, and geometry</BrandHeading><p>Semantic roles before decorative choices.</p></div>
+      </div>
+      <div class="brand-lab__fields" aria-label="Canonical color fields">
+        <div class="brand-lab__field brand-lab__field--paper"><strong>Warm paper</strong><span>#FDF9E5 · foundation</span></div>
+        <div class="brand-lab__field brand-lab__field--charcoal"><strong>Charcoal</strong><span>#1A1A1A · structure / text</span></div>
+        <div class="brand-lab__field brand-lab__field--coral"><strong>Coral</strong><span>#FF5555 · action / emphasis</span></div>
+        <div class="brand-lab__field brand-lab__field--yellow"><strong>Signal yellow</strong><span>#ECC90F · scarce signal</span></div>
+      </div>
+      <div class="brand-lab__foundation-notes">
+        <article><strong>8px</strong><span>Baseline spacing rhythm</span></article>
+        <article><strong>1px</strong><span>Structural border weight</span></article>
+        <article><strong>0 / 4 / 8</strong><span>Plate, control, panel radius</span></article>
+        <article><strong>44px</strong><span>Minimum important target</span></article>
+      </div>
+      <div class="brand-lab__token-flow" aria-label="Color token architecture">
+        <article><span>01 / Source</span><strong>Four pigments</strong><p>Warm paper, charcoal, coral, and signal yellow are the entire raw palette.</p></article>
+        <article><span>02 / Semantic</span><strong>Purpose before hue</strong><p>Canvas, surface, text, line, action, signal, and state roles describe intent.</p></article>
+        <article><span>03 / Component</span><strong>Consume roles</strong><p>Buttons, fields, navigation, and panels never choose raw pigments directly.</p></article>
+        <article><span>04 / State</span><strong>Shape plus color</strong><p>Focus, current, invalid, disabled, and verified remain distinguishable without hue alone.</p></article>
+      </div>
+      <ul class="brand-lab__sources" aria-label="Color foundation sources">
+        <li><a href="https://designsystem.digital.gov/design-tokens/color/overview/">USWDS Using Color</a></li>
+      </ul>
+    </section>
+
+    <section class="brand-lab__section" id="brand-contrast" aria-labelledby="brand-contrast-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">03 / Contrast</p>
+        <div><BrandHeading level={2} role="h3" id="brand-contrast-title">Make the palette do a job</BrandHeading><p>WCAG ratios define which combinations can carry text and which should create emphasis through fields, borders, and shape.</p></div>
+      </div>
+      <div class="brand-lab__contrast-grid" aria-label="Brand color contrast checks">
+        <article class="brand-lab__contrast brand-lab__contrast--paper">
+          <div><span>Charcoal on warm paper</span><strong data-contrast-ratio="15.53">15.53:1</strong></div>
+          <p><b>AAA pass.</b> Paper and charcoal carry most reading and structural work, leaving the accents free to mark hierarchy.</p>
+        </article>
+        <article class="brand-lab__contrast brand-lab__contrast--dark">
+          <div><span>Warm inverse on charcoal</span><strong data-contrast-ratio="15.53">15.53:1</strong></div>
+          <p><b>AAA pass.</b> Charcoal frames evidence, technical systems, and high-authority sections without losing readability.</p>
+        </article>
+        <article class="brand-lab__contrast brand-lab__contrast--coral">
+          <div><span>Charcoal on coral</span><strong data-contrast-ratio="5.54">5.54:1</strong></div>
+          <p><b>AA pass.</b> Coral owns primary actions, selected surfaces, and one decisive expressive field.</p>
+        </article>
+        <article class="brand-lab__contrast brand-lab__contrast--signal">
+          <div><span>Charcoal on signal yellow</span><strong data-contrast-ratio="10.71">10.71:1</strong></div>
+          <p><b>AAA pass.</b> Yellow stays scarce so one annotation, warning, or focal field remains unmistakable.</p>
+        </article>
+      </div>
+      <div class="brand-lab__contrast-cautions">
+        <article><span>Do not reverse coral</span><strong>Warm inverse on coral · 2.80:1</strong><p>It fails normal and large text. Put charcoal on coral instead.</p></article>
+        <article><span>No muted copy on action</span><strong>Muted text on coral · 3.20:1</strong><p>Coral descendants inherit charcoal; secondary gray breaks the action surface contract.</p></article>
+        <article><span>Decoration, not body copy</span><strong>Coral on warm paper · 2.97:1</strong><p>Use coral for underlines, rules, icons, and large fields while linked text stays charcoal.</p></article>
+      </div>
+      <aside class="brand-lab__color-advantage" aria-labelledby="color-advantage-title">
+        <div><p class="eyebrow">Brand advantage</p><h3 id="color-advantage-title">Recognition comes from role consistency.</h3></div>
+        <ul>
+          <li><strong>Paper</strong><span>keeps the default reading experience calm and warm.</span></li>
+          <li><strong>Charcoal</strong><span>carries structure, evidence panels, and nearly all text.</span></li>
+          <li><strong>Coral</strong><span>owns action, selection, and expressive emphasis.</span></li>
+          <li><strong>Yellow</strong><span>stays scarce so a real signal still feels important.</span></li>
+        </ul>
+      </aside>
+      <ul class="brand-lab__sources" aria-label="Contrast foundation sources">
+        <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html">W3C Contrast Minimum</a></li>
+        <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html">W3C Non-text Contrast</a></li>
+      </ul>
+    </section>
+
+    <section class="brand-lab__section" id="brand-typography" aria-labelledby="brand-typography-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">04 / Typography</p>
+        <div><BrandHeading level={2} role="h3" id="brand-typography-title">Technical editorial hierarchy</BrandHeading><p>Segoe UI Variable / Inter fallback, with mono reserved for operating detail.</p></div>
+      </div>
+      <div class="brand-lab__type-sheet">
+        <BrandHeading level={3} role="h1">H1 / Build the loop.</BrandHeading>
+        <BrandHeading level={3} role="h2">H2 / Keep <span class="brand-highlight">control visible.</span></BrandHeading>
+        <BrandHeading level={4} role="h3">H3 / Find the loop. Build the system.</BrandHeading>
+        <BrandHeading level={5} role="h4">H4 / Make judgment explicit</BrandHeading>
+        <BrandHeading level={6} role="h5">H5 / Evidence before handoff</BrandHeading>
+        <p class="brand-heading brand-heading--h6">H6 / System conductor · verified · recovery ready</p>
+        <p class="brand-lab__body-copy">A working system keeps context attached, checks output before handoff, and gives failure a route. Body copy stays readable, direct, and bounded to roughly 45–65 characters per line.</p>
+        <p class="brand-lab__mono">MONO / Labels · metadata · specifications · technical evidence</p>
+      </div>
+      <div class="brand-lab__reading-rules" aria-label="Web typography fundamentals">
+        <article><strong>16px+</strong><span>Running-text floor</span><p>Body copy starts at a comfortable browser reading size; smaller text is reserved for short labels and metadata.</p></article>
+        <article><strong>66ch</strong><span>Reading measure</span><p>Long-form prose targets about 66 characters. Leads and large headings use the narrower 45-character role.</p></article>
+        <article><strong>1.5–1.65</strong><span>Running line height</span><p>Paragraphs use unitless leading so spacing scales with text zoom. One- or two-line headings stay tighter.</p></article>
+        <article><strong>3 tiers</strong><span>Visible hierarchy</span><p>A screen should emphasize a primary, supporting, and reading level—not make every semantic heading compete.</p></article>
+      </div>
+      <aside class="brand-lab__spacing-proof">
+        <strong>Text-spacing resilience</strong>
+        <p>Content must remain readable when users override line height to 1.5, paragraph spacing to 2em, letter spacing to .12em, and word spacing to .16em.</p>
+      </aside>
+      <ul class="brand-lab__sources" aria-label="Typography research sources">
+        <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html">W3C Text Spacing</a></li>
+        <li><a href="https://designsystem.digital.gov/components/typography/">U.S. Web Design System Typography</a></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/line-height">MDN line-height</a></li>
+        <li><a href="https://www.nngroup.com/articles/visual-hierarchy-ux-definition/">NN/g Visual Hierarchy</a></li>
+      </ul>
+    </section>
+
+    <section class="brand-lab__section" id="brand-layout" aria-labelledby="brand-layout-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">05 / Layout</p>
+        <div><BrandHeading level={2} role="h3" id="brand-layout-title">Spacing, grid, and alignment</BrandHeading><p>An 8px mini-unit controls fixed space; responsive columns create shared key lines without forcing content into equal boxes.</p></div>
+      </div>
+      <div class="brand-lab__layout-grid" aria-label="Responsive column grid demonstration">
+        {Array.from({ length: 16 }, (_, index) => <span>{String(index + 1).padStart(2, "0")}</span>)}
+      </div>
+      <div class="brand-lab__breakpoints">
+        <article><strong>4 columns</strong><span>Compact · up to 600px</span><p>Single reading flow. Controls stack and retain 44px targets.</p></article>
+        <article><strong>8 columns</strong><span>Medium · 601–900px</span><p>Related content may pair; primary reading order remains explicit.</p></article>
+        <article><strong>16 columns</strong><span>Wide · above 900px</span><p>Editorial compositions align to shared vertical key lines.</p></article>
+      </div>
+      <div class="brand-lab__spacing-scale" aria-label="8 pixel spacing scale">
+        <span><i class="space-1"></i><b>8</b></span><span><i class="space-2"></i><b>16</b></span><span><i class="space-3"></i><b>24</b></span><span><i class="space-4"></i><b>32</b></span><span><i class="space-6"></i><b>48</b></span><span><i class="space-8"></i><b>64</b></span>
+      </div>
+      <div class="brand-lab__layout-rules">
+        <article><strong>Align type to padding</strong><p>Text starts on a key line, never floats ambiguously inside a region.</p></article>
+        <article><strong>Proximity shows ownership</strong><p>Related items sit closer together than unrelated groups.</p></article>
+        <article><strong>Containers are evidence</strong><p>Use borders and fields only when whitespace cannot explain the grouping.</p></article>
+        <article><strong>Content chooses the breakpoint</strong><p>Layouts change when reading order or target integrity would otherwise fail.</p></article>
+      </div>
+      <ul class="brand-lab__sources" aria-label="Layout foundation sources">
+        <li><a href="https://carbondesignsystem.com/elements/2x-grid/overview/">Carbon 2x Grid</a></li>
+        <li><a href="https://www.nngroup.com/articles/gestalt-proximity/">NN/g Proximity Principle</a></li>
+      </ul>
+    </section>
+
+    <section class="brand-lab__section" id="brand-motion" aria-labelledby="brand-motion-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">06 / Motion</p>
+        <div><BrandHeading level={2} role="h3" id="brand-motion-title">Movement confirms, never performs</BrandHeading><p>Transitions exist to confirm a state change. Nothing animates on load, and every duration collapses under a reduced-motion preference.</p></div>
+      </div>
+      <div class="brand-lab__motion">
+        <article><strong>160ms</strong><span>Standard duration</span><p><code>--motion-fast</code> covers hover, focus, and selection feedback. Longer feels sluggish under repeated use.</p></article>
+        <article><strong>ease</strong><span>Standard curve</span><p><code>--motion-ease</code> keeps movement predictable. No bounce, overshoot, or decorative spring.</p></article>
+        <article><strong>Color and border</strong><span>Animated properties</span><p>Only cheap, non-layout properties transition. Never animate width, height, or position on scroll.</p></article>
+        <article><strong>0.01ms</strong><span>Reduced motion</span><p><code>prefers-reduced-motion: reduce</code> collapses every transition and disables smooth scrolling.</p></article>
+      </div>
+      <aside class="brand-lab__motion-demo">
+        <div><strong>Try it</strong><p>Hover or tab to these controls. State is legible from shape and contrast alone—motion only softens the change.</p></div>
+        <div class="button-row">
+          <a class="button button--primary" href="#brand-motion">Inspect the workflow</a>
+          <a class="button button--secondary" href="#brand-motion">Read the evidence</a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="brand-lab__section" id="brand-tokens" aria-labelledby="brand-tokens-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">07 / Tokens</p>
+        <div><BrandHeading level={2} role="h3" id="brand-tokens-title">Every name you can type</BrandHeading><p>Read straight from <code>src/styles/global.css</code> at build time, so this list cannot drift from the running site.</p></div>
+      </div>
+      <div class="brand-lab__tokens">
+        {tokenGroups.map((group) => (
+          <article>
+            <h3>{group.label}</h3>
+            <dl>
+              {group.tokens.map((token) => (
+                <div><dt>{token.name}</dt><dd>{token.value}</dd></div>
+              ))}
+            </dl>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-assets" aria-labelledby="brand-assets-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">08 / Assets</p>
+        <div><BrandHeading level={2} role="h3" id="brand-assets-title">Marks and narrative imagery</BrandHeading><p>Use approved geometry and owned evidence—never generic AI imagery.</p></div>
+      </div>
+      <div class="brand-lab__asset-grid">
+        <figure class="brand-lab__asset brand-lab__asset--logo"><BrandLogo aria-label="Adopted Ryan Brosas charcoal logo" /><figcaption>Adopted mark / preserve ratio / choose variant by contrast</figcaption></figure>
+        <figure class="brand-lab__asset brand-lab__asset--operator"><OperatorMascot /><figcaption>The Operator / supporting identity character</figcaption></figure>
+        <figure class="brand-lab__asset brand-lab__asset--system"><SystemConductor aria-label="System conductor workflow illustration" /><figcaption>System conductor / context, checks, handoff, recovery</figcaption></figure>
+      </div>
+      <div class="brand-lab__icons" aria-label="Shared icon set">
+        {iconNames.map((name) => (
+          <figure><svg aria-hidden="true" focusable="false"><use href={`#${name}`} /></svg><figcaption>{name}</figcaption></figure>
+        ))}
+      </div>
+      <p class="brand-lab__asset-rule"><strong>Icons:</strong> one approved sprite, referenced with <code>&lt;use href="#icon-name"&gt;</code>. Icons inherit <code>currentColor</code> and never carry meaning alone—always pair one with text or an accessible name.</p>
+      <p class="brand-lab__asset-rule"><strong>Prefer:</strong> product screenshots, terminal captures, workflow diagrams, context maps, checks, failure states, and recovery paths.</p>
+    </section>
+
+    <section class="brand-lab__section" id="brand-actions" aria-labelledby="brand-actions-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">09 / Actions</p>
+        <div><BrandHeading level={2} role="h3" id="brand-actions-title">Controls and navigation</BrandHeading><p>Concrete verb plus object. Persistent selection is not evidence status.</p></div>
+      </div>
+      <div class="brand-lab__demo-grid">
+        <article class="brand-lab__demo">
+          <h3>Buttons</h3>
+          <div class="button-row">
+            <a class="button button--primary" href="#brand-actions">Inspect the workflow</a>
+            <a class="button button--secondary" href="#brand-actions">Read the evidence</a>
+            <button class="button" type="button" disabled>Checking output</button>
+          </div>
+          <p>Hover and keyboard focus use visible shape and contrast changes. Disabled remains legible.</p>
+        </article>
+        <article class="brand-lab__demo">
+          <h3>Compact navigation</h3>
+          <nav class="brand-lab__nav-demo" aria-label="Navigation component example">
+            <a href="#brand-identity">Ryan Brosas</a>
+            <a href="#brand-actions" aria-current="page">Design system</a>
+            <a class="brand-lab__nav-cta" href="#brand-governance">Review changes</a>
+          </nav>
+          <p>Current location is written with <code>aria-current</code>; targets remain at least 44px tall.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-forms" aria-labelledby="brand-forms-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">10 / Forms</p>
+        <div><BrandHeading level={2} role="h3" id="brand-forms-title">Fields and feedback</BrandHeading><p>Labels, hints, validation, and recovery stay connected in words.</p></div>
+      </div>
+      <fieldset class="brand-lab__fieldset">
+        <legend>Workflow intake field states</legend>
+        <label><span>Workflow to inspect</span><small id="workflow-hint">Name the recurring work, not the hoped-for technology.</small><input type="text" value="Weekly project evidence review" aria-describedby="workflow-hint" /></label>
+        <label><span>Owned proof</span><small id="proof-error">Error: the file was not attached. Your draft is safe. Attach a source or mark the claim Open.</small><input type="text" value="No source attached" aria-invalid="true" aria-describedby="proof-error" /></label>
+        <label><span>System owner</span><small>Read-only values can still be selected and copied.</small><input type="text" value="Ryan Brosas" readonly /></label>
+        <label><span>Archived destination</span><small>Disabled because this route is not part of the current workflow.</small><input type="text" value="Legacy queue" disabled /></label>
+      </fieldset>
+    </section>
+
+    <section class="brand-lab__section" id="brand-states" aria-labelledby="brand-states-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">11 / States</p>
+        <div><BrandHeading level={2} role="h3" id="brand-states-title">Evidence and lifecycle vocabulary</BrandHeading><p>Confidence, operation, and interaction are separate layers.</p></div>
+      </div>
+      <div class="brand-lab__status-grid">
+        <article class="brand-lab__status-card brand-lab__status-card--verified"><span>Verified</span><h3>Route policy is centralized.</h3><p><code>src/config/routes.ts</code> is the inspected source for paths and navigation.</p></article>
+        <article class="brand-lab__status-card brand-lab__status-card--proposed"><span>Proposed</span><h3>Add a reusable field component.</h3><p>It would reduce drift, but adds an API that must cover labels, hints, and invalid states.</p></article>
+        <article class="brand-lab__status-card brand-lab__status-card--open"><span>Open</span><h3>Still needed: owned project media.</h3><p>Add an inspected workflow capture before publishing a visual outcome claim.</p></article>
+      </div>
+      <div class="brand-lab__lifecycle" aria-label="Operational lifecycle">
+        <span>Default</span><span>Loading / validating</span><span>Content / empty</span><span>Error</span><span>Recovery</span>
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-patterns" aria-labelledby="brand-patterns-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">12 / Patterns</p>
+        <div><BrandHeading level={2} role="h3" id="brand-patterns-title">Applied compositions</BrandHeading><p>Flat editorial plates for workbench UI; one expressive flourish for campaign moments.</p></div>
+      </div>
+      <div class="brand-lab__pattern-grid">
+        <article class="brand-lab__system-map">
+          <header><span>System map</span><strong>Recurring evidence review</strong></header>
+          <ol><li><span>01</span><strong>Trigger</strong><small>What starts the work?</small></li><li><span>02</span><strong>Context</strong><small>What must stay attached?</small></li><li><span>03</span><strong>Execution</strong><small>What may the system decide?</small></li><li><span>04</span><strong>Handoff</strong><small>What must be checked?</small></li><li><span>05</span><strong>Recovery</strong><small>Who owns the exception?</small></li></ol>
+          <p>Recovery findings feed the next Context.</p>
+        </article>
+        <article class="brand-lab__campaign">
+          <p class="eyebrow">Campaign posture</p>
+          <BrandHeading level={3} role="campaign">Build the loop.</BrandHeading>
+          <p>Oversized type + one signal field. Not every screen needs campaign energy.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-voice" aria-labelledby="brand-voice-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">13 / Voice</p>
+        <div><BrandHeading level={2} role="h3" id="brand-voice-title">Casual, nerdy, specific, honest</BrandHeading><p>Explain the operating consequence and tradeoff without inflating the claim.</p></div>
+      </div>
+      <div class="brand-lab__voice-grid">
+        <article><span>Use</span><p>“The brief keeps getting rebuilt because source context is scattered. Start with a process change; add an agent only when the review boundary is explicit.”</p></article>
+        <article><span>Avoid</span><p>“Unlock a seamless, cutting-edge AI workforce that revolutionizes productivity.”</p></article>
+      </div>
+      <ol class="brand-lab__copy-sequence"><li>Operating consequence</li><li>System choice</li><li>Tradeoff</li><li>Evidence boundary</li><li>Specific next action</li></ol>
+    </section>
+
+<section class="brand-lab__section" id="brand-copy" aria-labelledby="brand-copy-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">14 / Copy</p>
+        <div><BrandHeading level={2} role="h3" id="brand-copy-title">Reusable strings</BrandHeading><p>Stop rewriting the same microcopy. These are the default forms for actions, states, and dates.</p></div>
+      </div>
+      <div class="brand-lab__copy-grid">
+        <article>
+          <span>Actions</span>
+          <dl>
+            <div><dt>Inspect the workflow</dt><dd>Verb plus object. Never “Learn more” or “Click here.”</dd></div>
+            <div><dt>Read the evidence</dt><dd>Names what the reader receives, not the interaction.</dd></div>
+            <div><dt>Book a working session</dt><dd>Commitment is explicit before the click.</dd></div>
+          </dl>
+        </article>
+        <article>
+          <span>Errors</span>
+          <dl>
+            <div><dt>What happened</dt><dd>“The file was not attached.”</dd></div>
+            <div><dt>What is safe</dt><dd>“Your draft is safe.”</dd></div>
+            <div><dt>What to do</dt><dd>“Attach a source or mark the claim Open.”</dd></div>
+          </dl>
+        </article>
+        <article>
+          <span>Empty and loading</span>
+          <dl>
+            <div><dt>Empty</dt><dd>Name the missing thing and the one action that fills it.</dd></div>
+            <div><dt>Loading</dt><dd>“Checking output” beats a bare spinner.</dd></div>
+            <div><dt>Partial</dt><dd>Say which part is verified and which is still open.</dd></div>
+          </dl>
+        </article>
+        <article>
+          <span>Dates and numbers</span>
+          <dl>
+            <div><dt>Dates</dt><dd><code>2026-07-28</code> in metadata; “28 July 2026” in prose.</dd></div>
+            <div><dt>Ranges</dt><dd>State the window, not a vague “recently.”</dd></div>
+            <div><dt>Metrics</dt><dd>Every number carries a source or it is not published.</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-inventory" aria-labelledby="brand-inventory-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">15 / Inventory</p>
+        <div><BrandHeading level={2} role="h3" id="brand-inventory-title">What already exists</BrandHeading><p>Reach for an existing module before writing new markup. Each entry names the file that owns the behavior.</p></div>
+      </div>
+      <div class="brand-lab__inventory">
+        <article>
+          <h3>Layouts</h3>
+          <dl>
+            <div><dt><code>BaseLayout</code></dt><dd>Document shell: head, skip link, one <code>&lt;main&gt;</code>, header, footer, nav script.</dd></div>
+            <div><dt><code>CommercialLayout</code></dt><dd>Service or standard page: shell plus entity graph and breadcrumbs.</dd></div>
+            <div><dt><code>CaseStudyLayout</code></dt><dd>Article page: shell plus Article graph and dynamic params.</dd></div>
+          </dl>
+        </article>
+        <article>
+          <h3>Content components</h3>
+          <dl>
+            <div><dt><code>EvidenceNote</code></dt><dd>Attaches a claim to its verified source.</dd></div>
+            <div><dt><code>Byline</code> · <code>FreshnessNotice</code></dt><dd>Authorship and review-date signals.</dd></div>
+            <div><dt><code>RelatedContent</code></dt><dd>Registry-derived onward links.</dd></div>
+            <div><dt><code>Breadcrumbs</code> · <code>JsonLd</code></dt><dd>Trail and structured data; both derive from the registry.</dd></div>
+          </dl>
+        </article>
+        <article>
+          <h3>Layout rhythm</h3>
+          <dl>
+            <div><dt><code>--rhythm-row</code></dt><dd>Editorial list rows. Keeps scan density even across pages.</dd></div>
+            <div><dt><code>--rhythm-block</code></dt><dd>Space between blocks inside one section.</dd></div>
+            <div><dt><code>--rhythm-section</code></dt><dd>Space between major page sections.</dd></div>
+            <div><dt>Never hand-tune</dt><dd>If a composition needs different spacing, change the role — not the one page.</dd></div>
+          </dl>
+        </article>
+        <article>
+          <h3>Style modules</h3>
+          <dl>
+            <div><dt><code>.button</code></dt><dd>Variants: <code>--primary</code>, <code>--secondary</code>, <code>--poster</code>.</dd></div>
+            <div><dt><code>.page-header</code> · <code>.page-visual</code></dt><dd>Route-level editorial headers.</dd></div>
+            <div><dt><code>.prose</code> · <code>.evidence-note</code></dt><dd>Reading measure and proof blocks.</dd></div>
+            <div><dt><code>.case-card</code> · <code>.cta-panel</code></dt><dd>Collection tiles and closing action plates.</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-gallery" aria-labelledby="brand-gallery-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">16 / Gallery</p>
+        <div><BrandHeading level={2} role="h3" id="brand-gallery-title">Live production patterns</BrandHeading><p>These are the real classes the site ships, rendered here with the rule that governs their spacing. Copy the markup; do not invent a parallel one.</p></div>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="page-header">
+        <p class="brand-lab__specimen-rule"><code>.page-header</code> · top-aligned, <code>--rhythm-block</code> above and below the copy. Headings cap at 13ch so they break deliberately.</p>
+        <header class="page-header">
+          <p class="eyebrow">The work, with the wiring exposed</p>
+          <h2>Case Studies</h2>
+          <p class="page-lead">Transparent, evidence-backed accounts of systems, trade-offs, and how the work was made.</p>
+        </header>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="signal-list">
+        <p class="brand-lab__specimen-rule"><code>.signal-list</code> · numbered editorial rows at <code>--rhythm-row</code>. Use for three to five problems or claims, never for navigation.</p>
+        <ol class="signal-list">
+          <li><span class="signal-number">01</span><strong>The brief keeps being rebuilt</strong><p>Critical context lives across messages, documents, and one person’s memory.</p></li>
+          <li><span class="signal-number">02</span><strong>Automation creates cleanup</strong><p>The happy path runs, but edge cases and review still land back on the founder.</p></li>
+        </ol>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="loop-field">
+        <p class="brand-lab__specimen-rule"><code>.loop-field</code> · two cycles and the handoff between them, drawn in this system's geometry: bordered plates and hairlines, no orbs. Stage ticks fire in sequence off <code>--motion-ambient</code>; the handoff marker drifts off <code>--motion-signal</code>. Both derive from <code>--motion-fast</code>, so decorative timing sits on the same scale as interaction timing. Every label is real text, so the figure reads with motion disabled. Wrap it in <code>.figure-frame</code>: the figure sizes to that frame with <code>@container</code>, so it stacks whenever its own column is under 30rem regardless of viewport.</p>
+        <div class="figure-frame">
+        <div class="loop-field">
+          <div class="loop-field__loop">
+            <p class="loop-field__label">Agent loop</p>
+            <ul class="loop-field__cycle">
+              <li>Context</li><li>Run</li><li>Check</li><li>Tools</li>
+              <li class="loop-field__actor">Agent</li>
+            </ul>
+          </div>
+          <div class="loop-field__bridge">
+            <span>Handoff</span>
+            <span class="loop-field__track" aria-hidden="true"><i></i></span>
+          </div>
+          <div class="loop-field__loop">
+            <p class="loop-field__label">Human loop</p>
+            <ul class="loop-field__cycle">
+              <li>Judgment</li><li>Steer</li><li>Approve</li><li>Recover</li>
+              <li class="loop-field__actor">You</li>
+            </ul>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="process-diagram">
+        <p class="brand-lab__specimen-rule"><code>.process-diagram</code> · a sequence under a dashed rail. Charcoal marks only the last stage, so the payoff reads as the destination. The travelling marker is decorative and stops for <code>prefers-reduced-motion</code>.</p>
+        <figure class="process-diagram">
+          <div class="process-rail" aria-hidden="true"><i></i></div>
+          <ol class="process-stages">
+            <li><span>01</span><b>Trace</b><small>Follow the trigger, decisions, handoffs, and failure points as they exist today.</small></li>
+            <li><span>02</span><b>Design</b><small>Define what the system may decide and where a person stays in control.</small></li>
+            <li class="is-proven"><span>03</span><b>Prove</b><small>Run the smallest loop against real work and improve only what the result exposes.</small></li>
+          </ol>
+          <figcaption>The last stage carries the evidence.</figcaption>
+        </figure>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="proof-strip">
+        <p class="brand-lab__specimen-rule"><code>.proof-strip</code> · the evidence rail for a section with spare horizontal room. Add a figure by dropping a file in <code>src/content/proof/</code> with a <code>sourceId</code> registered in <code>src/data/sources.json</code>; an unbacked, internal-only, blocked, or retired entry is withheld, and an empty collection renders no strip at all.</p>
+        <ul class="proof-strip">
+          <li><span>Verified</span><strong>Route policy</strong><p>Centralized in <code>src/config/routes.ts</code>.</p></li>
+          <li><span>Verified</span><strong>Build gate</strong><p>Check, test, build, and verify run before release.</p></li>
+          <li><span>Open</span><strong>Owned media</strong><p>Awaiting an inspected workflow capture.</p></li>
+        </ul>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="entry-points">
+        <p class="brand-lab__specimen-rule"><code>.entry-points</code> · the multi-door row. Four across on wide, two on medium. Each door is a whole link, so the label and its line share one hit target and one focus ring.</p>
+        <ul class="entry-points">
+          <li><a href="#brand-gallery"><strong>How I work</strong><span>The engagement, the method, and what you get.</span></a></li>
+          <li><a href="#brand-gallery"><strong>Case studies</strong><span>Systems built, with their evidence attached.</span></a></li>
+          <li><a href="#brand-gallery"><strong>Resources</strong><span>Readiness checks you can run yourself.</span></a></li>
+          <li><a href="#brand-gallery"><strong>About</strong><span>Who I am and how I got to this work.</span></a></li>
+        </ul>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="case-card">
+        <p class="brand-lab__specimen-rule"><code>.case-grid</code> + <code>.case-card</code> · the first card is charcoal. A lone card spans the full row instead of leaving a gap.</p>
+        <ul class="case-grid">
+          <li><article class="case-card"><p class="case-meta">Case study · AI workflow systems</p><h2>Building This Website</h2><p>How this site is built — a static Astro architecture with a single route registry.</p></article></li>
+          <li><article class="case-card"><p class="case-meta">Case study · Placeholder</p><h2>Second card for contrast</h2><p>Shows the paper variant that every card after the first one uses.</p></article></li>
+        </ul>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="cta-panel">
+        <p class="brand-lab__specimen-rule"><code>.cta-panel</code> · one closing action per page, on charcoal with the inverse grid texture. Two competing CTAs means neither is primary.</p>
+        <div class="cta-panel">
+          <div>
+            <p class="eyebrow">Start with one stubborn loop</p>
+            <h2>What keeps coming back to you?</h2>
+            <p>Bring the recurring work, the current workaround, and the point where it usually breaks.</p>
+          </div>
+          <a class="button button--primary" href="#brand-gallery">Start a conversation</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="brand-lab__section" id="brand-recipes" aria-labelledby="brand-recipes-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">17 / Recipes</p>
+        <div><BrandHeading level={2} role="h3" id="brand-recipes-title">Ship a page without rediscovering the system</BrandHeading><p>Routes, canonical URLs, and navigation come from <code>src/config/routes.ts</code>. Start there, then assemble known modules.</p></div>
+      </div>
+      <ol class="brand-lab__recipe-steps">
+        <li><span>01</span><strong>Register the route</strong><p>Add a <code>ROUTE_REGISTRY</code> entry with an <code>id</code>, path, <code>visibility</code>, gate, and navigation placement.</p></li>
+        <li><span>02</span><strong>Choose the layout</strong><p>Pass <code>routeId</code>, <code>title</code>, <code>description</code>, and <code>visibility</code> so canonical URLs and structured data stay derived.</p></li>
+        <li><span>03</span><strong>Assemble known modules</strong><p>Use inventoried components and style modules; add new CSS only for a genuinely new responsibility.</p></li>
+        <li><span>04</span><strong>Attach evidence</strong><p>Every claim, metric, or outcome needs an <code>EvidenceNote</code> source or it stays unpublished.</p></li>
+        <li><span>05</span><strong>Verify</strong><p>Run <code>npm run check &amp;&amp; npm test &amp;&amp; npm run build &amp;&amp; npm run verify</code> before calling it done.</p></li>
+      </ol>
+      <div class="brand-lab__recipe-grid">
+        <article>
+          <span>Commercial page</span>
+          <strong>Services, about, contact</strong>
+          <p><code>CommercialLayout</code> + <code>.page-header</code> + <code>.prose</code> + <code>.cta-panel</code>. Pass <code>kind="webpage"</code> when the page is not a service.</p>
+        </article>
+        <article>
+          <span>Case study</span>
+          <strong>Evidence-backed project</strong>
+          <p><code>CaseStudyLayout</code> + <code>.case-study-header</code> + <code>.prose</code> + <code>EvidenceNote</code> + <code>RelatedContent</code>. Canonical stays <code>/case-studies/[slug]/</code>.</p>
+        </article>
+        <article>
+          <span>Resource</span>
+          <strong>Guide or starter</strong>
+          <p><code>BaseLayout</code> + <code>JsonLd</code> + <code>Breadcrumbs</code> + <code>.prose</code>, driven by the validated content collection.</p>
+        </article>
+        <article>
+          <span>Collection hub</span>
+          <strong>Index of entries</strong>
+          <p><code>.page-header</code> + <code>.case-card</code> list. A hub advertises itself only when it has a public child.</p>
+        </article>
+      </div>
+      <aside class="brand-lab__recipe-guard">
+        <strong>Before adding anything new</strong>
+        <p>If an existing module nearly fits, extend its variant instead of creating a parallel pattern. New routes, tokens, and components each add a boundary someone must maintain.</p>
+      </aside>
+    </section>
+
+        <section class="brand-lab__section" id="brand-governance" aria-labelledby="brand-governance-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">18 / Governance</p>
+        <div><BrandHeading level={2} role="h3" id="brand-governance-title">One working boundary</BrandHeading><p>The archive informs decisions. Production components and tokens own the website.</p></div>
+      </div>
+      <div class="brand-lab__governance">
+        <article><span>Reference archive</span><code>{sourceDirectory}</code><p>Brand strategy, manifests, approved source assets, generated previews, and revision evidence.</p></article>
+        <article><span>Website source</span><code>src/styles/global.css + src/components/brand/</code><p>Canonical runtime tokens and reusable Astro components consumed by production pages.</p></article>
+        <article><span>Adjustment loop</span><code>reference → component → page → verify</code><p>Check conventional behavior here first, then verify narrow, wide, keyboard, and no-JavaScript rendering.</p></article>
+      </div>
+    </section>
+<section class="brand-lab__section" id="brand-checklist" aria-labelledby="brand-checklist-title">
+      <div class="brand-lab__section-heading">
+        <p class="brand-lab__index">19 / Checklist</p>
+        <div><BrandHeading level={2} role="h3" id="brand-checklist-title">Ready to ship</BrandHeading><p>A change is done when each line is observed, not assumed.</p></div>
+      </div>
+      <ol class="brand-lab__checklist">
+        <li><strong>Semantics</strong><p>One <code>h1</code>, ordered headings, native controls, labels tied to fields.</p></li>
+        <li><strong>Keyboard</strong><p>Every action reachable in order with a visible focus indicator at 3:1.</p></li>
+        <li><strong>Contrast</strong><p>Text 4.5:1, large text and meaningful graphics 3:1, state never signalled by hue alone.</p></li>
+        <li><strong>Reflow</strong><p>No horizontal overflow at 390px; content survives the WCAG text-spacing override.</p></li>
+        <li><strong>No JavaScript</strong><p>Content, navigation, and source boundaries still work with scripting off.</p></li>
+        <li><strong>Evidence</strong><p>Each claim resolves to a source; unverified claims stay Open or unpublished.</p></li>
+        <li><strong>Gate</strong><p><code>npm run check &amp;&amp; npm test &amp;&amp; npm run build &amp;&amp; npm run verify</code> reports exit status zero.</p></li>
+      </ol>
+    </section>
+  </div>
+</section>
+
+<style>
+  .brand-lab { padding-block: var(--space-6) var(--space-10); }
+  .brand-lab__header, .brand-lab__section-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--space-6); }
+  .brand-lab__header { padding-block-end: var(--space-5); border-bottom: 1px solid var(--line-strong); }
+  .brand-lab__header > div { display: grid; gap: var(--space-2); }
+  .brand-lab__title { max-width: 10ch; }
+  .brand-lab__lede { max-width: 62ch; color: var(--text-2); font-size: 1.1rem; }
+  .brand-lab__status { padding: var(--space-1) var(--space-2); background: var(--signal); font-family: var(--font-mono); font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__architecture { display: grid; grid-template-columns: repeat(4, 1fr); margin-block: var(--space-4); border: 1px solid var(--line-strong); }
+  .brand-lab__architecture article { display: grid; align-content: start; gap: var(--space-1); min-height: 10rem; padding: var(--space-2); border-inline-end: 1px solid var(--line-strong); }
+  .brand-lab__architecture article:last-child { border-inline-end: 0; }
+  .brand-lab__architecture span, .brand-lab__nav-group > strong { color: var(--brand-strong); font-family: var(--font-mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__architecture p { color: var(--text-2); }
+  .brand-lab__nav { position: sticky; inset-block-start: 5rem; z-index: 20; overflow-x: auto; border-block: 1px solid var(--text-1); background: color-mix(in srgb, var(--canvas) 94%, transparent); backdrop-filter: blur(8px); }
+  .brand-lab__nav-track { display: flex; min-width: max-content; }
+  .brand-lab__nav-group { display: grid; grid-template-rows: auto 1fr; border-inline-end: 1px solid var(--line-strong); }
+  .brand-lab__nav-group > strong { padding: var(--space-1) var(--space-2) 0; }
+  .brand-lab__nav ol { display: flex; margin: 0; padding: 0; list-style: none; }
+  .brand-lab__nav a { display: grid; min-height: 3.5rem; align-content: center; padding: var(--space-1) var(--space-2); border-inline-end: 1px solid var(--line); color: var(--text-1); font-size: .78rem; font-weight: 650; text-decoration: none; }
+  .brand-lab__nav li:last-child a { border-inline-end: 0; }
+  .brand-lab__nav a:hover { background: var(--surface-muted); }
+  .brand-lab__nav a span, .brand-lab__index, .brand-lab__field span, figcaption, .brand-lab__mono, .brand-lab__demo > p, .brand-lab__status-card > span, .brand-lab__voice-grid span, .brand-lab__governance span { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__nav a span { color: var(--brand-strong); }
+  .brand-lab__workspace { display: grid; }
+  .brand-lab__section { scroll-margin-top: 10rem; padding-block: var(--space-10); border-bottom: 1px solid var(--line-strong); }
+  .brand-lab__section-heading { grid-template-columns: 10rem minmax(0, 1fr); align-items: start; margin-block-end: var(--space-5); }
+  .brand-lab__section-heading > div { display: grid; gap: var(--space-1); }
+  .brand-lab__section-heading > div > p { max-width: 56ch; color: var(--text-2); }
+  .brand-lab__index { color: var(--brand-strong); }
+  .brand-lab__identity { padding: var(--space-6); background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__identity :global(.brand-heading), .brand-lab__identity .brand-lab__section-heading p { color: var(--text-inverse); }
+  .brand-lab__identity-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: var(--space-3); }
+  .brand-lab__logo-lockup, .brand-lab__identity blockquote { min-height: 18rem; margin: 0; padding: var(--space-4); background: var(--canvas); color: var(--text-1); }
+  .brand-lab__logo-lockup { display: flex; align-items: center; gap: var(--space-3); }
+  .brand-lab__logo-lockup svg { width: 6rem; }
+  .brand-lab__logo-lockup div { display: grid; }
+  .brand-lab__logo-lockup strong { font-size: 1.5rem; }
+  .brand-lab__logo-lockup span { color: var(--text-3); }
+  .brand-lab__identity blockquote { display: grid; align-content: space-between; background: var(--brand); }
+  .brand-lab__identity blockquote p { font-size: clamp(1.8rem, 4vw, 3.4rem); font-weight: 650; letter-spacing: -.04em; line-height: 1.02; }
+  .brand-lab__identity cite { font-family: var(--font-mono); font-size: .72rem; font-style: normal; text-transform: uppercase; }
+  .brand-lab__principles { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; border-top: 1px solid rgba(255,255,255,.25); }
+  .brand-lab__principles div { display: grid; gap: var(--space-2); padding: var(--space-3); border-inline-end: 1px solid rgba(255,255,255,.25); }
+  .brand-lab__principles dt { color: var(--signal); font-family: var(--font-mono); }
+  .brand-lab__principles dd { margin: 0; }
+  .brand-lab__fields { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--text-1); }
+  .brand-lab__field { display: grid; min-height: 13rem; align-content: space-between; padding: var(--space-2); border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__field:last-child { border-inline-end: 0; }
+  .brand-lab__field--paper { background: var(--canvas); } .brand-lab__field--charcoal { background: var(--surface-dark); color: var(--text-inverse); } .brand-lab__field--coral { background: var(--brand); } .brand-lab__field--yellow { background: var(--signal); }
+  .brand-lab__foundation-notes { display: grid; grid-template-columns: repeat(4, 1fr); border-inline-start: 1px solid var(--line-strong); }
+  .brand-lab__foundation-notes article { display: grid; gap: var(--space-1); padding: var(--space-3); border-inline-end: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+  .brand-lab__foundation-notes strong { font-size: 1.5rem; } .brand-lab__foundation-notes span { color: var(--text-2); }
+  .brand-lab__token-flow { display: grid; grid-template-columns: repeat(4, 1fr); margin-block-start: var(--space-4); border: 1px solid var(--text-1); }
+  .brand-lab__token-flow article { display: grid; align-content: start; gap: var(--space-2); min-height: 15rem; padding: var(--space-3); border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__token-flow article:last-child { border-inline-end: 0; }
+  .brand-lab__token-flow span { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__token-flow p { color: var(--text-2); }
+  .brand-lab__contrast-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .brand-lab__contrast { display: grid; min-height: 19rem; align-content: space-between; gap: var(--space-4); padding: var(--space-3); border: 1px solid var(--text-1); border-inline-end: 0; color: var(--text-1); }
+  .brand-lab__contrast:last-child { border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__contrast > div { display: grid; gap: var(--space-1); }
+  .brand-lab__contrast span, .brand-lab__contrast-cautions span { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__contrast strong { font-size: clamp(2.3rem, 5vw, 4.5rem); letter-spacing: -.05em; line-height: .95; }
+  .brand-lab__contrast p { max-width: 35ch; }
+  .brand-lab__contrast--paper { background: var(--canvas); }
+  .brand-lab__contrast--dark { background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__contrast--coral { background: var(--brand); }
+  .brand-lab__contrast--signal { background: var(--signal); }
+  .brand-lab__contrast-cautions { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line-strong); border-top: 0; }
+  .brand-lab__contrast-cautions article { display: grid; align-content: start; gap: var(--space-2); padding: var(--space-3); border-inline-end: 1px solid var(--line-strong); }
+  .brand-lab__contrast-cautions article:last-child { border-inline-end: 0; }
+  .brand-lab__contrast-cautions span { color: var(--brand-strong); }
+  .brand-lab__contrast-cautions p { color: var(--text-2); }
+  .brand-lab__color-advantage { display: grid; grid-template-columns: minmax(16rem, .8fr) minmax(0, 1.2fr); gap: var(--space-5); margin-block-start: var(--space-4); padding: var(--space-4); background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__color-advantage h3 { max-width: 12ch; margin-block-start: var(--space-2); color: var(--text-inverse); font-size: clamp(1.8rem, 4vw, 3rem); }
+  .brand-lab__color-advantage .eyebrow { color: var(--text-inverse); }
+  .brand-lab__color-advantage ul { display: grid; margin: 0; padding: 0; list-style: none; }
+  .brand-lab__color-advantage li { display: grid; grid-template-columns: 6rem 1fr; gap: var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid rgba(255,255,255,.24); }
+  .brand-lab__color-advantage li strong { color: var(--signal); }
+  .brand-lab__type-sheet { display: grid; gap: var(--space-3); padding: var(--space-5); border: 1px solid var(--text-1); background: var(--signal); overflow: hidden; }
+  .brand-lab__body-copy { max-width: 62ch; font-size: 1.05rem; }
+  .brand-lab__mono { padding-block-start: var(--space-2); border-top: 1px solid var(--text-1); }
+  .brand-lab__reading-rules { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line-strong); border-top: 0; }
+  .brand-lab__reading-rules article { display: grid; align-content: start; gap: var(--space-1); padding: var(--space-3); border-inline-end: 1px solid var(--line-strong); }
+  .brand-lab__reading-rules article:last-child { border-inline-end: 0; }
+  .brand-lab__reading-rules strong { font-size: 1.5rem; }
+  .brand-lab__reading-rules span { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__reading-rules p { color: var(--text-2); }
+  .brand-lab__spacing-proof { display: grid; grid-template-columns: 14rem 1fr; gap: var(--space-3); padding: var(--space-3); background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__spacing-proof p { max-width: var(--measure-reading); }
+  .brand-lab__sources { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; list-style: none; }
+  .brand-lab__sources a { font-family: var(--font-mono); font-size: .75rem; }
+  .brand-lab__layout-grid { display: grid; grid-template-columns: repeat(var(--grid-columns-wide), 1fr); min-height: 18rem; border: 1px solid var(--text-1); background: var(--surface-dark); }
+  .brand-lab__layout-grid span { display: grid; place-items: end center; padding: var(--space-1); border-inline-end: 1px solid color-mix(in srgb, var(--text-inverse) 35%, transparent); color: var(--text-inverse); font-family: var(--font-mono); font-size: .65rem; }
+  .brand-lab__layout-grid span:last-child { border-inline-end: 0; }
+  .brand-lab__breakpoints { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--text-1); border-top: 0; }
+  .brand-lab__breakpoints article { display: grid; align-content: start; gap: var(--space-1); padding: var(--space-3); border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__breakpoints article:last-child { border-inline-end: 0; }
+  .brand-lab__breakpoints span { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; text-transform: uppercase; }
+  .brand-lab__spacing-scale { display: grid; gap: var(--space-2); margin-block-start: var(--space-4); padding: var(--space-3); border: 1px solid var(--line-strong); }
+  .brand-lab__spacing-scale span { display: grid; grid-template-columns: 5rem 1fr; align-items: center; gap: var(--space-2); font-family: var(--font-mono); font-size: .7rem; }
+  .brand-lab__spacing-scale i { display: block; height: var(--space-1); background: var(--brand); }
+  .brand-lab__spacing-scale .space-1 { width: var(--space-1); } .brand-lab__spacing-scale .space-2 { width: var(--space-2); } .brand-lab__spacing-scale .space-3 { width: var(--space-3); } .brand-lab__spacing-scale .space-4 { width: var(--space-4); } .brand-lab__spacing-scale .space-6 { width: var(--space-6); } .brand-lab__spacing-scale .space-8 { width: var(--space-8); }
+  .brand-lab__layout-rules { display: grid; grid-template-columns: repeat(2, 1fr); margin-block-start: var(--space-4); border: 1px solid var(--line-strong); }
+  .brand-lab__layout-rules article { display: grid; gap: var(--space-1); padding: var(--space-3); border-inline-end: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+  .brand-lab__layout-rules article:nth-child(even) { border-inline-end: 0; } .brand-lab__layout-rules article:nth-last-child(-n+2) { border-bottom: 0; }
+  .brand-lab__layout-rules p { color: var(--text-2); }
+  .brand-lab__asset-grid { display: grid; grid-template-columns: .65fr .8fr 1.55fr; gap: var(--space-2); }
+  .brand-lab__asset { display: grid; min-height: 24rem; margin: 0; grid-template-rows: 1fr auto; border: 1px solid var(--text-1); background: var(--surface); overflow: hidden; }
+  .brand-lab__asset > svg { width: 100%; height: 100%; max-height: 22rem; padding: var(--space-3); }
+  .brand-lab__asset--operator > svg { padding: 0; } .brand-lab__asset--system { background: var(--brand); }
+  .brand-lab__asset figcaption { padding: var(--space-2); border-top: 1px solid var(--text-1); background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__asset-rule { margin-block-start: var(--space-3); padding: var(--space-3); border-inline-start: 4px solid var(--brand); background: var(--surface-muted); }
+  .brand-lab__demo-grid, .brand-lab__pattern-grid, .brand-lab__voice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+  .brand-lab__demo { display: grid; align-content: start; gap: var(--space-3); min-height: 17rem; padding: var(--space-4); border: 1px solid var(--line-strong); background: var(--surface); }
+  .brand-lab__demo > p { align-self: end; color: var(--text-3); line-height: 1.6; text-transform: none; }
+  .brand-lab__demo button:disabled { opacity: .55; cursor: not-allowed; }
+  .brand-lab__nav-demo { display: flex; flex-wrap: wrap; align-items: center; border-block: 1px solid var(--line); }
+  .brand-lab__nav-demo a { display: inline-flex; min-height: 44px; align-items: center; padding: var(--space-1) var(--space-2); text-decoration: none; }
+  .brand-lab__nav-demo a[aria-current="page"] { border-bottom: 3px solid var(--brand); }
+  .brand-lab__nav-demo .brand-lab__nav-cta { background: var(--brand); }
+  .brand-lab__fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: 0; padding: var(--space-4); border: 1px solid var(--text-1); background: var(--surface); }
+  .brand-lab__fieldset legend { padding-inline: var(--space-1); font-family: var(--font-mono); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+  .brand-lab__fieldset label { display: grid; align-content: start; gap: var(--space-1); }
+  .brand-lab__fieldset label > span { font-weight: 650; }
+  .brand-lab__fieldset small { min-height: 3.2em; color: var(--text-3); }
+  .brand-lab__fieldset input { min-height: 3rem; padding: var(--space-1) var(--space-2); border: 1px solid var(--control-border); border-radius: var(--radius-md); background: var(--canvas); color: var(--text-1); font: inherit; }
+  .brand-lab__fieldset input[aria-invalid="true"] { border: 2px solid var(--brand-strong); }
+  .brand-lab__fieldset input:read-only { background: var(--surface-muted); } .brand-lab__fieldset input:disabled { opacity: .55; }
+  .brand-lab__status-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .brand-lab__status-card { display: grid; min-height: 18rem; align-content: space-between; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--text-1); border-inline-end: 0; }
+  .brand-lab__status-card:last-child { border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__status-card--verified { background: var(--surface); } .brand-lab__status-card--proposed { background: var(--brand); color: var(--text-1); } .brand-lab__status-card--open { background: var(--signal); }
+  .brand-lab__status-card h3 { font-size: 1.5rem; } .brand-lab__status-card p { color: var(--text-2); } .brand-lab__status-card--proposed p { color: inherit; }
+  .brand-lab__lifecycle { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__lifecycle span { padding: var(--space-2); border-inline-end: 1px solid rgba(255,255,255,.25); font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase; }
+  .brand-lab__system-map, .brand-lab__campaign { min-height: 31rem; padding: var(--space-4); border: 1px solid var(--text-1); }
+  .brand-lab__system-map { background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__system-map header { display: flex; justify-content: space-between; gap: var(--space-2); padding-block-end: var(--space-3); border-bottom: 1px solid rgba(255,255,255,.3); }
+  .brand-lab__system-map header span { color: var(--signal); font-family: var(--font-mono); text-transform: uppercase; }
+  .brand-lab__system-map ol { display: grid; margin: var(--space-3) 0; padding: 0; list-style: none; }
+  .brand-lab__system-map li { display: grid; grid-template-columns: 2rem 1fr auto; gap: var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid rgba(255,255,255,.2); }
+  .brand-lab__system-map li span, .brand-lab__system-map small { color: var(--signal); font-family: var(--font-mono); }
+  .brand-lab__system-map > p { padding: var(--space-2); background: var(--signal); color: var(--text-1); }
+  .brand-lab__campaign { display: grid; align-content: space-between; background: var(--signal); overflow: hidden; }
+  .brand-lab__campaign :global(.brand-heading) { max-width: 5ch; text-transform: uppercase; }
+  .brand-lab__voice-grid article { padding: var(--space-4); border: 1px solid var(--text-1); }
+  .brand-lab__voice-grid article:first-child { background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__voice-grid article:last-child { background: var(--surface-muted); }
+  .brand-lab__voice-grid p { margin-block-start: var(--space-5); font-size: 1.25rem; }
+  .brand-lab__copy-sequence { display: grid; grid-template-columns: repeat(5, 1fr); margin: var(--space-3) 0 0; padding: 0; counter-reset: voice-step; list-style: none; }
+  .brand-lab__copy-sequence li { padding: var(--space-2); border: 1px solid var(--line-strong); border-inline-end: 0; counter-increment: voice-step; }
+  .brand-lab__copy-sequence li:last-child { border-inline-end: 1px solid var(--line-strong); }
+  .brand-lab__copy-sequence li::before { display: block; color: var(--brand-strong); font-family: var(--font-mono); content: "0" counter(voice-step); }
+  .brand-lab__inventory { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--text-1); }
+  .brand-lab__inventory article { display: grid; align-content: start; gap: var(--space-2); padding: var(--space-3); border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__inventory article:last-child { border-inline-end: 0; }
+  .brand-lab__inventory h3 { font-size: 1.15rem; }
+  .brand-lab__inventory dl { display: grid; gap: var(--space-2); margin: 0; }
+  .brand-lab__inventory dt { font-weight: 650; }
+  .brand-lab__inventory dd { margin: 0; color: var(--text-2); }
+  .brand-lab__inventory code, .brand-lab__recipe-steps code, .brand-lab__recipe-grid code { font-size: .82rem; }
+  .brand-lab__recipe-steps { display: grid; margin: 0; padding: 0; list-style: none; border: 1px solid var(--text-1); }
+  .brand-lab__recipe-steps li { display: grid; grid-template-columns: 4rem 14rem 1fr; gap: var(--space-2); align-items: baseline; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line-strong); }
+  .brand-lab__recipe-steps li:last-child { border-bottom: 0; }
+  .brand-lab__recipe-steps span { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; }
+  .brand-lab__recipe-steps p { margin: 0; color: var(--text-2); }
+  .brand-lab__recipe-grid { display: grid; grid-template-columns: repeat(2, 1fr); margin-block-start: var(--space-4); border: 1px solid var(--text-1); }
+  .brand-lab__recipe-grid article { display: grid; align-content: start; gap: var(--space-1); min-height: 12rem; padding: var(--space-3); border-inline-end: 1px solid var(--text-1); border-bottom: 1px solid var(--text-1); }
+  .brand-lab__recipe-grid article:nth-child(even) { border-inline-end: 0; }
+  .brand-lab__recipe-grid article:nth-last-child(-n+2) { border-bottom: 0; }
+  .brand-lab__recipe-grid span { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__recipe-grid strong { font-size: 1.25rem; }
+  .brand-lab__recipe-grid p { color: var(--text-2); }
+  .brand-lab__recipe-guard { display: grid; grid-template-columns: 16rem 1fr; gap: var(--space-3); margin-block-start: var(--space-4); padding: var(--space-3); background: var(--surface-dark); color: var(--text-inverse); }
+  .brand-lab__recipe-guard p { max-width: var(--measure-reading); }
+  .brand-lab__icons { display: grid; grid-template-columns: repeat(5, 1fr); margin-block-start: var(--space-3); border: 1px solid var(--line-strong); }
+  .brand-lab__icons figure { display: grid; justify-items: center; gap: var(--space-1); margin: 0; padding: var(--space-3) var(--space-2); border-inline-end: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+  .brand-lab__icons figure:nth-child(5n) { border-inline-end: 0; }
+  .brand-lab__icons svg { width: 1.75rem; height: 1.75rem; color: var(--text-1); }
+  .brand-lab__icons figcaption { color: var(--text-2); font-family: var(--font-mono); font-size: .65rem; }
+  .brand-lab__copy-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--text-1); }
+  .brand-lab__copy-grid article { display: grid; align-content: start; gap: var(--space-2); padding: var(--space-3); border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__copy-grid article:last-child { border-inline-end: 0; }
+  .brand-lab__copy-grid span { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__copy-grid dl { display: grid; gap: var(--space-2); margin: 0; }
+  .brand-lab__copy-grid dt { font-weight: 650; }
+  .brand-lab__copy-grid dd { margin: 0; color: var(--text-2); }
+  .brand-lab__checklist { display: grid; grid-template-columns: repeat(2, 1fr); margin: 0; padding: 0; list-style: none; counter-reset: ship-step; border: 1px solid var(--text-1); }
+  .brand-lab__checklist li { display: grid; align-content: start; gap: var(--space-1); padding: var(--space-3); border-inline-end: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); counter-increment: ship-step; }
+  .brand-lab__checklist li::before { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; content: "0" counter(ship-step); }
+  .brand-lab__checklist li:nth-child(even) { border-inline-end: 0; }
+  .brand-lab__checklist p { color: var(--text-2); }
+  .brand-lab__motion { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--text-1); }
+  .brand-lab__motion article { display: grid; align-content: start; gap: var(--space-1); min-height: 13rem; padding: var(--space-3); border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__motion article:last-child { border-inline-end: 0; }
+  .brand-lab__motion strong { font-size: 1.75rem; letter-spacing: -.03em; }
+  .brand-lab__motion span { color: var(--brand-strong); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__motion p { color: var(--text-2); }
+  .brand-lab__motion-demo { display: grid; grid-template-columns: 20rem 1fr; align-items: center; gap: var(--space-4); margin-block-start: var(--space-4); padding: var(--space-3); border: 1px solid var(--line-strong); background: var(--surface-muted); }
+  .brand-lab__motion-demo p { color: var(--text-2); }
+  .brand-lab__tokens { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--text-1); }
+  .brand-lab__tokens article { display: grid; align-content: start; gap: var(--space-2); padding: var(--space-3); border-inline-end: 1px solid var(--text-1); border-bottom: 1px solid var(--text-1); }
+  .brand-lab__tokens h3 { color: var(--brand-strong); font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+  .brand-lab__tokens dl { display: grid; gap: 2px; margin: 0; }
+  .brand-lab__tokens dl > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-1); padding-block: 2px; border-bottom: 1px solid var(--line); }
+  .brand-lab__tokens dt, .brand-lab__tokens dd { margin: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: .68rem; }
+  .brand-lab__tokens dd { color: var(--text-2); }
+  .brand-lab__specimen { display: grid; gap: var(--space-3); margin-block-start: var(--space-4); padding: var(--space-3); border: 1px solid var(--line-strong); }
+  .brand-lab__specimen-rule { max-width: var(--measure-wide); padding-inline-start: var(--space-2); border-inline-start: 3px solid var(--brand); color: var(--text-2); }
+  .brand-lab__specimen .page-header { margin-block-end: 0; }
+  .brand-lab__governance { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--text-1); }
+  .brand-lab__governance article { display: grid; align-content: start; gap: var(--space-3); min-height: 18rem; padding: var(--space-3); border-inline-end: 1px solid var(--text-1); }
+  .brand-lab__governance article:last-child { border-inline-end: 0; background: var(--brand); color: var(--text-1); }
+  .brand-lab__governance code { overflow-wrap: anywhere; font-size: .82rem; }
+  .brand-lab__governance p { color: var(--text-2); }
+  .brand-lab__governance article:last-child p { color: inherit; }
+  @media (max-width: 900px) {
+    .brand-lab__identity-grid, .brand-lab__demo-grid, .brand-lab__pattern-grid, .brand-lab__voice-grid, .brand-lab__reading-rules, .brand-lab__spacing-proof, .brand-lab__breakpoints { grid-template-columns: 1fr; }
+    .brand-lab__architecture, .brand-lab__token-flow, .brand-lab__layout-rules, .brand-lab__principles, .brand-lab__fields, .brand-lab__foundation-notes, .brand-lab__fieldset { grid-template-columns: repeat(2, 1fr); }
+    .brand-lab__layout-grid { grid-template-columns: repeat(var(--grid-columns-medium), 1fr); }
+    .brand-lab__layout-grid span:nth-child(n+9) { display: none; }
+    .brand-lab__asset-grid { grid-template-columns: 1fr 1fr; } .brand-lab__asset--system { grid-column: 1 / -1; }
+    .brand-lab__copy-grid, .brand-lab__motion, .brand-lab__tokens { grid-template-columns: repeat(2, 1fr); }
+    .brand-lab__motion-demo { grid-template-columns: 1fr; }
+    .brand-lab__icons { grid-template-columns: repeat(4, 1fr); }
+    .brand-lab__status-grid, .brand-lab__governance, .brand-lab__contrast-grid, .brand-lab__contrast-cautions, .brand-lab__color-advantage, .brand-lab__inventory, .brand-lab__recipe-grid, .brand-lab__recipe-guard { grid-template-columns: 1fr; }
+    .brand-lab__inventory article, .brand-lab__recipe-grid article { border-inline-end: 0; border-bottom: 1px solid var(--line-strong); }
+    .brand-lab__inventory article:last-child, .brand-lab__recipe-grid article:last-child { border-bottom: 0; }
+    .brand-lab__recipe-steps li { grid-template-columns: 3rem 1fr; }
+    .brand-lab__recipe-steps li p { grid-column: 2; }
+    .brand-lab__contrast { min-height: auto; border-inline-end: 1px solid var(--text-1); border-bottom: 0; }
+    .brand-lab__contrast-cautions article { border-inline-end: 0; border-bottom: 1px solid var(--line-strong); }
+    .brand-lab__contrast-cautions article:last-child { border-bottom: 0; }
+    .brand-lab__status-card, .brand-lab__governance article { min-height: auto; border-inline-end: 1px solid var(--text-1); border-bottom: 0; }
+    .brand-lab__governance article:last-child { border-bottom: 1px solid var(--text-1); }
+    .brand-lab__lifecycle, .brand-lab__copy-sequence { grid-template-columns: 1fr; }
+    .brand-lab__copy-sequence li { border-inline-end: 1px solid var(--line-strong); border-bottom: 0; }
+  }
+  @media (max-width: 600px) {
+    .brand-lab__header, .brand-lab__section-heading { grid-template-columns: 1fr; }
+    .brand-lab__status { justify-self: start; }
+    .brand-lab__nav { inset-block-start: 5rem; }
+    .brand-lab__identity { margin-inline: calc(-1 * var(--space-2)); padding: var(--space-3); }
+    .brand-lab__token-flow, .brand-lab__layout-rules, .brand-lab__principles, .brand-lab__fields, .brand-lab__foundation-notes, .brand-lab__fieldset, .brand-lab__asset-grid { grid-template-columns: 1fr; }
+    .brand-lab__architecture { grid-template-columns: repeat(2, 1fr); }
+    .brand-lab__architecture article { min-height: auto; }
+    .brand-lab__architecture p { display: none; }
+    .brand-lab__layout-grid { grid-template-columns: repeat(var(--grid-columns-compact), 1fr); }
+    .brand-lab__layout-grid span:nth-child(n+5) { display: none; }
+    .brand-lab__asset--system { grid-column: auto; }
+    .brand-lab__field { border-inline-end: 0; border-bottom: 1px solid var(--text-1); }
+    .brand-lab__type-sheet { padding: var(--space-3); }
+    .brand-lab__copy-grid, .brand-lab__checklist, .brand-lab__motion, .brand-lab__tokens { grid-template-columns: 1fr; }
+    .brand-lab__icons { grid-template-columns: repeat(3, 1fr); }
+    .brand-lab__system-map li { grid-template-columns: 2rem 1fr; } .brand-lab__system-map small { grid-column: 2; }
+  }
+  @media (prefers-reduced-motion: reduce) { .brand-lab__section { scroll-margin-top: 6rem; } }
+</style>

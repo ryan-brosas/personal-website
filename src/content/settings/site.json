@@ -2,10 +2,12 @@
   "site": {
     "siteTitle": "Ryan Brosas",
     "navLabels": {
+      "home": "Home",
       "about": "About",
       "services": "Work With Me",
       "contact": "Contact",
-      "caseStudies": "Case Studies"
+      "caseStudies": "Case Studies",
+      "resources": "Resources"
     },
     "contact": {
       "schedulerUrl": "https://calendly.com/ryanjoserbrosas/30min",

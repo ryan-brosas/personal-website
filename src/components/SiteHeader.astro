@@ -11,66 +11,25 @@
 // handlers bind successfully does the script set data-nav-ready, which reveals
 // the toggle and (on mobile) collapses the nav until opened. Menu/close icons
 // come from the approved utility sprite, injected once via trusted set:html.
-import { getEntry, getCollection } from "astro:content";
 import { ROOT_ROUTE } from "../lib/routes.ts";
-import { resolveRoutes, resolveCollectionRoutes } from "../lib/site-routes.ts";
-import { PAGES, NAV_ORDER } from "../config/site.ts";
-import type { Visibility } from "../lib/publishing.ts";
+import { resolveSiteNavigation } from "../lib/navigation.ts";
 import Logo from "../assets/brand/logo-charcoal.svg";
 import iconSprite from "../assets/brand/icons.svg?raw";
 
-const settings = await getEntry("settings", "site");
-if (!settings) {
-  throw new Error('settings entry "site" is missing; cannot render navigation');
-}
+const { siteTitle, primary: navItems } = await resolveSiteNavigation();
 
-const pages = await getCollection("pages");
-const visibilities: Record<string, Visibility> = {};
-for (const page of pages) {
-  visibilities[page.id] = page.data.visibility;
-}
-const resolved = resolveRoutes(visibilities);
-const resolvedByPath = new Map(resolved.map((r) => [r.path, r]));
-
-// Collection-backed hubs (case-studies) are NOT `pages` records, so they never
-// surface through resolveRoutes. Fold in their registry-derived, min-child-gated
-// routes (INV-07): the hub is only navigable when ≥1 public entry exists.
-const caseStudies = await getCollection("case-studies");
-const caseStudyRecords = caseStudies.map((entry) => ({
-  slug: entry.data.slug,
-  visibility: entry.data.visibility,
-}));
-for (const route of resolveCollectionRoutes({ "case-studies": caseStudyRecords })) {
-  resolvedByPath.set(route.path, route);
-}
-
-interface NavItem {
-  href: string;
-  label: string;
-}
-const navItems: NavItem[] = [];
-for (const id of NAV_ORDER) {
-  const pageConfig = PAGES.find((p) => p.id === id);
-  if (!pageConfig) continue;
-  if (!resolvedByPath.has(pageConfig.path)) continue;
-  navItems.push({
-    href: pageConfig.path,
-    label: settings.data.navLabels[pageConfig.navLabelKey],
-  });
-}
-
+// The nav's Home item owns the root current-page state, so the brand lockup stays
+// a plain link: two elements marking the same current page would be ambiguous.
 const current = Astro.url.pathname;
 const isCurrent = (href: string) =>
   href === ROOT_ROUTE ? current === "/" : current === href;
 ---
 <header class="site-header">
-  <a
-    class="brand"
-    href={ROOT_ROUTE}
-    aria-current={isCurrent(ROOT_ROUTE) ? "page" : undefined}
-  >
+  <a class="brand" href={ROOT_ROUTE}>
     <Logo aria-hidden="true" focusable="false" />
-    <span>{settings.data.siteTitle}</span>
+    <span class="brand-wordmark">
+      <span>{siteTitle}</span>
+    </span>
   </a>
   <button
     class="nav-toggle"
@@ -89,6 +48,7 @@ const isCurrent = (href: string) =>
           <li>
             <a
               href={item.href}
+              class:list={{ "nav-cta": item.emphasis }}
               aria-current={isCurrent(item.href) ? "page" : undefined}
             >
               {item.label}

@@ -1,6 +1,6 @@
 ---
 title: "Building This Website: A Transparent Self-Project"
-description: "How this site itself is built — a static Astro architecture with a single route registry, fail-closed visibility, and a deterministic build verifier."
+description: "How this site is built: a static Astro app with one route list, strict publish rules, and a build check that must pass."
 visibility: public
 owner: ryan
 kind: case-study
@@ -11,9 +11,9 @@ evidence:
   sourceId: source-self-project-build-001
 ---
 
-This case study describes how this website is built. Every statement below is a
-directly observable fact about the site's own source and static output — there
-are no client outcomes, metrics, or testimonials.
+This case study covers how this website is built. Every point below is a fact you
+can check in the site's own source and output. There are no client results,
+numbers, or quotes.
 
 ## Stack
 
@@ -44,4 +44,4 @@ Collections.
 The build proceeds in reviewed slices: an accessible static shell first, then
 the route registry and canonical pipeline, the content and evidence models, the
 structured-data and authority layer, and finally the public case-study and
-service surfaces — each landing only after its verification gate passes.
+service pages. Each one lands only after its check passes.

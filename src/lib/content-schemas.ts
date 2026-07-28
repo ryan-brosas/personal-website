@@ -34,10 +34,12 @@ export type PageRecord = z.infer<typeof PageSchema>;
 export const SettingsDataSchema = z.object({
   siteTitle: z.string().min(1),
   navLabels: z.object({
+    home: z.string().min(1),
     about: z.string().min(1),
     services: z.string().min(1),
     contact: z.string().min(1),
     caseStudies: z.string().min(1),
+    resources: z.string().min(1),
   }),
   contact: z.object({
     schedulerUrl: z
@@ -206,3 +208,28 @@ export const CaseStudyRecordSchema = PublicationRecordSchema.merge(SeoFieldsSche
     }
   });
 export type CaseStudyRecord = z.infer<typeof CaseStudyRecordSchema>;
+
+export const ResourceFormatSchema = z.enum(["guide", "checklist", "template", "reference"]);
+export type ResourceFormat = z.infer<typeof ResourceFormatSchema>;
+
+export const ResourceRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchema)
+  .merge(TopicFieldsSchema)
+  .extend({
+    kind: z.literal("resource"),
+    format: ResourceFormatSchema,
+    slug: z.string().min(1),
+  });
+export type ResourceRecord = z.infer<typeof ResourceRecordSchema>;
+
+// A homepage evidence-rail figure. sourceId is required, so a proof point with
+// no backing source cannot be authored at all; lib/proof-points.ts additionally
+// withholds any entry whose source is unregistered or internal-only.
+export const ProofPointRecordSchema = z.object({
+  value: z.string().min(1),
+  label: z.string().min(1),
+  detail: z.string().min(1),
+  sourceId: z.string().min(1),
+  status: z.enum(["approved", "blocked", "retired"]),
+  order: z.number().int().nonnegative(),
+});
+export type ProofPointRecord = z.infer<typeof ProofPointRecordSchema>;

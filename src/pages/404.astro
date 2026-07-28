@@ -1,18 +1,16 @@
 ---
-// M2 (Plan 03, Child 2) — recoverable 404 page. Builds to /404.html (Astro
-// special-cases status pages). Canonical derives from the registry "404" entry
-// (slashless file endpoint /404.html) via buildPageMetadata, so trailingSlash:
-// "always" cannot produce /404/. The registry marks 404 "public", so noindex is
-// passed as an explicit override — noindex,follow keeps it crawlable but excluded
-// from discovery. Recovery link lives inside main#main. The header nav marks no
-// item current because /404.html is not a navigation page.
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const title = "Page not found — Ryan Brosas";
+const title = "Page not found | Ryan Brosas";
 const description = "The page you were looking for could not be found.";
 ---
 <BaseLayout routeId="404" title={title} description={description} noindex>
-  <h1>Page not found</h1>
-  <p>The page you were looking for could not be found.</p>
-  <p><a href="/">Return to the home page</a></p>
+  <section class="page-shell">
+    <header class="page-header">
+      <p class="eyebrow">404 · Recovery path</p>
+      <h1>Page not found</h1>
+      <p class="page-lead">This route ended without a useful result. The home page is the safe fallback.</p>
+    </header>
+    <a class="button button--primary" href="/">Return to the home page</a>
+  </section>
 </BaseLayout>

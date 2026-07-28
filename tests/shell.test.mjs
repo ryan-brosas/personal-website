@@ -11,55 +11,32 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { verifyBuild } from "../scripts/verify-build.mjs";
-import { caseStudyRoutes } from "../scripts/collection-records.mjs";
+import { resolveBuildManifest, verifyBuild } from "../scripts/verify-build.mjs";
+import {
+  collectionEntryRoutes,
+  collectionDiscoveryRoutes,
+  readPageVisibilities,
+} from "../scripts/collection-records.mjs";
 import { resolveRoutes } from "../src/lib/site-routes.ts";
-import { ROUTE_REGISTRY } from "../src/config/routes.ts";
-import { isHtmlRoute } from "../src/lib/routes.ts";
+
+// The authored first sentence of a page's markdown body. Deriving it keeps the
+// "content is wired, not blank" check from going stale every copy edit.
+const authoredOpening = (id) => {
+  const raw = fs.readFileSync(path.join(repoRoot, "src", "content", "pages", `${id}.md`), "utf-8");
+  const body = raw.replace(/^---\n[\s\S]*?\n---\n+/, "");
+  return body.split(/(?<=\.)\s/).find((s) => s.trim().length > 25).trim();
+};
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const astroBin = path.join(repoRoot, "node_modules", ".bin", "astro");
 const SITE = "https://example.com";
 
-// Registry-derived build manifest — mirrors the CLI entry in
-// scripts/verify-build.mjs so the test and the verifier share one truth (no
-// hand-maintained route arrays). Gate filter: unconditionally-enabled routes
-// (gate "always") plus the code-owned noindex root are the registry-static build
-// targets. Collection-backed routes (the case-studies hub + entries) are
-// content-driven and gated by the INV-07 min-child rule, so they are derived
-// from tracked frontmatter through the SAME resolveCollectionRoutes helper the
-// verifier and sitemap use — keeping test, verifier, sitemap, and build in
-// lockstep. favicon.svg is a public/ static asset, the one declared literal.
-const registryDefs = ROUTE_REGISTRY.all();
-const collectionPaths = caseStudyRoutes().map((r) => r.path);
-const expectedHtmlRoutes = [
-  ...registryDefs
-    .filter(
-      (d) =>
-        d.isDynamic !== true &&
-        isHtmlRoute(d.path) &&
-        // The code-owned root (gate "home-proof") is always a build target in
-        // both dispositions; "always" routes are unconditional; content-driven
-        // noindex pages (e.g. the C2 variant) are routable too.
-        (d.gate === "always" || d.gate === "home-proof" || d.visibility === "noindex"),
-    )
-    .map((d) => d.path),
-  ...collectionPaths,
-];
-const expectedDiscoverableRoutes = [
-  ...ROUTE_REGISTRY.discoverableRoutes()
-    // discoverableRoutes() already filters to public; the home-proof root joins
-    // the "always" routes in discovery ONLY when the gate promoted it to public.
-    .filter((r) => r.gate === "always" || r.gate === "home-proof")
-    .map((r) => r.path),
-  ...collectionPaths,
-];
-const expectedFileEndpoints = [
-  ...registryDefs
-    .filter((d) => d.isDynamic !== true && !isHtmlRoute(d.path))
-    .map((d) => d.path.replace(/^\/+/, "")),
-  "favicon.svg",
-];
+const { expectedHtmlRoutes, expectedDiscoverableRoutes, expectedFileEndpoints } =
+  resolveBuildManifest({
+    pageVisibilities: readPageVisibilities(),
+    collectionEntryRoutes: collectionEntryRoutes(),
+    collectionDiscoveryRoutes: collectionDiscoveryRoutes(),
+  });
 
 // Assert exactly one NAV-ENHANCEMENT script exists and it is the marked inline
 // nav enhancement (no external src, no other client scripts, no generated
@@ -89,8 +66,9 @@ const assertOneNavScript = (html) => {
     "the nav enhancement script must be inline (no src attribute)",
   );
 };
-const LOGO_SOURCE = path.join(repoRoot, "docs/Ryan-Brosas-Brand-System/logos/Logo---Ryan-1.svg");
+const LOGO_SOURCE = path.join(repoRoot, "src/assets/brand/logo-charcoal.svg");
 const LOGO_SOURCE_SHA256 = "a5e1589808b8c2a27a021bceef787ca7198e968273fe6a567c58e68515aa8cf8";
+const ICON_SPRITE_SHA256 = "3fae4f90a6e1298f38ea488942ac88602d1de9f5645fef821acf31d098d910d4";
 
 // Build the real root into an isolated repo-local dist. Asserts the outDir stays
 // inside the repo before spawning Astro. Returns { distDir, cleanup }.
@@ -115,6 +93,17 @@ const buildShell = () => {
   return { distDir, cleanup: () => fs.rmSync(tempParent, { recursive: true, force: true }) };
 };
 
+let distDir;
+let cleanup;
+before(() => {
+  const built = buildShell();
+  distDir = built.distDir;
+  cleanup = built.cleanup;
+});
+after(() => {
+  if (cleanup) cleanup();
+});
+
 // Read a built HTML route's index.html. Returns undefined if absent (never throws).
 const readHtml = (distDir, route) => {
   const rel = route.replace(/^\/+/, "");
@@ -137,19 +126,6 @@ const canonicalsOf = (html) => {
 };
 
 describe("B1 root shell", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("root / is a public indexable homepage promoted through the proof gate", () => {
     // The verifier is the gate: it fails with `missing-route: /` until index.astro
     // exists, so this assertion fails before any HTML read can ENOENT. With the
@@ -204,7 +180,13 @@ describe("B1 root shell", () => {
     assert.ok(h1s, "has an h1");
     const h1Text = h1s[1].replace(/<[^>]+>/g, "").trim();
     assert.equal(html.match(/<h1/gi).length, 1, "exactly one h1");
-    assert.ok(h1Text.includes("Ryan Brosas"), "h1 includes the identity name");
+    // The identity no longer sits in the h1 (it duplicated the header lockup), so the
+  // entity is asserted where it actually carries weight: the visible brand lockup
+  // and the Person node in structured data.
+  assert.ok(h1Text.length > 0, "h1 is not empty");
+  assert.match(html, /class="brand-wordmark">\s*<span>Ryan Brosas<\/span>/);
+  assert.match(html, /"@type":"Person"[^}]*"name":"Ryan Brosas"/);
+    assert.match(html, /<h2[^>]*id="case-title"/i, "case-study section uses an h2");
 
     // Proof-led positioning + the self-project case study link (its evidence).
     assert.ok(
@@ -262,19 +244,6 @@ const collectCss = (html, distDir) => {
 };
 
 describe("B2 shared shell", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("header with one primary nav and a current root link", () => {
     const html = readHtml(distDir, "/");
     assert.ok(html, "dist/index.html must exist");
@@ -317,19 +286,6 @@ describe("B2 shared shell", () => {
 });
 
 describe("B3 footer and 404", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("footer with copyright and a secondary Home link", () => {
     const html = readHtml(distDir, "/");
     assert.ok(html, "dist/index.html must exist");
@@ -400,19 +356,6 @@ describe("B3 footer and 404", () => {
 });
 
 describe("C2 about route", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("unconfigured public record generates no route", () => {
     // Contract evidence: resolveRoutes only yields configured PAGES.
     // A future home.md or 404.md with visibility public must not create a route.
@@ -484,7 +427,7 @@ describe("C2 about route", () => {
 
     // The approved body paragraph renders — proves <Content/> is wired, not blank.
     assert.ok(
-      html.includes("I build agent systems so repetitive work stops coming back to you"),
+      html.includes(authoredOpening("about")),
       "about body paragraph renders the approved copy",
     );
 
@@ -492,12 +435,8 @@ describe("C2 about route", () => {
   });
 });
 
-// Permanent copied-production noindex variant: copies production src + configs
-// to an isolated repo-local temp root, rewrites the COPIED about visibility to
-// noindex, and builds the copy. This proves the dynamic route handles noindex
-// visibility (route + noindex meta + sitemap exclusion + nav) even after the
-// tracked About record is promoted to public. The tracked source is never
-// mutated.
+// Copied-production fixture for routable content that is intentionally excluded
+// from discovery. The tracked source is never mutated.
 describe("C2 noindex variant (copied production)", () => {
   let variantDist;
   let variantCleanup;
@@ -524,22 +463,36 @@ describe("C2 noindex variant (copied production)", () => {
     if (fs.existsSync(publicDir)) {
       fs.cpSync(publicDir, path.join(tempRoot, "public"), { recursive: true });
     }
-    // Copy the canonical token sheet so the copied global.css @import resolves
-    // inside the temp root (D2 dependency: src/styles/global.css imports
-    // ../../docs/Ryan-Brosas-Brand-System/tokens.css).
-    const tokensDest = path.join(tempRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css");
-    fs.mkdirSync(path.dirname(tokensDest), { recursive: true });
-    fs.copyFileSync(
-      path.join(repoRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css"),
-      tokensDest,
-    );
-
     // Rewrite the COPIED about visibility to noindex (never the tracked file).
     const aboutPath = path.join(tempRoot, "src", "content", "pages", "about.md");
     const aboutContent = fs
       .readFileSync(aboutPath, "utf-8")
       .replace(/^visibility:.*$/m, "visibility: noindex");
     fs.writeFileSync(aboutPath, aboutContent, "utf-8");
+
+    const caseStudyPath = path.join(
+      tempRoot,
+      "src",
+      "content",
+      "case-studies",
+      "this-site.md",
+    );
+    const caseStudyContent = fs
+      .readFileSync(caseStudyPath, "utf-8")
+      .replace(/^visibility:.*$/m, "visibility: noindex");
+    fs.writeFileSync(caseStudyPath, caseStudyContent, "utf-8");
+
+    const resourcePath = path.join(
+      tempRoot,
+      "src",
+      "content",
+      "resources",
+      "ai-workflow-readiness.md",
+    );
+    const resourceContent = fs
+      .readFileSync(resourcePath, "utf-8")
+      .replace(/^visibility:.*$/m, "visibility: public");
+    fs.writeFileSync(resourcePath, resourceContent, "utf-8");
 
     variantDist = path.join(tempRoot, "dist");
     const result = spawnSync(astroBin, ["build", "--outDir", variantDist], {
@@ -557,6 +510,41 @@ describe("C2 noindex variant (copied production)", () => {
 
   after(() => {
     if (variantCleanup) variantCleanup();
+  });
+
+  test("noindex case study is routable and excluded from discovery", () => {
+    const route = "/case-studies/this-site/";
+    const html = readHtml(variantDist, route);
+    assert.ok(html, "variant case-study HTML must exist");
+    assert.deepEqual(canonicalsOf(html), [`${SITE}${route}`]);
+    assert.match(html, /<meta\s+name="robots"\s+content="noindex,follow"/i);
+
+    const sitemap = fs.readFileSync(path.join(variantDist, "sitemap.xml"), "utf-8");
+    assert.ok(!sitemap.includes(`${SITE}${route}`), "noindex case study is absent from sitemap");
+
+    const hub = readHtml(variantDist, "/case-studies/");
+    assert.ok(hub, "case-study hub remains a recovery route");
+    assert.match(hub, /<meta\s+name="robots"\s+content="noindex,follow"/i);
+  });
+
+  test("public resource activates its entry, hub, nav, and sitemap", () => {
+    const entryRoute = "/resources/ai-workflow-readiness/";
+    const entry = readHtml(variantDist, entryRoute);
+    assert.ok(entry, "public resource entry must build");
+    assert.deepEqual(canonicalsOf(entry), [`${SITE}${entryRoute}`]);
+    assert.ok(!/noindex,follow/i.test(entry));
+
+    const hub = readHtml(variantDist, "/resources/");
+    assert.ok(hub, "Resources hub must build");
+    assert.ok(!/noindex,follow/i.test(hub));
+    assert.match(hub, /href="\/resources\/ai-workflow-readiness\/"/i);
+
+    const home = readHtml(variantDist, "/");
+    assert.match(home, /href="\/resources\/"[^>]*>\s*Resources\s*<\/a>/i);
+
+    const sitemap = fs.readFileSync(path.join(variantDist, "sitemap.xml"), "utf-8");
+    assert.ok(sitemap.includes(`${SITE}/resources/`));
+    assert.ok(sitemap.includes(`${SITE}${entryRoute}`));
   });
 
   test("noindex about is routable, has noindex meta, excluded from sitemap, in nav", () => {
@@ -611,20 +599,71 @@ describe("C2 noindex variant (copied production)", () => {
   });
 });
 
+// Fail-closed evidence guard: a PUBLIC case study whose verified sourceId does not
+// resolve in the registry must fail the build, rather than silently shipping a
+// public page with no evidence note. Copies production, rewrites only the
+// sourceId to a bogus value (keeps visibility public), and asserts the build fails.
+describe("public case study evidence guard", () => {
+  test("an unresolvable public evidence source fails the build", () => {
+    const tempRoot = fs.mkdtempSync(path.join(repoRoot, "node_modules", ".evidence-guard-"));
+    const rel = path.relative(repoRoot, tempRoot);
+    assert.ok(!path.isAbsolute(rel) && !rel.startsWith(".."), "guard temp root inside repo");
+    try {
+      fs.cpSync(path.join(repoRoot, "src"), path.join(tempRoot, "src"), { recursive: true });
+      fs.copyFileSync(path.join(repoRoot, "astro.config.mjs"), path.join(tempRoot, "astro.config.mjs"));
+      fs.copyFileSync(path.join(repoRoot, "tsconfig.json"), path.join(tempRoot, "tsconfig.json"));
+      fs.copyFileSync(path.join(repoRoot, "package.json"), path.join(tempRoot, "package.json"));
+      const publicDir = path.join(repoRoot, "public");
+      if (fs.existsSync(publicDir)) {
+        fs.cpSync(publicDir, path.join(tempRoot, "public"), { recursive: true });
+      }
+      const caseStudyPath = path.join(tempRoot, "src", "content", "case-studies", "this-site.md");
+      const broken = fs
+        .readFileSync(caseStudyPath, "utf-8")
+        .replace(/sourceId:.*$/m, "sourceId: source-does-not-exist-999");
+      fs.writeFileSync(caseStudyPath, broken, "utf-8");
+
+      const result = spawnSync(astroBin, ["build", "--outDir", path.join(tempRoot, "dist")], {
+        cwd: tempRoot,
+        encoding: "utf-8",
+      });
+      assert.notEqual(result.status, 0, "build must fail when a public case study's evidence does not resolve");
+      assert.match(
+        `${result.stdout}${result.stderr}`,
+        /does not resolve to a public-safe evidence source/,
+        "failure message names the unresolved evidence",
+      );
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+});
+
+
+describe("Resources publication", () => {
+  test("the public starter activates its entry, hub, navigation, and sitemap", () => {
+    const hub = readHtml(distDir, "/resources/");
+    assert.ok(hub, "Resources hub must build");
+    assert.deepEqual(canonicalsOf(hub), [`${SITE}/resources/`]);
+    assert.ok(!/noindex,follow/i.test(hub));
+    assert.match(hub, /<h1[^>]*>\s*Resources\s*<\/h1>/i);
+    assert.match(hub, /href="\/resources\/ai-workflow-readiness\/"/i);
+
+    const entryRoute = "/resources/ai-workflow-readiness/";
+    const entry = readHtml(distDir, entryRoute);
+    assert.ok(entry, "starter resource must build");
+    assert.deepEqual(canonicalsOf(entry), [`${SITE}${entryRoute}`]);
+
+    const home = readHtml(distDir, "/");
+    assert.match(home, /href="\/resources\/"[^>]*>\s*Resources\s*<\/a>/i);
+
+    const sitemap = fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf-8");
+    assert.ok(sitemap.includes(`${SITE}/resources/`));
+    assert.ok(sitemap.includes(`${SITE}${entryRoute}`));
+  });
+});
+
 describe("C3 services route", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("/services/ is public and discoverable with Work With Me label", () => {
     // The verifier is the gate: it fails with `missing-route: /services/` until
     // services.md exists, so the first assertion fails before any HTML read.
@@ -696,7 +735,7 @@ describe("C3 services route", () => {
 
     // The approved body paragraph renders — proves <Content/> is wired, not blank.
     assert.ok(
-      html.includes("I start with the recurring work and make its context, checks, handoffs"),
+      html.includes(authoredOpening("services")),
       "services body paragraph renders the approved copy",
     );
 
@@ -705,19 +744,6 @@ describe("C3 services route", () => {
 });
 
 describe("C4 contact route", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("/contact/ is public, discoverable, and wired to settings-driven actions", () => {
     // The verifier is the gate: it fails with `missing-route: /contact/` until
     // contact.md exists with visibility public.
@@ -785,9 +811,7 @@ describe("C4 contact route", () => {
 
     // The approved body paragraph renders — proves <Content/> is wired, not blank.
     assert.ok(
-      html.includes(
-        "If you have recurring work that needs clearer context, checks, handoffs, or recovery paths",
-      ),
+      html.includes(authoredOpening("contact")),
       "contact body paragraph renders the approved copy",
     );
 
@@ -845,19 +869,6 @@ const sha256OfFile = (file) =>
   crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 
 describe("D1 favicon", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("favicon endpoint exists, matches the approved charcoal mark", () => {
     // The verifier must accept favicon.svg now that it ships alongside the
     // expected file-endpoint inventory.
@@ -928,28 +939,14 @@ describe("D1 favicon", () => {
 });
 
 describe("D2 token shell", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
-  test("global.css imports the canonical token sheet once", () => {
+  test("global.css owns a self-contained semantic token source", () => {
     const globalCssPath = path.join(repoRoot, "src", "styles", "global.css");
-    // Existence guard before reading (assertion, not ENOENT).
     assert.ok(fs.existsSync(globalCssPath), "src/styles/global.css must exist");
     const source = fs.readFileSync(globalCssPath, "utf-8");
-    assert.ok(
-      source.includes('@import "../../docs/Ryan-Brosas-Brand-System/tokens.css"'),
-      "global.css imports the canonical tokens.css via a relative path",
-    );
+    assert.ok(!/@import\b/i.test(source), "global.css has no dependency on a removed archive");
+    for (const token of ["canvas", "text-1", "font-body", "font-display", "content-max"]) {
+      assert.match(source, new RegExp(`--${token}\\s*:`), `global.css defines --${token}`);
+    }
   });
 
   test("built shell consumes semantic brand tokens, not system-ui", () => {
@@ -1003,10 +1000,19 @@ describe("D2 token shell", () => {
     selectorConsumes("footer nav a", "var(--link-decoration)");
     selectorConsumes(".nav-toggle", "var(--control-bg)");
     selectorConsumes(".nav-toggle", "var(--control-fg)");
-    // Every nonzero padding/gap component must consume --space-* (no
-    // arbitrary hardcoded rem/px values that bypass the 8px rhythm). Handles
-    // shorthand values like "var(--space-2) 13px" by checking each component
-    // independently, including across multiline declarations.
+    // Every --rhythm-* role must alias a --space-* token, so consuming a
+    // rhythm role below cannot smuggle an off-scale value into the 8px rhythm.
+    const rhythmRoles = [...css.matchAll(/--rhythm-[a-z0-9-]+:\s*([^;]+);/g)].map((m) =>
+      m[1].trim(),
+    );
+    assert.ok(rhythmRoles.length > 0, "CSS defines rhythm roles");
+    for (const value of rhythmRoles) {
+      assert.match(value, /^var\(--space-[a-z0-9-]+\)$/);
+    }
+    // Every nonzero padding/gap component must consume --space-* or a
+    // --rhythm-* role (no arbitrary hardcoded rem/px values that bypass the 8px
+    // rhythm). Handles shorthand values like "var(--space-2) 13px" by checking
+    // each component independently, including across multiline declarations.
     const nonzeroPaddingGap = [...css.matchAll(/(?:padding|gap)\s*:\s*([^;}]+)/gis)].map((m) =>
       m[1].trim(),
     );
@@ -1015,8 +1021,8 @@ describe("D2 token shell", () => {
       for (const component of value.split(/\s+/)) {
         if (component === "0") continue;
         assert.ok(
-          /^var\(--space-[a-z0-9-]+\)$/i.test(component),
-          `padding/gap component "${component}" in "${value}" must be exactly 0 or var(--space-*) (no hardcoded rem/px, no mixed shorthand)`,
+          /^var\(--(?:space|rhythm)-[a-z0-9-]+\)$/i.test(component),
+          `padding/gap component "${component}" in "${value}" must be exactly 0, var(--space-*), or var(--rhythm-*) (no hardcoded rem/px, no mixed shorthand)`,
         );
       }
     }
@@ -1080,23 +1086,35 @@ describe("D2 token shell", () => {
       "brand anchor shows the visible site title beside the mark",
     );
 
-    // The brand anchor owns the root current-page state on /.
-    assert.ok(
-      /<a[^>]+href="\/"[^>]*aria-current="page"/i.test(html) ||
-        /<a[^>]+aria-current="page"[^>]*href="\/"/i.test(html),
-      "brand anchor has aria-current=page on /",
+    // Exactly one element marks the current page, and on / it is the nav's Home item.
+    assert.equal(
+      (html.match(/aria-current="page"/g) || []).length,
+      1,
+      "exactly one aria-current=page",
     );
 
-    // The Primary nav contains only page routes (root lives in the brand anchor).
+    // The nav leads with Home and owns the root current-page state; the brand
+    // lockup is a plain link to the same place.
     const navMatch = html.match(/<nav[^>]*aria-label=["']Primary["'][^>]*>([\s\S]*?)<\/nav>/i);
     assert.ok(navMatch, "exactly one <nav aria-label=Primary>");
-    assert.ok(
-      !/href="\/"/i.test(navMatch[1]),
-      "primary nav does not duplicate the root link (brand anchor owns it)",
-    );
+    assert.match(navMatch[1], /<a href="\/" aria-current="page">\s*Home/);
+    assert.doesNotMatch(html.slice(0, html.indexOf("<nav")), /aria-current/);
     assert.ok(/href="\/about\/"/i.test(navMatch[1]), "primary nav has the about link");
     assert.ok(/href="\/services\/"/i.test(navMatch[1]), "primary nav has the services link");
     assert.ok(/href="\/contact\/"/i.test(navMatch[1]), "primary nav has the contact link");
+  });
+
+  test("about profile uses the approved Operator artwork inside an accessible supporting frame", () => {
+    const html = readHtml(distDir, "/about/");
+    assert.ok(html, "dist/about/index.html must exist");
+    const profileVisual = html.match(
+      /<aside[^>]+class="page-visual page-visual--about"[^>]+aria-label="[^"]+"[^>]*>([\s\S]*?)<\/aside>/i,
+    );
+    assert.ok(profileVisual, "about page has a labelled Operator profile visual");
+    assert.match(profileVisual[1], /<svg[^>]+viewBox="0 0 320 320"/i);
+    assert.match(profileVisual[1], /<title>The Operator<\/title>/i);
+    assert.match(profileVisual[1], /aria-hidden="true"/i);
+    assert.match(profileVisual[1], /focusable="false"/i);
   });
 
   test("production logo asset is byte-identical to the approved charcoal mark", () => {
@@ -1117,19 +1135,6 @@ const navEnhancementScript = (html) => {
 };
 
 describe("D3 progressive navigation", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   test("DOM order: brand anchor, then toggle, then primary nav", () => {
     const html = readHtml(distDir, "/");
     assert.ok(html, "dist/index.html must exist");
@@ -1212,20 +1217,13 @@ describe("D3 progressive navigation", () => {
     assert.ok(/prefers-reduced-motion/i.test(css), "reduced-motion media query present");
   });
 
-  test("approved sprite asset is byte-identical and contains no script/external refs", () => {
+  test("approved sprite asset keeps its pinned bytes and contains no script/external refs", () => {
     const spritePath = path.join(repoRoot, "src", "assets", "brand", "icons.svg");
     assert.ok(fs.existsSync(spritePath), "src/assets/brand/icons.svg must exist");
-    const sourceSprite = path.join(
-      repoRoot,
-      "docs",
-      "Ryan-Brosas-Brand-System",
-      "assets",
-      "icons.svg",
-    );
     assert.equal(
       sha256OfFile(spritePath),
-      sha256OfFile(sourceSprite),
-      "production sprite matches the approved sprite bytes",
+      ICON_SPRITE_SHA256,
+      "production sprite matches the pinned approved bytes",
     );
     const sprite = fs.readFileSync(spritePath, "utf-8");
     assert.ok(!/<script/i.test(sprite), "sprite has no <script>");
@@ -1258,15 +1256,6 @@ const buildLayoutProbe = () => {
   if (fs.existsSync(publicDir)) {
     fs.cpSync(publicDir, path.join(tempRoot, "public"), { recursive: true });
   }
-  // global.css @imports ../../docs/Ryan-Brosas-Brand-System/tokens.css — copy it
-  // so the relative import resolves inside the temp root.
-  const tokensDest = path.join(tempRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css");
-  fs.mkdirSync(path.dirname(tokensDest), { recursive: true });
-  fs.copyFileSync(
-    path.join(repoRoot, "docs", "Ryan-Brosas-Brand-System", "tokens.css"),
-    tokensDest,
-  );
-
   // Throwaway fixture pages that exercise each layout with a real public routeId.
   // NOTE: no leading underscore — Astro treats `_`-prefixed files under
   // src/pages/ as private and emits NO route for them, so the probe would build
@@ -1388,19 +1377,6 @@ const jsonLdGraphsOf = (html) => {
 };
 
 describe("T15 commercial pages (services/about/contact) structured data", () => {
-  let distDir;
-  let cleanup;
-
-  before(() => {
-    const built = buildShell();
-    distDir = built.distDir;
-    cleanup = built.cleanup;
-  });
-
-  after(() => {
-    if (cleanup) cleanup();
-  });
-
   const graphTypesFor = (route) => {
     const html = readHtml(distDir, route);
     assert.ok(html, `dist${route}index.html must exist`);
@@ -1446,4 +1422,39 @@ describe("T15 commercial pages (services/about/contact) structured data", () => 
   test("a removed/unregistered route (/projects/) produces no built page", () => {
     assert.equal(readHtml(distDir, "/projects/"), undefined, "/projects/ must not be built");
   });
+});
+
+test("commercial pages use route-specific editorial hero modules", () => {
+  const about = readHtml(distDir, "/about/");
+  assert.match(about, /class="page-visual page-visual--about"/);
+  assert.match(about, /<title>The Operator<\/title>/);
+  assert.match(about, />Philippines<\/dd>/);
+
+  const services = readHtml(distDir, "/services/");
+  assert.match(services, /class="page-visual page-visual--services"/);
+  assert.match(services, /viewBox="0 0 1000 520"/);
+  assert.match(services, />Agent<\/li>[\s\S]*>Script<\/li>[\s\S]*>Process<\/li>/);
+
+  const contact = readHtml(distDir, "/contact/");
+  assert.match(contact, /class="page-visual page-visual--contact"/);
+  assert.match(contact, /class="intake-sequence"/);
+  assert.match(contact, />Recurring work<\/strong>/);
+  assert.match(contact, />Current workaround<\/strong>/);
+  assert.match(contact, />Breaking point<\/strong>/);
+});
+
+test("homepage uses the hero composition and approved local typography", () => {
+  const html = readHtml(distDir, "/");
+  assert.match(html, /class="hero"/);
+  // The hero headline names the visitor's outcome; the highlight carries the promise.
+  assert.match(html, /Work that runs/);
+  assert.match(html, /class="brand-highlight">without you\.<\/span>/);
+  assert.match(html, /class="hero__visual"/);
+  assert.match(html, /class="loop-field"/);
+  assert.ok(!html.includes("<title>The Operator</title>"), "homepage reserves the mascot for supporting pages");
+
+  const css = collectCss(html, distDir);
+  assert.match(css, /@font-face\s*{[^}]*font-family:\s*["\']?Inter["\']?/);
+  assert.match(css, /inter-latin[^)]*\.woff2/);
+  assert.match(css, /\.hero__title/);
 });

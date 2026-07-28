@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "brand:lab": "PUBLIC_BRAND_LAB=true astro dev --host 0.0.0.0 --port 4325 --mode brand-lab",
     "check": "astro check",
     "build": "astro build",
     "preview": "astro preview",
