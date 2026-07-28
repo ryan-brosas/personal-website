@@ -1,0 +1,29 @@
+---
+interface Props {
+  primaryHref: string;
+  primaryLabel: string;
+  primaryRel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+  class?: string;
+}
+
+const {
+  primaryHref,
+  primaryLabel,
+  primaryRel,
+  secondaryHref,
+  secondaryLabel,
+  class: className,
+} = Astro.props;
+---
+<div class:list={["button-row", className]}>
+  <a class="button button--primary" href={primaryHref} rel={primaryRel}>{primaryLabel}</a>
+  {
+    secondaryHref && secondaryLabel && (
+      <a class="button button--secondary" href={secondaryHref}>
+        {secondaryLabel}
+      </a>
+    )
+  }
+</div>

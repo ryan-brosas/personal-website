@@ -61,6 +61,18 @@ const serviceRail = {
   caption: "The task picks the tool.",
 };
 
+const contactActions = contact
+  ? {
+      title: "Bring the rough version.",
+      body: "We will decide if the next step is an agent, a script, a process change, or nothing at all.",
+      primaryHref: contact.schedulerUrl,
+      primaryLabel: "Schedule a conversation",
+      primaryRel: "noopener noreferrer",
+      secondaryHref: `mailto:${contact.emailFallback}`,
+      secondaryLabel: contact.emailFallback,
+    }
+  : undefined;
+
 const pageCta = {
   services: {
     eyebrow: "Start with one task",
@@ -80,17 +92,7 @@ const pageCta = {
     secondaryHref: caseStudiesHref,
     secondaryLabel: "Read the case study",
   },
-  contact: {
-    eyebrow: "No tidy brief needed",
-    title: "Bring the rough version.",
-    body: "We will decide if the next step is an agent, a script, a process change, or nothing at all.",
-    primaryHref: contact?.schedulerUrl ?? contactHref,
-    primaryLabel: "Schedule a conversation",
-    primaryRel: "noopener noreferrer",
-    secondaryHref: contact ? `mailto:${contact.emailFallback}` : undefined,
-    secondaryLabel: contact?.emailFallback,
-  },
-}[entry.id as "services" | "about" | "contact"];
+}[entry.id as "services" | "about"];
 ---
 <CommercialLayout
   routeId={entry.id}
@@ -106,6 +108,7 @@ const pageCta = {
       eyebrow={eyebrows[pageId]}
       title={entry.data.title}
       description={entry.data.description}
+      contactActions={contactActions}
     />
 
     {
@@ -122,16 +125,19 @@ const pageCta = {
       <Content />
     </div>
 
-    <PageCta
-      id={`${entry.id}-next-step`}
-      eyebrow={pageCta.eyebrow}
-      title={pageCta.title}
-      body={pageCta.body}
-      primaryHref={pageCta.primaryHref}
-      primaryLabel={pageCta.primaryLabel}
-      primaryRel={pageCta.primaryRel}
-      secondaryHref={pageCta.secondaryHref}
-      secondaryLabel={pageCta.secondaryLabel}
-    />
+    {
+      entry.id !== "contact" && pageCta && (
+        <PageCta
+          id={`${entry.id}-next-step`}
+          eyebrow={pageCta.eyebrow}
+          title={pageCta.title}
+          body={pageCta.body}
+          primaryHref={pageCta.primaryHref}
+          primaryLabel={pageCta.primaryLabel}
+          secondaryHref={pageCta.secondaryHref}
+          secondaryLabel={pageCta.secondaryLabel}
+        />
+      )
+    }
   </article>
 </CommercialLayout>

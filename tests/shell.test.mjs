@@ -798,11 +798,8 @@ describe("C4 contact route", () => {
       "contact h1 includes the approved title",
     );
 
-    // The approved body paragraph renders — proves <Content/> is wired, not blank.
-    assert.ok(
-      html.includes(authoredOpening("contact")),
-      "contact body paragraph renders the approved copy",
-    );
+    // The useful intake brief renders — proves <Content/> is wired, not blank.
+    assert.ok(html.includes("Bring these three things"), "contact intake brief renders");
 
     // Settings-driven scheduler link: HTTPS Calendly URL from settings, exact
     // label, and the locked rel tokens. Rendered by the template, not markdown.
@@ -1427,8 +1424,10 @@ test("commercial pages use route-specific editorial hero modules", () => {
 
   const contact = readHtml(distDir, "/contact/");
   assert.match(contact, /class="page-visual page-visual--contact"/);
-  assert.match(contact, />Bring one stubborn loop<\/p>/);
-  assert.doesNotMatch(contact, /class="intake-sequence"/, "the visual does not repeat the intake copy");
+  assert.match(contact, /class="contact-action-panel"/);
+  assert.match(contact, />Bring the rough version\.<\/h2>/);
+  assert.match(contact, /class="button-row contact-action-panel__actions"/);
+  assert.doesNotMatch(contact, /class="page-cta cta-panel"/, "contact keeps one action surface");
 });
 
 test("homepage uses the hero composition and approved local typography", () => {

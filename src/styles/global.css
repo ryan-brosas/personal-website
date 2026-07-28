@@ -1384,21 +1384,41 @@ main a {
 
 .page-visual--contact {
   display: grid;
-  min-height: 24rem;
-  align-content: center;
+  min-height: 0;
   padding: var(--space-5);
-  background: var(--surface-dark);
-  color: var(--text-inverse);
+  border-block-start: 4px solid var(--brand);
+  background: var(--surface);
 }
 
-.page-visual--contact > p {
-  max-width: 9ch;
-  margin: 0;
-  color: var(--signal);
-  font-size: clamp(2.4rem, 5vw, 4.5rem);
-  font-weight: var(--weight-emphasis);
-  letter-spacing: -0.05em;
-  line-height: 0.95;
+.contact-action-panel {
+  display: grid;
+  align-content: center;
+  gap: var(--space-3);
+}
+
+.contact-action-panel .eyebrow {
+  color: var(--text-1);
+}
+
+.contact-action-panel h2 {
+  max-width: 11ch;
+  font-size: var(--type-h3-size);
+}
+
+.contact-action-panel__body {
+  max-width: 34ch;
+  color: var(--text-2);
+  font-size: var(--type-emphasis-size);
+}
+
+.contact-action-panel__actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-block-start: var(--space-2);
+}
+
+.contact-action-panel__actions .button {
+  width: 100%;
 }
 
 .page-shell--services .prose h2 {
@@ -1406,21 +1426,54 @@ main a {
   border-top: 1px solid var(--line-strong);
 }
 
+.page-shell--contact .prose {
+  max-width: none;
+}
+
 .page-shell--contact .prose ol {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
   padding: 0;
+  border-block-start: 1px solid var(--line-strong);
+  border-inline-start: 1px solid var(--line-strong);
+  counter-reset: contact-step;
   list-style: none;
 }
 
 .page-shell--contact .prose li {
+  min-height: 13rem;
   padding: var(--space-3);
-  border-top: 1px solid var(--line-strong);
+  border-inline-end: 1px solid var(--line-strong);
+  border-block-end: 1px solid var(--line-strong);
+  counter-increment: contact-step;
 }
 
-.page-shell--contact .prose li:nth-child(odd) {
-  border-inline-end: 1px solid var(--line-strong);
+.page-shell--contact .prose li::before {
+  display: block;
+  margin-block-end: var(--space-4);
+  color: var(--text-2);
+  content: "0" counter(contact-step);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--tracking-label);
+}
+
+.page-shell--contact .prose li strong {
+  display: block;
+  margin-block-end: var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--type-subheading-size);
+  line-height: var(--leading-compact);
+}
+
+.page-shell--contact .prose ol + p {
+  max-width: var(--measure-reading);
+  margin-block-start: var(--space-5);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 3px solid var(--brand);
+  font-size: var(--type-emphasis-size);
 }
 
 /* ---------- Prose ---------- */
@@ -2071,6 +2124,10 @@ html[data-motion-ready] [data-reveal="visible"] {
     min-height: 24rem;
   }
 
+  .page-visual--contact {
+    min-height: 0;
+  }
+
 
 
 
@@ -2126,8 +2183,8 @@ html[data-motion-ready] [data-reveal="visible"] {
     grid-template-columns: 1fr;
   }
 
-  .page-shell--contact .prose li:nth-child(odd) {
-    border-inline-end: 0;
+  .page-shell--contact .prose li {
+    min-height: 0;
   }
 
 

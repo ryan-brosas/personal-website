@@ -4,10 +4,6 @@ description: "Bring Ryan Brosas one job that keeps coming back, how you handle i
 visibility: public
 ---
 
-Do you have work that keeps coming back? Maybe it needs clearer facts, checks, or a way to recover. Book a call and we will see if an agent, a script, or a change in process fits. You can email me instead if that is easier.
-
-Start with one stubborn loop. You do not need a tidy brief. You do not need to pick an AI tool first.
-
 ## Bring these three things
 
 1. **The work that repeats.** What goes in, and what good result should come out.

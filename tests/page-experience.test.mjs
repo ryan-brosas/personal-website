@@ -33,10 +33,15 @@ test("workflow rails appear only where they orient a service or collection", () 
   }
 });
 
-test("every public non-home HTML route closes with a clear next step", () => {
+test("every public non-home HTML route offers a clear next step", () => {
   for (const route of publicHtmlRoutes) {
     const html = readRoute(route);
-    assert.match(html, /class="page-cta cta-panel"/, route + " renders the shared closing CTA");
+    if (route === "/contact/") {
+      assert.match(html, /class="contact-action-panel"/, "contact places its action in the hero");
+      assert.doesNotMatch(html, /class="page-cta cta-panel"/, "contact does not repeat its action");
+    } else {
+      assert.match(html, /class="page-cta cta-panel"/, route + " renders the shared closing CTA");
+    }
     assert.match(html, /class="button button--primary"/, route + " offers a primary action");
   }
 });
@@ -293,6 +298,17 @@ test("CTA panels share one base composition", () => {
   assert.match(homepage, /import PageCta/);
   assert.match(homepage, /<PageCta/);
   assert.doesNotMatch(homepage, /import CtaPanel|<CtaPanel/);
+});
+
+test("contact and page CTAs share one action-links component", () => {
+  const actionLinks = fs.readFileSync(path.join(repoRoot, "src", "components", "ActionLinks.astro"), "utf-8");
+  const pageCta = fs.readFileSync(path.join(repoRoot, "src", "components", "PageCta.astro"), "utf-8");
+  const commercialHero = fs.readFileSync(path.join(repoRoot, "src", "components", "CommercialHero.astro"), "utf-8");
+  assert.match(actionLinks, /class:list=\{\["button-row"/);
+  assert.match(pageCta, /import ActionLinks/);
+  assert.match(pageCta, /<ActionLinks/);
+  assert.match(commercialHero, /import ActionLinks/);
+  assert.match(commercialHero, /<ActionLinks/);
 });
 
 test("secondary buttons remain readable when inverted panels use a light hover surface", () => {

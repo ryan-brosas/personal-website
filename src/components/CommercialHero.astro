@@ -2,9 +2,20 @@
 import type { HTMLTag } from "astro/types";
 import HeroOperator from "../assets/brand/operator-mascot.svg";
 import HeroSystemMap from "../assets/brand/hero-system-conductor.svg";
+import ActionLinks from "./ActionLinks.astro";
 
 export type CommercialPageId = "about" | "services" | "contact";
 type HeadingLevel = 1 | 2;
+
+interface ContactActions {
+  title: string;
+  body: string;
+  primaryHref: string;
+  primaryLabel: string;
+  primaryRel?: string;
+  secondaryHref: string;
+  secondaryLabel: string;
+}
 
 interface Props {
   pageId: CommercialPageId;
@@ -12,9 +23,13 @@ interface Props {
   title: string;
   description: string;
   headingLevel?: HeadingLevel;
+  contactActions?: ContactActions;
 }
 
-const { pageId, eyebrow, title, description, headingLevel = 1 } = Astro.props;
+const { pageId, eyebrow, title, description, headingLevel = 1, contactActions } = Astro.props;
+if (pageId === "contact" && !contactActions) {
+  throw new Error("Contact hero requires settings-driven actions");
+}
 const Tag = `h${headingLevel}` as HTMLTag;
 ---
 <header class="page-header commercial-hero">
@@ -46,9 +61,21 @@ const Tag = `h${headingLevel}` as HTMLTag;
   }
 
   {
-    pageId === "contact" && (
-      <aside class="page-visual page-visual--contact" aria-label="Bring one stubborn loop">
-        <p>Bring one stubborn loop</p>
+    pageId === "contact" && contactActions && (
+      <aside class="page-visual page-visual--contact" aria-label="Start a conversation">
+        <div class="contact-action-panel">
+          <p class="eyebrow">One task · Two ways to start</p>
+          <h2>{contactActions.title}</h2>
+          <p class="contact-action-panel__body">{contactActions.body}</p>
+          <ActionLinks
+            class="contact-action-panel__actions"
+            primaryHref={contactActions.primaryHref}
+            primaryLabel={contactActions.primaryLabel}
+            primaryRel={contactActions.primaryRel}
+            secondaryHref={contactActions.secondaryHref}
+            secondaryLabel={contactActions.secondaryLabel}
+          />
+        </div>
       </aside>
     )
   }

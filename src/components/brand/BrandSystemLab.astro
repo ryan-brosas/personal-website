@@ -2,6 +2,7 @@
 import BrandHeading from "./BrandHeading.astro";
 import WorkflowRail from "../WorkflowRail.astro";
 import PageCta from "../PageCta.astro";
+import ActionLinks from "../ActionLinks.astro";
 import PageHeader from "../PageHeader.astro";
 import SectionHeading from "../SectionHeading.astro";
 import CollectionCard from "../CollectionCard.astro";
@@ -269,10 +270,12 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
       </div>
       <aside class="brand-lab__motion-demo">
         <div><strong>Try it</strong><p>Hover or tab to these controls. State is legible from shape and contrast alone—motion only softens the change.</p></div>
-        <div class="button-row">
-          <a class="button button--primary" href="#brand-motion">Inspect the workflow</a>
-          <a class="button button--secondary" href="#brand-motion">Read the evidence</a>
-        </div>
+        <ActionLinks
+          primaryHref="#brand-motion"
+          primaryLabel="Inspect the workflow"
+          secondaryHref="#brand-motion"
+          secondaryLabel="Read the evidence"
+        />
       </aside>
     </section>
 
