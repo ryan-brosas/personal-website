@@ -609,17 +609,6 @@ main a {
   justify-items: start;
 }
 
-.hero__kicker {
-  display: block;
-  margin-block-end: var(--space-3);
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .hero__title {
   max-width: 15ch;
   margin: 0;
@@ -639,14 +628,6 @@ main a {
 
 .hero__visual {
   margin: 0;
-}
-
-.hero__visual > svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  padding: var(--space-3);
-  background: var(--surface-muted);
 }
 
 /* ---------- Loop field ----------
@@ -1082,7 +1063,6 @@ main a {
   color: var(--text-2);
 }
 
-/* ---------- Method grid (three flat editorial plates) ---------- */
 /* ---------- Case feature (dark plate + coral visual) ---------- */
 .case-feature {
   display: grid;
@@ -1369,12 +1349,6 @@ main a {
   line-height: 0.95;
 }
 
-
-.commercial-body {
-  display: grid;
-  gap: var(--space-6);
-}
-
 .page-shell--services .prose h2 {
   display: grid;
   grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1fr);
@@ -1431,15 +1405,6 @@ main a {
 
 .prose li::marker {
   color: var(--brand);
-}
-
-.contact-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-block-start: var(--space-6);
-  padding-block-start: var(--space-4);
-  border-top: 1px solid var(--line);
 }
 
 /* ---------- Case grid / cards ---------- */

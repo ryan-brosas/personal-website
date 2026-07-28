@@ -125,3 +125,12 @@ test("the self-project case study tells a challenge-to-result story without inve
   assert.match(caseStudy, /self-project, not a client success story/i);
   assert.match(caseStudy, /no invented metrics/i);
 });
+
+test("page patterns contain no stale wrappers or unused selector contracts", () => {
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  const page = fs.readFileSync(path.join(repoRoot, "src", "pages", "[page].astro"), "utf-8");
+  const cta = fs.readFileSync(path.join(repoRoot, "src", "components", "PageCta.astro"), "utf-8");
+  assert.doesNotMatch(css, /\.hero__kicker|\.hero__visual\s*>\s*svg|\.contact-actions|\.commercial-body|Method grid/);
+  assert.doesNotMatch(page, /commercial-body/);
+  assert.doesNotMatch(cta, /secondaryRel/);
+});
