@@ -11,8 +11,8 @@
  * disclosure contract. Self-contained: no external stylesheet imports (the
  * removed OpenDesign archive is not a dependency). Semantic token names are
  * consumed by every
- * selector; the six contrast-critical tokens (canvas/surface/surface-muted/
- * surface-dark/text-3/focus-ring) are literal #hex so the contrast tests can
+ * selector; the five contrast-critical tokens (canvas/surface/surface-muted/
+ * surface-dark/text-3) are literal #hex so the contrast tests can
  * read them. Padding/gap are exactly `0` or var(--space-*) (8px rhythm). */
 :root {
   color-scheme: light;
@@ -30,9 +30,6 @@
   --surface-muted: #f1ecda;
   --surface-dark: #1a1a1a;
   --text-3: #5c5c54;
-
-  /* Focus ring: a deep coral that holds >=3:1 on paper, raised, and charcoal. */
-  --focus-ring: #ce4848;
 
   /* Text and strokes. */
   --text-1: #1a1a1a;
@@ -97,7 +94,21 @@
   --type-campaign-tracking: -0.06em;
   --type-campaign-weight: 780;
   --type-body-size: 1rem;
+  --type-label-size: 0.7rem;
+  --type-small-size: 0.9rem;
+  --type-meta-size: 0.78rem;
+  --type-emphasis-size: 1.125rem;
+  --type-subheading-size: 1.25rem;
+  --type-control-size: 0.95rem;
+  --type-auxiliary-size: 0.8rem;
+  --tracking-label: 0.1em;
+  --tracking-meta: 0.08em;
   --leading-body: 1.65;
+  --leading-support: 1.5;
+  --leading-compact: 1.12;
+  --weight-medium: 550;
+  --weight-emphasis: 600;
+  --weight-strong: 650;
 
   /* Marker highlight. The painted band is sized in em instead of inheriting the
    * font's content box (~1.33em in Segoe), which at display leading paints over
@@ -111,6 +122,7 @@
   --measure-narrow: 45ch;
   --measure-reading: 66ch;
   --measure-wide: 72ch;
+  --measure-heading: 18ch;
   --prose-max: var(--measure-reading);
   --grid-columns-compact: 4;
   --grid-columns-medium: 8;
@@ -119,8 +131,10 @@
   --motion-ease: ease;
   --motion-enter: 200ms;
   --motion-enter-ease: cubic-bezier(0.23, 1, 0.32, 1);
-  /* Ambient figure motion. Multiples of the base unit so decorative timing stays
-   * on the same scale as interaction timing instead of being invented per figure. */
+  /* Figure motion. Multiples of the base unit keep decorative timing on the
+   * interaction scale instead of inventing durations per composition. */
+  --motion-process: calc(var(--motion-fast) * 30);
+  --motion-process-ease: cubic-bezier(0.5, 0, 0.5, 1);
   --motion-ambient: calc(var(--motion-fast) * 36);
   --motion-signal: calc(var(--motion-fast) * 15);
   --canvas-grid: rgba(26, 26, 26, 0.06);
@@ -135,7 +149,7 @@
   --radius-sm: 0.125rem;
   --radius-md: 0.25rem;
   --radius-lg: 0.5rem;
-  --radius-pill: 9999px;
+  --target-min: 2.75rem;
 
   /* 8px spacing scale. */
   --space-1: 0.5rem;
@@ -320,8 +334,8 @@ a:hover {
   gap: var(--space-2);
   color: var(--text-1);
   font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--type-control-size);
+  font-weight: var(--weight-emphasis);
   line-height: 1.1;
   text-decoration: none;
 }
@@ -346,14 +360,14 @@ a:hover {
 
 .site-header nav a {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: var(--target-min);
   align-items: center;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   border-bottom: 2px solid transparent;
   color: var(--nav-fg);
-  font-size: 0.9rem;
-  font-weight: 550;
+  font-size: var(--type-small-size);
+  font-weight: var(--weight-medium);
   text-decoration: none;
   text-decoration-color: var(--link-decoration);
   transition: background-color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
@@ -365,7 +379,7 @@ a:hover {
   border-bottom-color: var(--nav-current-rule);
 }
 
-.site-header nav a[aria-current="page"] {
+.site-header nav a[aria-current] {
   color: var(--nav-current-fg);
   border-bottom-color: var(--nav-current-rule);
 }
@@ -384,8 +398,8 @@ a:hover {
 
 .nav-toggle {
   display: none;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
@@ -443,7 +457,7 @@ main a {
   color: var(--text-2);
   font-family: var(--font-mono);
   font-size: 0.74rem;
-  font-weight: 650;
+  font-weight: var(--weight-strong);
   letter-spacing: 0.12em;
   line-height: 1.3;
   text-transform: uppercase;
@@ -479,8 +493,8 @@ main a {
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-1);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--type-control-size);
+  font-weight: var(--weight-emphasis);
   text-decoration: none;
   transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
 }
@@ -618,7 +632,7 @@ main a {
   max-width: var(--measure-narrow);
   margin-block: var(--space-4) 0;
   color: var(--text-2);
-  font-size: 1.125rem;
+  font-size: var(--type-emphasis-size);
   line-height: 1.55;
 }
 
@@ -672,7 +686,7 @@ main a {
   color: var(--text-3);
   font-family: var(--font-mono);
   font-size: 0.68rem;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
 
@@ -739,9 +753,9 @@ main a {
   background: var(--surface);
   color: var(--text-1);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 650;
-  letter-spacing: 0.08em;
+  font-size: var(--type-label-size);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--tracking-meta);
   text-align: center;
   text-transform: uppercase;
 }
@@ -756,7 +770,7 @@ main a {
   color: var(--text-3);
   font-family: var(--font-mono);
   font-size: 0.6rem;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-meta);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -846,7 +860,7 @@ main a {
   height: 7px;
   border: 1px solid var(--text-1);
   background: var(--brand);
-  animation: process-travel 4.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  animation: process-travel var(--motion-process) var(--motion-process-ease) infinite;
 }
 
 @keyframes process-travel {
@@ -884,24 +898,24 @@ main a {
 .process-stages span {
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
 }
 
 .process-stages b {
   margin-block-start: var(--space-4);
   color: var(--text-1);
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 650;
+  font-size: var(--type-subheading-size);
+  font-weight: var(--weight-strong);
   letter-spacing: -0.02em;
 }
 
 .process-stages small {
   margin-block-start: var(--space-2);
   color: var(--text-2);
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: var(--type-small-size);
+  line-height: var(--leading-support);
 }
 
 .process-stages .is-proven {
@@ -921,8 +935,8 @@ main a {
   border-block-start: 1px solid var(--line);
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-meta);
   text-transform: uppercase;
 }
 
@@ -962,8 +976,8 @@ main a {
 .workflow-rail__steps span {
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
 }
 
 .workflow-rail__steps strong {
@@ -974,21 +988,25 @@ main a {
 
 .workflow-rail__steps small {
   color: var(--text-2);
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: var(--type-small-size);
+  line-height: var(--leading-support);
 }
 
 .workflow-rail figcaption {
   margin-block-start: var(--space-3);
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: var(--type-label-size);
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .page-cta {
-  margin-block-start: var(--space-10);
+  margin-block-start: var(--rhythm-section);
+}
+
+.home-section.page-cta {
+  margin-block-start: 0;
 }
 
 .page-cta .button-row {
@@ -998,6 +1016,11 @@ main a {
 .page-cta .button--secondary {
   color: var(--text-inverse);
   border-color: var(--text-inverse);
+}
+
+.page-cta .button--secondary:hover {
+  color: var(--text-1);
+  border-color: var(--text-1);
 }
 
 /* ---------- Home sections ---------- */
@@ -1013,20 +1036,41 @@ main a {
 
 .section-heading {
   display: grid;
-  grid-template-columns: minmax(10rem, 0.45fr) minmax(0, 1fr);
+  grid-template-columns: minmax(18rem, 1fr) minmax(0, 1fr);
   gap: var(--space-6);
   margin-block-end: var(--space-8);
 }
 
 .section-heading h2 {
-  max-width: 12ch;
+  max-width: var(--measure-heading);
 }
 
-.section-heading p:last-child {
+.section-heading__title h2 a {
+  text-decoration: none;
+}
+
+.section-heading__title h2 a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--link-decoration);
+}
+
+.section-heading--stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.section-heading--stacked h2 {
+  max-width: none;
+}
+
+.section-heading__description {
   max-width: 38rem;
   align-self: end;
   color: var(--text-2);
   font-size: 1.15rem;
+}
+
+.page-header--wide-title h1 {
+  max-width: none;
 }
 
 /* ---------- Signal list (editorial rows) ---------- */
@@ -1052,13 +1096,13 @@ main a {
 .signal-list .signal-number {
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: var(--type-meta-size);
   font-variant-numeric: tabular-nums;
 }
 
 .signal-list strong {
   font-size: clamp(1.25rem, 2.5vw, 2rem);
-  font-weight: 550;
+  font-weight: var(--weight-medium);
   letter-spacing: -0.025em;
 }
 
@@ -1069,7 +1113,7 @@ main a {
 /* ---------- Case feature (dark plate + coral visual) ---------- */
 .case-feature {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(20rem, 1.2fr);
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
   min-height: 34rem;
   overflow: hidden;
   border-radius: 0;
@@ -1104,6 +1148,11 @@ main a {
 .case-feature__copy a {
   color: var(--text-inverse);
   border-color: var(--text-inverse);
+}
+
+.case-feature__copy .button--secondary:hover {
+  color: var(--text-1);
+  border-color: var(--text-1);
 }
 
 .case-feature__visual {
@@ -1147,7 +1196,7 @@ main a {
 .architecture-map span {
   color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: var(--type-meta-size);
 }
 
 /* ---------- Homepage verified claims ---------- */
@@ -1190,7 +1239,7 @@ main a {
 }
 
 .cta-panel h2 {
-  max-width: 13ch;
+  max-width: var(--measure-heading);
   color: var(--text-inverse);
 }
 
@@ -1238,7 +1287,7 @@ main a {
 }
 
 .page-header h1 {
-  max-width: 13ch;
+  max-width: var(--measure-heading);
 }
 
 .case-study-header {
@@ -1326,8 +1375,8 @@ main a {
   background: var(--surface-dark);
   color: var(--text-inverse);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
   list-style: none;
   text-align: center;
   text-transform: uppercase;
@@ -1347,20 +1396,16 @@ main a {
   margin: 0;
   color: var(--signal);
   font-size: clamp(2.4rem, 5vw, 4.5rem);
-  font-weight: 600;
+  font-weight: var(--weight-emphasis);
   letter-spacing: -0.05em;
   line-height: 0.95;
 }
 
 .page-shell--services .prose h2 {
-  display: grid;
-  grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1fr);
-  gap: var(--space-4);
   padding-block-start: var(--space-3);
   border-top: 1px solid var(--line-strong);
 }
 
-.page-shell--about .prose ul,
 .page-shell--contact .prose ol {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1369,13 +1414,11 @@ main a {
   list-style: none;
 }
 
-.page-shell--about .prose li,
 .page-shell--contact .prose li {
   padding: var(--space-3);
   border-top: 1px solid var(--line-strong);
 }
 
-.page-shell--about .prose li:nth-child(odd),
 .page-shell--contact .prose li:nth-child(odd) {
   border-inline-end: 1px solid var(--line-strong);
 }
@@ -1390,8 +1433,14 @@ main a {
   margin-block-start: var(--space-3);
 }
 
-.prose h2,
-.prose h3 {
+/* Two adjacent prose blocks (e.g. a wiki entry body followed by its Source
+   section) need a gap; without this the Source heading butts against the body. */
+.prose + .prose {
+  margin-block-start: var(--space-8);
+}
+
+.prose > * + h2,
+.prose > * + h3 {
   margin-block-start: var(--space-8);
 }
 
@@ -1410,6 +1459,192 @@ main a {
   color: var(--brand);
 }
 
+/* Wiki preview on the Resources hub: a dense directory, not feature cards. */
+.wiki-preview-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border-block-start: 1px solid var(--line-strong);
+  border-inline-start: 1px solid var(--line-strong);
+  list-style: none;
+}
+
+.wiki-preview-list li {
+  border-inline-end: 1px solid var(--line-strong);
+  border-block-end: 1px solid var(--line-strong);
+}
+
+.wiki-preview-list a {
+  display: grid;
+  height: 100%;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  text-decoration: none;
+}
+
+.wiki-preview-list strong {
+  font-family: var(--font-display);
+  font-size: var(--type-subheading-size);
+  text-decoration: underline;
+  text-decoration-color: var(--link-decoration);
+  text-underline-offset: 0.12em;
+}
+
+.wiki-preview-list span {
+  color: var(--text-2);
+}
+
+.wiki-preview-more {
+  margin-block-start: var(--space-2);
+}
+
+.directory-category-list {
+  margin-block-end: var(--space-8);
+}
+
+.directory-category-list ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border-block-start: 1px solid var(--line-strong);
+  list-style: none;
+}
+
+.directory-category-list li {
+  border-block-end: 1px solid var(--line-strong);
+}
+
+.directory-category-list li:nth-child(odd) {
+  padding-inline-end: var(--space-2);
+}
+
+.directory-category-list li:nth-child(even) {
+  padding-inline-start: var(--space-2);
+}
+
+.directory-category-list a {
+  display: flex;
+  min-height: var(--target-min);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-block: var(--space-1);
+  text-decoration-color: var(--link-decoration);
+}
+
+.directory-category-list small {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.directory-groups {
+  display: grid;
+  gap: var(--rhythm-section);
+}
+
+.directory-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border-block-start: 1px solid var(--line-strong);
+  border-inline-start: 1px solid var(--line-strong);
+  list-style: none;
+}
+
+.directory-list li {
+  border-inline-end: 1px solid var(--line-strong);
+  border-block-end: 1px solid var(--line-strong);
+}
+
+.directory-list a {
+  display: grid;
+  height: 100%;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  text-decoration: none;
+}
+
+.directory-list strong {
+  font-family: var(--font-display);
+  font-size: var(--type-subheading-size);
+  text-decoration: underline;
+  text-decoration-color: var(--link-decoration);
+  text-underline-offset: 0.12em;
+}
+
+.directory-list span {
+  color: var(--text-2);
+}
+
+.directory-list small {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* Wiki concept finder. Hidden in the server-rendered baseline; the shell
+   enhancement reveals it only after filtering behavior is bound. */
+.wiki-filter {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-end: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.wiki-filter[hidden],
+.directory-filter[hidden],
+.wiki-filter-empty[hidden],
+.directory-filter-empty[hidden],
+[data-wiki-group][hidden],
+[data-directory-group][hidden],
+[data-directory-item][hidden],
+[data-wiki-term][hidden] {
+  display: none;
+}
+
+.wiki-filter label {
+  font-family: var(--font-display);
+  font-size: var(--type-subheading-size);
+  font-weight: var(--weight-emphasis);
+}
+
+.wiki-filter__field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wiki-filter input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--target-min);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+  color: var(--control-fg);
+  font: inherit;
+}
+
+.wiki-filter output,
+.wiki-filter-empty,
+.directory-filter-empty {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--type-meta-size);
+}
+
+/* Adjacent resource groups (resources hub, wiki hub) need vertical
+   rhythm; the group itself carries no margin, so without this they stack flush. */
+.resource-group + .resource-group {
+  margin-block-start: var(--space-8);
+}
+
 /* ---------- Case grid / cards ---------- */
 .case-grid {
   display: grid;
@@ -1424,7 +1659,7 @@ main a {
   grid-column: 1 / -1;
 }
 
-.case-grid li:only-child .case-card {
+.case-grid li:only-child .case-card:not(.case-card--compact) {
   min-height: 16rem;
 }
 
@@ -1440,6 +1675,11 @@ main a {
   transition: transform calc(var(--motion-fast) * 2) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease);
 }
 
+.case-card--compact {
+  min-height: 0;
+  align-content: start;
+}
+
 .case-card:has(a:hover),
 .case-card:focus-within {
   transform: translateY(calc(-1 * var(--space-1)));
@@ -1452,17 +1692,16 @@ main a {
   color: var(--text-inverse);
 }
 
-.case-grid li:first-child .case-card h2,
 .case-grid li:first-child .case-card a {
   color: var(--text-inverse);
 }
 
-.case-card h2 {
+.case-card__title {
   font-size: clamp(1.75rem, 3vw, 2.75rem);
-  line-height: 1.12;
+  line-height: var(--leading-compact);
 }
 
-.case-card h2 a {
+.case-card__title a {
   text-decoration-thickness: 2px;
   text-underline-offset: 0.1em;
 }
@@ -1479,7 +1718,7 @@ main a {
   color: var(--text-3);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
 
@@ -1502,7 +1741,7 @@ main a {
 }
 
 .evidence-note__claim {
-  font-weight: 600;
+  font-weight: var(--weight-emphasis);
 }
 
 .evidence-note__sources {
@@ -1515,11 +1754,15 @@ main a {
   max-width: var(--prose-max);
   margin-block-start: var(--space-4);
   color: var(--text-2);
-  font-size: 0.9rem;
+  font-size: var(--type-small-size);
 }
 
 .byline__author {
-  font-weight: 600;
+  font-weight: var(--weight-emphasis);
+}
+
+.byline + .prose {
+  margin-block-start: var(--space-4);
 }
 
 .freshness-notice {
@@ -1527,7 +1770,7 @@ main a {
   margin-block-start: var(--space-3);
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: var(--type-auxiliary-size);
 }
 
 .related-content {
@@ -1560,7 +1803,7 @@ nav[aria-label="Breadcrumb"] ol {
   padding: 0;
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: var(--type-auxiliary-size);
   list-style: none;
 }
 
@@ -1589,9 +1832,9 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .site-footer__statement {
   max-width: 24ch;
   font-size: clamp(1.5rem, 3vw, 2.4rem);
-  font-weight: 550;
+  font-weight: var(--weight-medium);
   letter-spacing: -0.035em;
-  line-height: 1.12;
+  line-height: var(--leading-compact);
 }
 
 .site-footer__meta {
@@ -1648,7 +1891,7 @@ footer nav a {
 .proof-strip strong {
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-  font-weight: 650;
+  font-weight: var(--weight-strong);
   letter-spacing: -0.03em;
   line-height: 1.05;
 }
@@ -1656,8 +1899,8 @@ footer nav a {
 .proof-strip span {
   color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-meta);
   text-transform: uppercase;
 }
 
@@ -1727,8 +1970,8 @@ footer nav a {
 
 .entry-points strong {
   font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 650;
+  font-size: var(--type-emphasis-size);
+  font-weight: var(--weight-strong);
   letter-spacing: -0.01em;
 }
 
@@ -1803,7 +2046,7 @@ html[data-motion-ready] [data-reveal="visible"] {
     border-bottom-color: transparent;
   }
 
-  .site-header nav a[aria-current="page"] {
+  .site-header nav a[aria-current] {
     border-bottom-color: var(--nav-current-rule);
   }
 
@@ -1849,6 +2092,16 @@ html[data-motion-ready] [data-reveal="visible"] {
 }
 
 @media (max-width: 600px) {
+  .wiki-preview-list,
+  .directory-list,
+  .directory-category-list ul {
+    grid-template-columns: 1fr;
+  }
+
+  .directory-category-list li:nth-child(n) {
+    padding-inline: 0;
+  }
+
   main {
     padding: var(--space-3) var(--space-2) var(--space-8);
   }
@@ -1869,13 +2122,10 @@ html[data-motion-ready] [data-reveal="visible"] {
 
   .proof-strip,
   .case-grid,
-  .page-shell--about .prose ul,
-  .page-shell--contact .prose ol,
-  .page-shell--services .prose h2 {
+  .page-shell--contact .prose ol {
     grid-template-columns: 1fr;
   }
 
-  .page-shell--about .prose li:nth-child(odd),
   .page-shell--contact .prose li:nth-child(odd) {
     border-inline-end: 0;
   }

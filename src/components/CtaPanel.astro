@@ -1,0 +1,32 @@
+---
+import type { HTMLTag } from "astro/types";
+
+type PanelElement = "div" | "section";
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  class?: string;
+  element?: PanelElement;
+}
+
+const {
+  id,
+  eyebrow,
+  title,
+  body,
+  class: className,
+  element = "section",
+} = Astro.props;
+const Tag = element as HTMLTag;
+---
+<Tag class:list={[className, "cta-panel"]} aria-labelledby={id}>
+  <div>
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id={id}>{title}</h2>
+    <p>{body}</p>
+  </div>
+  <slot />
+</Tag>

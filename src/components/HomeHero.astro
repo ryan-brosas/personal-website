@@ -1,0 +1,30 @@
+---
+import BrandHeading from "./brand/BrandHeading.astro";
+import LoopField from "./LoopField.astro";
+
+interface Props {
+  primaryHref: string;
+  secondaryHref: string;
+}
+
+const { primaryHref, secondaryHref } = Astro.props;
+---
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__copy">
+    <BrandHeading level={1} role="h1" class="hero__title" id="hero-title">
+      Stop doing the same work <span class="brand-highlight">every week.</span>
+    </BrandHeading>
+    <p class="hero__intro">
+      If one task still needs your memory, your checks, and your rescue, it is not a system yet.
+      I help you fix that loop.
+    </p>
+    <div class="button-row hero__actions">
+      <a class="button button--primary" href={primaryHref}>Fix one stuck task</a>
+      <a class="button button--secondary" href={secondaryHref}>See a real build</a>
+    </div>
+  </div>
+
+  <figure class="hero__visual">
+    <LoopField />
+  </figure>
+</section>

@@ -492,6 +492,7 @@ describe("T3 routes and canonical helpers", () => {
       "case-studies",
       "case-studies-slug",
       "contact",
+      "directory",
       "home",
       "resources",
       "resources-slug",
@@ -500,6 +501,8 @@ describe("T3 routes and canonical helpers", () => {
       "sitemap",
       "tools",
       "tools-slug",
+      "wiki",
+      "wiki-slug",
     ]);
   });
 

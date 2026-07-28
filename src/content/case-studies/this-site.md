@@ -12,127 +12,136 @@ evidence:
 ---
 
 This is a self-project, not a client success story. There is no borrowed
-testimonial, no conversion claim, and no invented metrics. The useful story is
-simpler: what was unclear at the start, what I chose to build, what changed when
-those choices met a real browser, and what the repository can prove now.
+quote, no conversion claim, and no invented metrics. This study shows how I turned an
+unclear site plan into a clear, checked build process. It also shows what the
+repo can prove and what is still unknown.
 
 ## The starting point
 
-I needed a portfolio core that I could actually show before adding the résumé
-assistant or publishing work that still needs permission. The first version had
-pages and ideas, but the harder problem was trust. A polished page would not be
-credible if its routes drifted, draft content leaked into discovery, or a public
-claim could not be traced to evidence.
+I needed a portfolio I could show before I added the résumé assistant. I also
+had work that I could not share without consent.
 
-That made the job larger than styling a homepage and smaller than building a
-full publishing platform. The immediate goal was a dependable static site with
-a clear path for adding verified work later.
+The first site had pages and ideas. Yet a polished page was not enough. A
+founder or operator should be able to trust the way the site works. Routes
+should not drift. Draft work should not leak into search. Each public claim
+should link back to proof.
+
+I did not need a full tool for web publishing. I needed a sound static site. It
+also had to make room for checked work later.
 
 ## What had to be true
 
-I set five constraints before treating the site as ready:
+I set five rules for the build.
 
-- **The complete page must work without JavaScript.** Navigation, content,
-  discovery, and the primary next step cannot depend on hydration.
-- **Routes need one owner.** Paths, canonical URLs, navigation entries, and
-  parent links should not be retyped across pages.
-- **Publishing must fail closed.** A missing visibility decision should keep
-  content private rather than accidentally exposing it.
-- **Public claims need public-safe evidence.** Placeholder copy can describe the
-  intended service, but factual claims must resolve to something inspectable.
-- **The release output must be testable.** A successful framework build is not
-  enough if the generated files contradict the publishing rules.
+- **The full page must work without JavaScript.** The menu, text, site search
+  paths, and main next step must still work.
+- **Routes need one owner.** A route is a page path. Its path, main web address,
+  menu link, and parent link should come from one source.
+- **Publishing must fail closed.** If a page has no clear public state, the site
+  must keep it private.
+- **Public claims need safe proof.** Draft copy may state what I plan to offer.
+  A fact must point to proof that is safe to share.
+- **The final files must pass checks.** A clean Astro build is not enough when
+  the files break a publish rule.
 
-These constraints kept the project static. There was no demonstrated need for a
-server adapter, a CMS runtime, or a client application controlling the page.
+These rules kept the site static. The work did not show a need for a live
+server, a content system, or a web app that runs the page in the browser.
 
 ## What I built
 
 ### One route registry
 
-The route registry owns every public path, trailing-slash rule, navigation
-position, parent relationship, and dynamic collection pattern. Pages consume
-those decisions instead of assembling URLs locally. The same registry feeds
-breadcrumbs, expected build output, and discovery policy, so changing a route
-has one deliberate starting point.
+One route list owns each public path. It also owns the ending slash, menu order,
+parent link, and rules for pages made from a set of content.
 
-### A fail-closed publishing pipeline
+Pages use this list instead of making their own links. The same list sets page
+trails, planned build files, and which pages search tools may find. A route
+change starts in one known place.
 
-Content moves through three explicit states. `draft` creates no route. `noindex`
-can be visited but stays out of discovery. `public` can appear in navigation and
-the sitemap. Collection hubs only become discoverable when they have a public
-child, which prevents empty sections from looking finished.
+### A fail-closed publishing flow
 
-### Evidence before promotion
+Each item has one of three states.
 
-The homepage does not become publicly discoverable just because its template
-exists. Its promotion gate checks this case study, the evidence source registry,
-and the approved self-project claims. If that chain stops resolving, the home
-route falls back to `noindex`.
+- `draft` makes no page.
+- `noindex` makes a page that people can visit, but leaves it out of site search
+  lists.
+- `public` may place the page in the menu and site map.
 
-That is intentionally stricter than the current copy requires. It gives later
-case studies somewhere safe to put metrics, testimonials, and source
-permissions without turning editorial judgment into scattered conditionals.
+A group page stays out of those lists until it has a public child page. This
+keeps an empty part of the site from looking done.
 
-### A semantic shell with bounded enhancement
+### Proof before a page goes public
 
-Astro renders static HTML with semantic landmarks and plain CSS. One inline
-progressive-enhancement seam handles mobile navigation and optional scroll
-reveals. If that script or `IntersectionObserver` is unavailable, the content
-stays visible and the navigation stays usable. Reduced-motion preferences keep
-the page static.
+The home page does not go public just because its file exists. A proof gate
+checks this case study, the list of proof sources, and the approved claims about
+this project. If one link in that chain fails, the home page falls back to
+`noindex`.
 
-### Verification of the generated site
+This rule is more strict than the current copy needs. It gives later studies a
+safe place for numbers, quotes, and consent notes. Those checks stay in one
+place instead of being spread through the site.
 
-The build verifier reads the final output rather than trusting source intent. It
-checks expected routes, canonical URLs, sitemap membership, robots policy, and
-unexpected generated files. Browser checks then cover keyboard navigation,
-console errors, failed requests, responsive layouts, and reduced-motion states.
+### A clear page with small add-ons
+
+Astro makes plain HTML with named page parts and plain CSS. This gives the page
+a sound base before scripts run.
+
+One small script runs the mobile menu and scroll effects. The browser tool
+`IntersectionObserver` tells the script when an item comes into view. If the
+script or that tool does not work, the text stays in view and the menu still
+works. The page also stays still when a person asks for less motion.
+
+### Checks on the final site
+
+The build check reads the final files. It does not trust the source code alone.
+It checks planned routes, main web addresses, the site map, rules for search
+bots, and files that should not exist.
+
+Browser checks cover the keyboard, screen sizes, and low-motion settings. They
+also look for script errors and failed file requests.
 
 ## What changed during the build
 
-The architecture held, but several presentation decisions did not survive first
-contact with the actual site.
+The core plan held up, but parts of the design did not.
 
-The homepage established a stronger editorial system than the early inner
-pages. Instead of copying that markup page by page, I moved the reusable heading,
-card, workflow, and closing-action patterns into shared production components
-and the local Brand Lab.
+The home page had a stronger look than the first inner pages. I did not copy its
+code into each page. I moved shared title, card, work step, and closing link
+parts into shared site parts and the local Brand Lab.
 
-Motion exposed a compatibility problem. A CSS view-timeline reveal worked in the
-verification browser but not in the browser used to review the demo. I replaced
-it with an `IntersectionObserver` enhancement inside the existing single script,
-kept the no-JavaScript baseline visible, and aligned the entry timing with the
-brand motion rules.
+The first scroll effect used a CSS view timeline. It worked in the test browser
+but failed in the browser used for the demo. I changed it to
+`IntersectionObserver` in the same small script. The page still showed all text
+without JavaScript. I also matched the timing to the brand motion rules.
 
-The first entry layout also stopped at a narrow shell and left a large unused
-column on desktop. The final version uses the full editorial width for the title
-and summary while preserving a readable measure for the article body. The title
-was shortened from an explanatory suffix to the direct **Building This
+The first study page was too narrow on a wide screen. It left a large blank
+space. The new page gives the title and short summary more room. The body text
+stays at an easy line width. I also cut the long title down to **Building This
 Website**.
 
-Those corrections matter because they show the difference between a design that
-passes a source-level check and one that works in the review context.
+These fixes came from use in a real browser. A source check alone would not have
+found all of them.
 
 ## The result
 
-The current site produces static pages whose navigation, canonicals,
-breadcrumbs, discovery files, structured data, and publishing state derive from
-shared policy. Draft content stays unrouted. Public self-project claims resolve
-to the registered source. The generated build is checked before it is treated as
-a release.
+The site now makes static pages from shared rules. Those rules set the menu,
+main web addresses, page trails, search files, page data for search tools, and
+publish state.
 
-The outcome is not a promised traffic or conversion result. It is a portfolio
-foundation I can inspect, demonstrate, and extend without weakening the rules
-that made the first version credible.
+Draft work makes no route. Public claims about this project point to the listed
+source. The build check reads the final files before they count as a release.
+
+This does not prove more traffic or sales. It proves that I can show and test the
+steps used to publish the site. A founder or operator can see where key choices
+live, how checks fail, and which claims have proof.
 
 ## What remains unfinished
 
-Most portfolio evidence still needs to be added. There are no client outcome
-claims, approved testimonials, or fabricated case-study numbers filling those
-gaps. The résumé assistant remains a separate future service rather than being
-mixed into the static Astro application before its HTTP contract is ready.
+Most proof for the rest of the portfolio still needs to be added. There are no
+client result claims, approved client quotes, or made-up case study numbers to
+fill the gaps.
 
-That incompleteness is visible on purpose. The next useful step is not adding
-more surface area; it is publishing the next piece of work with the same clear
-claim, source, and permission trail.
+The résumé assistant is still a future service. It stays apart from the static
+Astro site until its web request rules are ready.
+
+The gaps stay in view on purpose. The next step is to add one more piece of work
+with a clear claim, source, and consent trail. More pages can wait.

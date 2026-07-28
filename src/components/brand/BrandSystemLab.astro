@@ -2,6 +2,20 @@
 import BrandHeading from "./BrandHeading.astro";
 import WorkflowRail from "../WorkflowRail.astro";
 import PageCta from "../PageCta.astro";
+import PageHeader from "../PageHeader.astro";
+import SectionHeading from "../SectionHeading.astro";
+import CollectionCard from "../CollectionCard.astro";
+import CtaPanel from "../CtaPanel.astro";
+import EntryHeader from "../EntryHeader.astro";
+import CommercialHero from "../CommercialHero.astro";
+import LoopField from "../LoopField.astro";
+import ProofStrip from "../ProofStrip.astro";
+import SignalList from "../SignalList.astro";
+import ProcessDiagram from "../ProcessDiagram.astro";
+import EntryPoints from "../EntryPoints.astro";
+import CaseFeature from "../CaseFeature.astro";
+import OutcomeColumns from "../OutcomeColumns.astro";
+import VerifiedClaims from "../VerifiedClaims.astro";
 import BrandLogo from "../../assets/brand/logo-charcoal.svg";
 import OperatorMascot from "../../assets/brand/operator-mascot.svg";
 import SystemConductor from "../../assets/brand/hero-system-conductor.svg";
@@ -27,16 +41,20 @@ const tokenGroups = (() => {
     ([, name, value]) => ({ name: `--${name}`, value: value.trim() }),
   );
   const buckets: Record<string, string[]> = {
-    Color: ["color-", "canvas", "surface", "text-", "line", "brand", "signal", "nav-", "link-", "control-", "focus-"],
-    Type: ["font-", "type-"],
-    Space: ["space-"],
-    Layout: ["content-", "measure-", "prose-", "grid-", "radius-", "canvas-grid"],
+    Color: ["color-", "canvas$", "surface", "text-", "line", "brand", "signal", "nav-", "link-", "control-", "focus-"],
+    Type: ["font-", "type-", "tracking-", "leading-", "weight-", "highlight-"],
+    Space: ["space-", "rhythm-"],
+    Layout: ["content-", "measure-", "prose-", "grid-", "radius-", "target-", "texture-", "canvas-grid"],
     Motion: ["motion-"],
   };
   return Object.entries(buckets).map(([label, prefixes]) => ({
     label,
     tokens: tokens.filter((token) =>
-      prefixes.some((prefix) => token.name.startsWith(`--${prefix}`)),
+      prefixes.some((prefix) =>
+        prefix.endsWith("$")
+          ? token.name === `--${prefix.slice(0, -1)}`
+          : token.name.startsWith(`--${prefix}`),
+      ),
     ),
   }));
 })();
@@ -120,7 +138,7 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
       <div class="brand-lab__foundation-notes">
         <article><strong>8px</strong><span>Baseline spacing rhythm</span></article>
         <article><strong>1px</strong><span>Structural border weight</span></article>
-        <article><strong>0 / 4 / 8</strong><span>Plate, control, panel radius</span></article>
+        <article><strong>0 / 2 / 4 / 8</strong><span>Plate, control, panel radius</span></article>
         <article><strong>44px</strong><span>Minimum important target</span></article>
       </div>
       <div class="brand-lab__token-flow" aria-label="Color token architecture">
@@ -220,11 +238,11 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
       </div>
       <div class="brand-lab__breakpoints">
         <article><strong>4 columns</strong><span>Compact · up to 600px</span><p>Single reading flow. Controls stack and retain 44px targets.</p></article>
-        <article><strong>8 columns</strong><span>Medium · 601–900px</span><p>Related content may pair; primary reading order remains explicit.</p></article>
-        <article><strong>16 columns</strong><span>Wide · above 900px</span><p>Editorial compositions align to shared vertical key lines.</p></article>
+        <article><strong>8 columns</strong><span>Medium · 601–820px</span><p>Related content may pair; primary reading order remains explicit.</p></article>
+        <article><strong>16 columns</strong><span>Wide · above 820px</span><p>Editorial compositions align to shared vertical key lines.</p></article>
       </div>
-      <div class="brand-lab__spacing-scale" aria-label="8 pixel spacing scale">
-        <span><i class="space-1"></i><b>8</b></span><span><i class="space-2"></i><b>16</b></span><span><i class="space-3"></i><b>24</b></span><span><i class="space-4"></i><b>32</b></span><span><i class="space-6"></i><b>48</b></span><span><i class="space-8"></i><b>64</b></span>
+      <div class="brand-lab__spacing-scale" aria-label="Fluid spacing scale on an 8 pixel rhythm">
+        <span><i class="space-1"></i><b>8px</b></span><span><i class="space-2"></i><b>12–16px</b></span><span><i class="space-3"></i><b>16–24px</b></span><span><i class="space-4"></i><b>20–32px</b></span><span><i class="space-6"></i><b>28–48px</b></span><span><i class="space-8"></i><b>36–64px</b></span>
       </div>
       <div class="brand-lab__layout-rules">
         <article><strong>Align type to padding</strong><p>Text starts on a key line, never floats ambiguously inside a region.</p></article>
@@ -436,14 +454,17 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
             <div><dt><code>BaseLayout</code></dt><dd>Document shell: head, skip link, one <code>&lt;main&gt;</code>, header, footer, nav script.</dd></div>
             <div><dt><code>CommercialLayout</code></dt><dd>Service or standard page: shell plus entity graph and breadcrumbs.</dd></div>
             <div><dt><code>CaseStudyLayout</code></dt><dd>Article page: shell plus Article graph and dynamic params.</dd></div>
+            <div><dt><code>SeoHead</code></dt><dd>Canonical metadata, robots policy, social cards, and discovery links.</dd></div>
+            <div><dt><code>SiteHeader</code> · <code>SiteFooter</code> · <code>MotionEnhancement</code></dt><dd>Shared landmarks and the shell’s single progressive-enhancement script.</dd></div>
           </dl>
         </article>
         <article>
           <h3>Content components</h3>
           <dl>
             <div><dt><code>EvidenceNote</code></dt><dd>Attaches a claim to its verified source.</dd></div>
-            <div><dt><code>Byline</code> · <code>FreshnessNotice</code></dt><dd>Authorship and review-date signals.</dd></div>
-            <div><dt><code>RelatedContent</code></dt><dd>Registry-derived onward links.</dd></div>
+            <div><dt><code>Byline</code></dt><dd>Validated single-author signal rendered on editorial entries.</dd></div>
+            <div><dt><code>FreshnessNotice</code></dt><dd>Reserved until validated dates and substantive change records exist.</dd></div>
+            <div><dt><code>RelatedContent</code></dt><dd>Reserved until relationship records can resolve to public routes.</dd></div>
             <div><dt><code>Breadcrumbs</code> · <code>JsonLd</code></dt><dd>Trail and structured data; both derive from the registry.</dd></div>
           </dl>
         </article>
@@ -460,7 +481,11 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
           <h3>Style modules</h3>
           <dl>
             <div><dt><code>.button</code></dt><dd>Variants: <code>--primary</code>, <code>--secondary</code>, <code>--poster</code>.</dd></div>
-            <div><dt><code>.page-header</code> · <code>.page-visual</code></dt><dd>Route-level editorial headers.</dd></div>
+            <div><dt><code>HomeHero</code> · <code>PageHeader</code> · <code>CommercialHero</code> · <code>EntryHeader</code></dt><dd>Shared route and editorial openings.</dd></div>
+            <div><dt><code>LoopField</code></dt><dd>The framed agent/human loop diagram used by Home and this gallery.</dd></div>
+            <div><dt><code>ProofStrip</code> · <code>VerifiedClaims</code></dt><dd>Display-only evidence patterns fed by public-safe selectors.</dd></div>
+            <div><dt><code>SignalList</code> · <code>ProcessDiagram</code> · <code>EntryPoints</code> · <code>CaseFeature</code> · <code>OutcomeColumns</code></dt><dd>Shared homepage and Brand Lab compositions.</dd></div>
+            <div><dt><code>SectionHeading</code></dt><dd>Shared split or stacked section introduction with token-owned spacing.</dd></div>
             <div><dt><code>.prose</code> · <code>.evidence-note</code></dt><dd>Reading measure and proof blocks.</dd></div>
             <div><dt><code>.case-card</code> · <code>.cta-panel</code></dt><dd>Collection tiles and closing action plates.</dd></div>
           </dl>
@@ -475,12 +500,45 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
       </div>
 
       <div class="brand-lab__specimen" data-pattern="page-header">
-        <p class="brand-lab__specimen-rule"><code>.page-header</code> · top-aligned, <code>--rhythm-block</code> above and below the copy. Headings cap at 13ch so they break deliberately.</p>
-        <header class="page-header">
-          <p class="eyebrow">The work, with the wiring exposed</p>
-          <h2>Case Studies</h2>
-          <p class="page-lead">Transparent, evidence-backed accounts of systems, trade-offs, and how the work was made.</p>
-        </header>
+        <p class="brand-lab__specimen-rule"><code>PageHeader</code> · top-aligned, <code>--rhythm-block</code> above and below the copy. Titles use <code>--measure-heading</code>; the <code>wide</code> variant changes only that measure.</p>
+        <PageHeader
+          id="brand-lab-page-header"
+          eyebrow="The work, with the wiring exposed"
+          title="Case Studies"
+          description="Transparent, evidence-backed accounts of systems, trade-offs, and how the work was made."
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="commercial-hero">
+        <p class="brand-lab__specimen-rule"><code>CommercialHero</code> · one route-title composition with explicit About, Services, and Contact visual variants. Brand Lab uses an H2 specimen.</p>
+        <CommercialHero
+          pageId="about"
+          headingLevel={2}
+          eyebrow="The operator behind the systems"
+          title="About"
+          description="The same component owns the title rhythm and the route-specific supporting visual."
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="entry-header">
+        <p class="brand-lab__specimen-rule"><code>EntryHeader</code> · the shared editorial entry opening. Production entries use an H1; Brand Lab uses an H2 specimen without changing the composition.</p>
+        <EntryHeader
+          headingLevel={2}
+          eyebrow="Case study · AI workflow systems"
+          title="Building This Website"
+          description="A clear entry opening with one title, one summary, and one shared spacing contract."
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="section-heading">
+        <p class="brand-lab__specimen-rule"><code>SectionHeading</code> · the shared section introduction. Use the split layout with supporting copy and the stacked layout for dense index groups.</p>
+        <SectionHeading
+          id="brand-lab-section-heading"
+          eyebrow="One shared rhythm"
+          title="Section titles stay aligned."
+        >
+          <p>The component owns the title measure, supporting-copy alignment, and responsive stack.</p>
+        </SectionHeading>
       </div>
 
       <div class="brand-lab__specimen" data-pattern="workflow-rail">
@@ -512,88 +570,141 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
 
       <div class="brand-lab__specimen" data-pattern="signal-list">
         <p class="brand-lab__specimen-rule"><code>.signal-list</code> · numbered editorial rows at <code>--rhythm-row</code>. Use for three to five problems or claims, never for navigation.</p>
-        <ol class="signal-list">
-          <li><span class="signal-number">01</span><strong>The brief keeps being rebuilt</strong><p>Critical context lives across messages, documents, and one person’s memory.</p></li>
-          <li><span class="signal-number">02</span><strong>Automation creates cleanup</strong><p>The happy path runs, but edge cases and review still land back on the founder.</p></li>
-        </ol>
+        <SignalList
+          items={[
+            { title: "The brief keeps being rebuilt", detail: "Critical context lives across messages, documents, and one person’s memory." },
+            { title: "Automation creates cleanup", detail: "The happy path runs, but edge cases and review still land back on the founder." },
+          ]}
+        />
       </div>
 
       <div class="brand-lab__specimen" data-pattern="loop-field">
         <p class="brand-lab__specimen-rule"><code>.loop-field</code> · two cycles and the handoff between them, drawn in this system's geometry: bordered plates and hairlines, no orbs. Stage ticks fire in sequence off <code>--motion-ambient</code>; the handoff marker drifts off <code>--motion-signal</code>. Both derive from <code>--motion-fast</code>, so decorative timing sits on the same scale as interaction timing. Every label is real text, so the figure reads with motion disabled. Wrap it in <code>.figure-frame</code>: the figure sizes to that frame with <code>@container</code>, so it stacks whenever its own column is under 30rem regardless of viewport.</p>
-        <div class="figure-frame">
-        <div class="loop-field">
-          <div class="loop-field__loop">
-            <p class="loop-field__label">Agent loop</p>
-            <ul class="loop-field__cycle">
-              <li>Context</li><li>Run</li><li>Check</li><li>Tools</li>
-              <li class="loop-field__actor">Agent</li>
-            </ul>
-          </div>
-          <div class="loop-field__bridge">
-            <span>Handoff</span>
-            <span class="loop-field__track" aria-hidden="true"><i></i></span>
-          </div>
-          <div class="loop-field__loop">
-            <p class="loop-field__label">Human loop</p>
-            <ul class="loop-field__cycle">
-              <li>Judgment</li><li>Steer</li><li>Approve</li><li>Recover</li>
-              <li class="loop-field__actor">You</li>
-            </ul>
-          </div>
-        </div>
-        </div>
+        <LoopField />
       </div>
 
       <div class="brand-lab__specimen" data-pattern="process-diagram">
         <p class="brand-lab__specimen-rule"><code>.process-diagram</code> · a sequence under a dashed rail. Charcoal marks only the last stage, so the payoff reads as the destination. The travelling marker is decorative and stops for <code>prefers-reduced-motion</code>.</p>
-        <figure class="process-diagram">
-          <div class="process-rail" aria-hidden="true"><i></i></div>
-          <ol class="process-stages">
-            <li><span>01</span><b>Trace</b><small>Follow the trigger, decisions, handoffs, and failure points as they exist today.</small></li>
-            <li><span>02</span><b>Design</b><small>Define what the system may decide and where a person stays in control.</small></li>
-            <li class="is-proven"><span>03</span><b>Prove</b><small>Run the smallest loop against real work and improve only what the result exposes.</small></li>
-          </ol>
-          <figcaption>The last stage carries the evidence.</figcaption>
-        </figure>
+        <ProcessDiagram
+          stages={[
+            { label: "Trace", detail: "Follow the trigger, decisions, handoffs, and failure points as they exist today." },
+            { label: "Design", detail: "Define what the system may decide and where a person stays in control." },
+            { label: "Prove", detail: "Run the smallest loop against real work and improve only what the result exposes.", proven: true },
+          ]}
+          caption="The last stage carries the evidence."
+        />
       </div>
 
       <div class="brand-lab__specimen" data-pattern="proof-strip">
         <p class="brand-lab__specimen-rule"><code>.proof-strip</code> · the evidence rail for a section with spare horizontal room. Add a figure by dropping a file in <code>src/content/proof/</code> with a <code>sourceId</code> registered in <code>src/data/sources.json</code>; an unbacked, internal-only, blocked, or retired entry is withheld, and an empty collection renders no strip at all.</p>
-        <ul class="proof-strip">
-          <li><span>Verified</span><strong>Route policy</strong><p>Centralized in <code>src/config/routes.ts</code>.</p></li>
-          <li><span>Verified</span><strong>Build gate</strong><p>Check, test, build, and verify run before release.</p></li>
-          <li><span>Open</span><strong>Owned media</strong><p>Awaiting an inspected workflow capture.</p></li>
-        </ul>
+        <ProofStrip
+          label="Proof strip specimen"
+          items={[
+            { label: "Verified", value: "Route policy", detail: "Centralized in src/config/routes.ts." },
+            { label: "Verified", value: "Build gate", detail: "Check, test, build, and verify run before release." },
+            { label: "Open", value: "Owned media", detail: "Awaiting an inspected workflow capture." },
+          ]}
+        />
       </div>
 
       <div class="brand-lab__specimen" data-pattern="entry-points">
         <p class="brand-lab__specimen-rule"><code>.entry-points</code> · the multi-door row. Four across on wide, two on medium. Each door is a whole link, so the label and its line share one hit target and one focus ring.</p>
-        <ul class="entry-points">
-          <li><a href="#brand-gallery"><strong>How I work</strong><span>The engagement, the method, and what you get.</span></a></li>
-          <li><a href="#brand-gallery"><strong>Case studies</strong><span>Systems built, with their evidence attached.</span></a></li>
-          <li><a href="#brand-gallery"><strong>Resources</strong><span>Readiness checks you can run yourself.</span></a></li>
-          <li><a href="#brand-gallery"><strong>About</strong><span>Who I am and how I got to this work.</span></a></li>
-        </ul>
+        <EntryPoints
+          items={[
+            { href: "#brand-gallery", title: "How I work", detail: "The engagement, the method, and what you get." },
+            { href: "#brand-gallery", title: "Case studies", detail: "Systems built, with their evidence attached." },
+            { href: "#brand-gallery", title: "Resources", detail: "Readiness checks you can run yourself." },
+            { href: "#brand-gallery", title: "About", detail: "Who I am and how I got to this work." },
+          ]}
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="dual-list">
+        <p class="brand-lab__specimen-rule"><code>OutcomeColumns</code> · paired lists with shared row rhythm. Items may carry a short explanation or stand as concise fit signals.</p>
+        <OutcomeColumns
+          columns={[
+            {
+              title: "What you get",
+              items: [
+                { title: "A clear map", detail: "The trigger, path, checks, and handoffs." },
+                { title: "A safe handoff", detail: "A system another person can inspect and run." },
+              ],
+            },
+            {
+              title: "Who it’s for",
+              items: [
+                { title: "The same work keeps coming back." },
+                { title: "The easy path works, but exceptions still need rescue." },
+              ],
+            },
+          ]}
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="homepage-claims">
+        <p class="brand-lab__specimen-rule"><code>VerifiedClaims</code> · a display-only list fed by <code>homepageVerifiedClaims()</code>. Selection and evidence resolution stay outside the component.</p>
+        <VerifiedClaims
+          label="Verified claims specimen"
+          claims={[
+            { statement: "The route inventory is derived from one registry." },
+            { statement: "The static build is checked before publication." },
+          ]}
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="case-feature">
+        <p class="brand-lab__specimen-rule"><code>CaseFeature</code> · a proof-led feature plate with one primary route, one secondary route, and an inspectable architecture map.</p>
+        <CaseFeature
+          id="brand-lab-case-feature"
+          eyebrow="Proof you can inspect"
+          title="Show the system behind the result."
+          body="The feature keeps visible copy, actions, and architecture labels in one reusable composition."
+          primaryHref="#brand-gallery"
+          primaryLabel="Read the case study"
+          secondaryHref="#brand-gallery"
+          secondaryLabel="All case studies"
+          items={[
+            { label: "Content", status: "validated" },
+            { label: "Routes", status: "canonical" },
+            { label: "Evidence", status: "fail-closed" },
+            { label: "Build", status: "verified" },
+          ]}
+        />
       </div>
 
       <div class="brand-lab__specimen" data-pattern="case-card">
-        <p class="brand-lab__specimen-rule"><code>.case-grid</code> + <code>.case-card</code> · the first card is charcoal. A lone card spans the full row instead of leaving a gap.</p>
+        <p class="brand-lab__specimen-rule"><code>.case-grid</code> + <code>CollectionCard</code> · the first card is charcoal. A lone card spans the row; the <code>compact</code> variant removes feature-card height from dense indexes.</p>
         <ul class="case-grid">
-          <li><article class="case-card"><p class="case-meta">Case study · AI workflow systems</p><h2>Building This Website</h2><p>How this site is built — a static Astro architecture with a single route registry.</p></article></li>
-          <li><article class="case-card"><p class="case-meta">Case study · Placeholder</p><h2>Second card for contrast</h2><p>Shows the paper variant that every card after the first one uses.</p></article></li>
+          <li>
+            <CollectionCard
+              href="#brand-gallery"
+              title="Building This Website"
+              description="How this site is built — a static Astro architecture with a single route registry."
+              meta="Case study · AI workflow systems"
+            />
+          </li>
+          <li>
+            <CollectionCard
+              href="#brand-gallery"
+              title="Second card for contrast"
+              description="Shows the paper variant that every card after the first one uses."
+              meta="Case study · Placeholder"
+            />
+          </li>
         </ul>
       </div>
 
       <div class="brand-lab__specimen" data-pattern="cta-panel">
         <p class="brand-lab__specimen-rule"><code>.cta-panel</code> · one closing action per page, on charcoal with the inverse grid texture. Two competing CTAs means neither is primary.</p>
-        <div class="cta-panel">
-          <div>
-            <p class="eyebrow">Start with one stubborn loop</p>
-            <h2>What keeps coming back to you?</h2>
-            <p>Bring the recurring work, the current workaround, and the point where it usually breaks.</p>
-          </div>
+        <CtaPanel
+          element="div"
+          id="brand-lab-cta-panel"
+          eyebrow="Start with one stubborn loop"
+          title="What keeps coming back to you?"
+          body="Bring the recurring work, the current workaround, and the point where it usually breaks."
+        >
           <a class="button button--primary" href="#brand-gallery">Start a conversation</a>
-        </div>
+        </CtaPanel>
       </div>
     </section>
 
@@ -607,7 +718,7 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
         <li><span>02</span><strong>Choose the layout</strong><p>Pass <code>routeId</code>, <code>title</code>, <code>description</code>, and <code>visibility</code> so canonical URLs and structured data stay derived.</p></li>
         <li><span>03</span><strong>Assemble known modules</strong><p>Use inventoried components and style modules; add new CSS only for a genuinely new responsibility.</p></li>
         <li><span>04</span><strong>Attach evidence</strong><p>Every claim, metric, or outcome needs an <code>EvidenceNote</code> source or it stays unpublished.</p></li>
-        <li><span>05</span><strong>Verify</strong><p>Run <code>npm run check &amp;&amp; npm test &amp;&amp; npm run build &amp;&amp; npm run verify</code> before calling it done.</p></li>
+        <li><span>05</span><strong>Verify</strong><p>Run <code>npm run check &amp;&amp; npm run build &amp;&amp; npm test &amp;&amp; npm run verify</code> before calling it done.</p></li>
       </ol>
       <div class="brand-lab__recipe-grid">
         <article>
@@ -618,17 +729,17 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
         <article>
           <span>Case study</span>
           <strong>Evidence-backed project</strong>
-          <p><code>CaseStudyLayout</code> + <code>.case-study-header</code> + <code>.prose</code> + <code>EvidenceNote</code> + <code>RelatedContent</code>. Canonical stays <code>/case-studies/[slug]/</code>.</p>
+          <p><code>CaseStudyLayout</code> + <code>EntryHeader</code> + <code>.prose</code> + <code>EvidenceNote</code> + <code>RelatedContent</code>. Canonical stays <code>/case-studies/[slug]/</code>.</p>
         </article>
         <article>
           <span>Resource</span>
           <strong>Guide or starter</strong>
-          <p><code>BaseLayout</code> + <code>JsonLd</code> + <code>Breadcrumbs</code> + <code>.prose</code>, driven by the validated content collection.</p>
+          <p><code>BaseLayout</code> + <code>JsonLd</code> + <code>Breadcrumbs</code> + <code>EntryHeader</code> + <code>.prose</code>, driven by the validated content collection.</p>
         </article>
         <article>
           <span>Collection hub</span>
           <strong>Index of entries</strong>
-          <p><code>.page-header</code> + <code>.case-card</code> list. A hub advertises itself only when it has a public child.</p>
+          <p><code>PageHeader</code> + <code>SectionHeading</code> + <code>CollectionCard</code> list. A hub advertises itself only when it has a public child.</p>
         </article>
       </div>
       <aside class="brand-lab__recipe-guard">
@@ -660,7 +771,7 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
         <li><strong>Reflow</strong><p>No horizontal overflow at 390px; content survives the WCAG text-spacing override.</p></li>
         <li><strong>No JavaScript</strong><p>Content, navigation, and source boundaries still work with scripting off.</p></li>
         <li><strong>Evidence</strong><p>Each claim resolves to a source; unverified claims stay Open or unpublished.</p></li>
-        <li><strong>Gate</strong><p><code>npm run check &amp;&amp; npm test &amp;&amp; npm run build &amp;&amp; npm run verify</code> reports exit status zero.</p></li>
+        <li><strong>Gate</strong><p><code>npm run check &amp;&amp; npm run build &amp;&amp; npm test &amp;&amp; npm run verify</code> reports exit status zero.</p></li>
       </ol>
     </section>
   </div>
@@ -883,7 +994,7 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
   .brand-lab__governance code { overflow-wrap: anywhere; font-size: .82rem; }
   .brand-lab__governance p { color: var(--text-2); }
   .brand-lab__governance article:last-child p { color: inherit; }
-  @media (max-width: 900px) {
+  @media (max-width: 820px) {
     .brand-lab__identity-grid, .brand-lab__demo-grid, .brand-lab__pattern-grid, .brand-lab__voice-grid, .brand-lab__reading-rules, .brand-lab__spacing-proof, .brand-lab__breakpoints { grid-template-columns: 1fr; }
     .brand-lab__architecture, .brand-lab__token-flow, .brand-lab__layout-rules, .brand-lab__principles, .brand-lab__fields, .brand-lab__foundation-notes, .brand-lab__fieldset { grid-template-columns: repeat(2, 1fr); }
     .brand-lab__layout-grid { grid-template-columns: repeat(var(--grid-columns-medium), 1fr); }

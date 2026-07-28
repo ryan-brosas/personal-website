@@ -1,0 +1,21 @@
+---
+export interface SignalItem {
+  readonly title: string;
+  readonly detail: string;
+}
+
+interface Props {
+  items: readonly SignalItem[];
+}
+
+const { items } = Astro.props;
+---
+<ol class="signal-list">
+  {items.map((item, index) => (
+    <li>
+      <span class="signal-number">{String(index + 1).padStart(2, "0")}</span>
+      <strong>{item.title}</strong>
+      <p>{item.detail}</p>
+    </li>
+  ))}
+</ol>

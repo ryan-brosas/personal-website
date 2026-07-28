@@ -24,17 +24,13 @@ test("the figure sizes to its container, not the viewport", () => {
 });
 
 test("every loop field carries its container frame", () => {
-  // An element cannot query itself, so a loop field rendered without a
-  // .figure-frame ancestor silently ignores every @container rule and clips.
-  for (const file of [
-    path.join(repoRoot, "src", "pages", "index.astro"),
-    path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
-  ]) {
-    const source = fs.readFileSync(file, "utf-8");
-    const fields = (source.match(/<div class="loop-field">/g) || []).length;
-    const frames = (source.match(/<div class="figure-frame">\s*<div class="loop-field">/g) || []).length;
-    assert.equal(frames, fields, `${path.basename(file)} wraps every loop field in a figure frame`);
-  }
+  // An element cannot query itself, so LoopField owns the frame and consumers
+  // cannot accidentally render the field outside its container contract.
+  const componentPath = path.join(repoRoot, "src", "components", "LoopField.astro");
+  assert.ok(fs.existsSync(componentPath));
+  const source = fs.readFileSync(componentPath, "utf-8");
+  assert.equal((source.match(/<div class="loop-field">/g) || []).length, 1);
+  assert.equal((source.match(/<div class="figure-frame">\s*<div class="loop-field">/g) || []).length, 1);
 });
 
 test("the figure is drawn in this system's geometry, not borrowed", () => {

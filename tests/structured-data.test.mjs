@@ -7,7 +7,9 @@
 // Runs as pure Node (no Astro runtime). Imports the .ts file directly via the
 // ESM-native TypeScript resolution that Astro/Vite and the Node runner provide.
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import fs from "node:fs";
+import path from "node:path";
+import { describe, it, test } from "node:test";
 import { buildEntityGraph } from "../src/lib/structured-data.ts";
 
 const SITE = "https://ryanjosebrosas.dev";
@@ -125,4 +127,103 @@ describe("structured-data — buildEntityGraph", () => {
     assert.equal(typeOf(graph, "Person")["@id"], "https://ryanjosebrosas.dev/#person");
     assert.ok(!JSON.stringify(graph).includes("//#"), "no double-slash before the #anchor");
   });
+});
+
+
+test("built WebPage identity matches metadata and visible copy", () => {
+  const dist = path.resolve(import.meta.dirname, "..", "dist");
+  const htmlFiles = fs.readdirSync(dist, { recursive: true })
+    .filter((entry) => typeof entry === "string" && entry.endsWith(".html"));
+  const decode = (value) => value
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll(/<[^>]+>/g, " ")
+    .replaceAll(/\s+/g, " ")
+    .trim();
+  let webPages = 0;
+
+  for (const relativePath of htmlFiles) {
+    const html = fs.readFileSync(path.join(dist, relativePath), "utf-8");
+    const graphs = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .map((match) => JSON.parse(match[1]));
+    const webPage = graphs.flatMap((graph) => graph["@graph"] ?? [])
+      .find((node) => node["@type"] === "WebPage");
+    if (webPage === undefined) continue;
+    webPages += 1;
+
+    const title = decode(html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "");
+    const description = decode(
+      html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "",
+    );
+    const body = decode(html.match(/<body[^>]*>([\s\S]*?)<\/body>/)?.[1] ?? "");
+    assert.equal(webPage.name, title, `${relativePath} WebPage name matches title`);
+    assert.equal(webPage.description, description, `${relativePath} description matches metadata`);
+    assert.ok(body.includes(description), `${relativePath} description is visible copy`);
+  }
+  assert.ok(webPages > 0, "the build emits public WebPage nodes");
+});
+
+test("built Article identity matches visible headlines and bylines", () => {
+  const dist = path.resolve(import.meta.dirname, "..", "dist");
+  const htmlFiles = fs.readdirSync(dist, { recursive: true })
+    .filter((entry) => typeof entry === "string" && entry.endsWith(".html"));
+  const visibleText = (value) => value
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll(/<[^>]+>/g, " ")
+    .replaceAll(/\s+/g, " ")
+    .trim();
+  let articles = 0;
+
+  for (const relativePath of htmlFiles) {
+    const html = fs.readFileSync(path.join(dist, relativePath), "utf-8");
+    const nodes = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .flatMap((match) => JSON.parse(match[1])["@graph"] ?? []);
+    const article = nodes.find((node) => node["@type"] === "Article");
+    if (article === undefined) continue;
+    articles += 1;
+
+    const person = nodes.find((node) => node["@type"] === "Person");
+    const heading = visibleText(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "");
+    const byline = visibleText(
+      html.match(/<span class="byline__author">([\s\S]*?)<\/span>/)?.[1] ?? "",
+    );
+    const body = visibleText(html.match(/<body[^>]*>([\s\S]*?)<\/body>/)?.[1] ?? "");
+    assert.equal(article.headline, heading, `${relativePath} headline matches H1`);
+    assert.ok(body.includes(article.description), `${relativePath} description is visible`);
+    assert.equal(byline, person.name, `${relativePath} byline matches Person`);
+    assert.equal(article.author["@id"], person["@id"], `${relativePath} author resolves to Person`);
+  }
+  assert.ok(articles > 0, "the build emits public Article nodes");
+});
+
+test("built Service identity matches visible copy and provider", () => {
+  const dist = path.resolve(import.meta.dirname, "..", "dist");
+  const htmlFiles = fs.readdirSync(dist, { recursive: true })
+    .filter((entry) => typeof entry === "string" && entry.endsWith(".html"));
+  const visibleText = (value) => value
+    .replaceAll("&amp;", "&")
+    .replaceAll(/<[^>]+>/g, " ")
+    .replaceAll(/\s+/g, " ")
+    .trim();
+  let services = 0;
+
+  for (const relativePath of htmlFiles) {
+    const html = fs.readFileSync(path.join(dist, relativePath), "utf-8");
+    const nodes = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .flatMap((match) => JSON.parse(match[1])["@graph"] ?? []);
+    const service = nodes.find((node) => node["@type"] === "Service");
+    if (service === undefined) continue;
+    services += 1;
+
+    const person = nodes.find((node) => node["@type"] === "Person");
+    const heading = visibleText(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "");
+    const body = visibleText(html.match(/<body[^>]*>([\s\S]*?)<\/body>/)?.[1] ?? "");
+    assert.equal(service.name, heading, `${relativePath} service name matches H1`);
+    assert.ok(body.includes(service.description), `${relativePath} description is visible`);
+    assert.equal(service.provider["@id"], person["@id"], `${relativePath} provider resolves to Person`);
+  }
+  assert.ok(services > 0, "the build emits a public Service node");
 });

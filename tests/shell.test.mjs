@@ -332,6 +332,10 @@ describe("B3 footer and 404", () => {
       /<a[^>]+href="\/"[^>]*>\s*Return to the home page\s*<\/a>/i.test(mainMatch[1]),
       "404 main has a recovery link to / with text 'Return to the home page'",
     );
+    assert.ok(
+      /<a[^>]+href="\/resources\/"[^>]*>\s*Browse resources\s*<\/a>/i.test(mainMatch[1]),
+      "404 main offers Resources as a second recovery route",
+    );
 
     // The 404 header nav must not mark any item current (it is not a nav page).
     const headerMatch = html.match(/<header[\s\S]*?<\/header>/i);
@@ -1441,4 +1445,74 @@ test("homepage uses the hero composition and approved local typography", () => {
   assert.match(css, /@font-face\s*{[^}]*font-family:\s*["\']?Inter["\']?/);
   assert.match(css, /inter-latin[^)]*\.woff2/);
   assert.match(css, /\.hero__title/);
+});
+// Copied-production fixture: every wiki entry is noindex, so the wiki hub has
+// no public children and must itself render noindex,follow with no WebPage node
+// (INV-03), mirroring the resources/case-study hub controlled-failure contract.
+describe("wiki noindex variant (copied production)", () => {
+  let variantDist;
+  let variantCleanup;
+
+  before(() => {
+    const tempRoot = fs.mkdtempSync(path.join(repoRoot, "node_modules", ".wiki-noindex-variant-"));
+    const rel = path.relative(repoRoot, tempRoot);
+    assert.ok(
+      !path.isAbsolute(rel) && !rel.startsWith(".."),
+      `variant temp root must stay inside repo (got ${rel})`,
+    );
+    fs.cpSync(path.join(repoRoot, "src"), path.join(tempRoot, "src"), { recursive: true });
+    fs.copyFileSync(path.join(repoRoot, "astro.config.mjs"), path.join(tempRoot, "astro.config.mjs"));
+    fs.copyFileSync(path.join(repoRoot, "tsconfig.json"), path.join(tempRoot, "tsconfig.json"));
+    fs.copyFileSync(path.join(repoRoot, "package.json"), path.join(tempRoot, "package.json"));
+    const publicDir = path.join(repoRoot, "public");
+    if (fs.existsSync(publicDir)) {
+      fs.cpSync(publicDir, path.join(tempRoot, "public"), { recursive: true });
+    }
+    // Rewrite EVERY copied wiki entry to noindex (never the tracked files).
+    const wikiDir = path.join(tempRoot, "src", "content", "resources", "wiki");
+    for (const name of fs.readdirSync(wikiDir)) {
+      if (!name.endsWith(".md")) continue;
+      const entryPath = path.join(wikiDir, name);
+      const rewritten = fs
+        .readFileSync(entryPath, "utf-8")
+        .replace(/^visibility:.*$/m, "visibility: noindex");
+      fs.writeFileSync(entryPath, rewritten, "utf-8");
+    }
+    variantDist = path.join(tempRoot, "dist");
+    const result = spawnSync(astroBin, ["build", "--outDir", variantDist], {
+      cwd: tempRoot,
+      encoding: "utf-8",
+    });
+    if (result.status !== 0) {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+      assert.fail(
+        `variant build failed (status ${result.status}):\n${result.stdout}\n${result.stderr}`,
+      );
+    }
+    variantCleanup = () => fs.rmSync(tempRoot, { recursive: true, force: true });
+  });
+
+  after(() => {
+    if (variantCleanup) variantCleanup();
+  });
+
+  test("no public wiki children => hub is noindex,follow and emits no WebPage node", () => {
+    const hub = readHtml(variantDist, "/resources/wiki/");
+    assert.ok(hub, "wiki hub must still build as a recovery route");
+    assert.match(hub, /<meta\s+name="robots"\s+content="noindex,follow"/i);
+    // INV-03: a noindex page emits NO WebPage/Article node (site identity only).
+    const jsonLd = [...hub.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)]
+      .map((m) => m[1])
+      .join("\n");
+    assert.ok(!/"@type"\s*:\s*"WebPage"/i.test(jsonLd), "noindex hub must not emit a WebPage node");
+    assert.ok(!/"@type"\s*:\s*"Article"/i.test(jsonLd), "noindex hub must not emit an Article node");
+  });
+
+  test("noindex wiki entries are routable but excluded from discovery", () => {
+    const entry = readHtml(variantDist, "/resources/wiki/ai-agents/");
+    assert.ok(entry, "noindex wiki entry must still build (routable)");
+    assert.match(entry, /<meta\s+name="robots"\s+content="noindex,follow"/i);
+    const sitemap = fs.readFileSync(path.join(variantDist, "sitemap.xml"), "utf-8");
+    assert.ok(!sitemap.includes(`${SITE}/resources/wiki/`), "noindex wiki routes are absent from the sitemap");
+  });
 });

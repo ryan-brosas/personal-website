@@ -142,6 +142,22 @@ describe("ROUTE_REGISTRY derived helpers", () => {
     assert.equal(ROUTE_REGISTRY.parentFor("resources-slug")?.id, "resources");
   });
 
+  test("Wiki pages own a nested Resources hub and entry pattern", () => {
+    assert.equal(ROUTE_REGISTRY.pathFor("wiki"), "/resources/wiki/");
+    assert.equal(
+      ROUTE_REGISTRY.pathFor("wiki-slug", { slug: "ai-agents" }),
+      "/resources/wiki/ai-agents/",
+    );
+    assert.equal(ROUTE_REGISTRY.parentFor("wiki")?.id, "resources");
+    assert.equal(ROUTE_REGISTRY.parentFor("wiki-slug")?.id, "wiki");
+    assert.deepEqual(
+      ROUTE_REGISTRY
+        .breadcrumbsFor("wiki-slug", { slug: "ai-agents" }, "AI agents")
+        .map((crumb) => crumb.path),
+      ["/resources/", "/resources/wiki/", "/resources/wiki/ai-agents/"],
+    );
+  });
+
   test("Tools own a nested Resources hub and entry pattern", () => {
     assert.equal(ROUTE_REGISTRY.pathFor("tools"), "/resources/tools/");
     assert.equal(
@@ -226,7 +242,9 @@ describe("ROUTE_REGISTRY derived helpers", () => {
       "/case-studies/",
       "/contact/",
       "/resources/",
+      "/resources/directory/",
       "/resources/tools/",
+      "/resources/wiki/",
       "/services/",
     ]);
   });

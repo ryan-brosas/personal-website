@@ -4,7 +4,11 @@ import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import JsonLd from "../../components/JsonLd.astro";
 import WorkflowRail from "../../components/WorkflowRail.astro";
 import PageCta from "../../components/PageCta.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import CollectionCard from "../../components/CollectionCard.astro";
+import SectionHeading from "../../components/SectionHeading.astro";
 import { ROUTE_REGISTRY } from "../../config/routes.ts";
+import { AI_DIRECTORY } from "../../data/ai-directory.ts";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { isDiscoverable } from "../../lib/publishing.ts";
 import { buildEntityGraph } from "../../lib/structured-data.ts";
@@ -12,14 +16,19 @@ import { buildEntityGraph } from "../../lib/structured-data.ts";
 const routeId = "resources";
 const title = "Resources";
 const description =
-  "Tools, articles, guides, checklists, templates, and references for building dependable AI workflows.";
-const [resourceEntries, toolEntries] = await Promise.all([
+  "Tools and short guides for AI workflows you can trust.";
+const [resourceEntries, toolEntries, wikiCollection] = await Promise.all([
   getCollection("resources"),
   getCollection("tools"),
+  getCollection("wiki"),
 ]);
 const entries = [...resourceEntries, ...toolEntries]
   .filter((entry) => isDiscoverable(entry.data.visibility))
   .sort((a, b) => a.data.title.localeCompare(b.data.title));
+const wikiEntries = wikiCollection
+  .filter((entry) => isDiscoverable(entry.data.visibility))
+  .sort((a, b) => a.data.title.localeCompare(b.data.title));
+const wikiPreview = wikiEntries.slice(0, 6);
 const resourceSections = [
   { format: "tool", title: "Tools & Demos", eyebrow: "Try the working system" },
   { format: "article", title: "Articles", eyebrow: "Ideas and field notes" },
@@ -36,6 +45,7 @@ const resourceGroups = resourceSections
   .filter((section) => section.entries.length > 0);
 const visibility = entries.length > 0 ? "public" : "noindex";
 const contactHref = ROUTE_REGISTRY.pathFor("contact");
+const checklistHref = ROUTE_REGISTRY.pathFor("resources-slug", { slug: "ai-workflow-readiness" });
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({
   site,
@@ -52,11 +62,12 @@ const graph = buildEntityGraph({
   <Breadcrumbs routeId={routeId} />
 
   <section class="page-shell" aria-labelledby="resources-title">
-    <header class="page-header">
-      <p class="eyebrow">Useful systems, made reusable</p>
-      <h1 id="resources-title">{title}</h1>
-      <p class="page-lead">{description}</p>
-    </header>
+    <PageHeader
+      id="resources-title"
+      eyebrow="Useful systems, made reusable"
+      title={title}
+      description={description}
+    />
 
     <WorkflowRail
       label="Use the resource, then decide"
@@ -68,37 +79,77 @@ const graph = buildEntityGraph({
       caption="A useful check can tell you not to automate yet."
     />
 
+    <section class="resource-group" aria-labelledby="resources-wiki">
+      <SectionHeading
+        id="resources-wiki"
+        eyebrow="Plain-language reference"
+        title="AI workflow wiki"
+      >
+        <p>Short definitions for AI workflow ideas. Each entry links back to its source.</p>
+      </SectionHeading>
+      <ul class="wiki-preview-list">
+        {wikiPreview.map((entry) => (
+          <li>
+            <a href={ROUTE_REGISTRY.pathFor("wiki-slug", { slug: entry.data.slug })}>
+              <strong>{entry.data.title}</strong>
+              <span>{entry.data.description}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="wiki-preview-more">
+        <a href={ROUTE_REGISTRY.pathFor("wiki")}>View all {wikiEntries.length} concepts</a>
+      </p>
+    </section>
+
+    <section class="resource-group" aria-labelledby="resources-directory">
+      <SectionHeading
+        id="resources-directory"
+        eyebrow="Official starting points"
+        title="AI tools directory"
+        titleHref={ROUTE_REGISTRY.pathFor("directory")}
+      >
+        <p>Model providers, local runtimes, agent frameworks, evaluation tools, and workflow automation links.</p>
+      </SectionHeading>
+      <nav class="directory-category-list" aria-label="AI tools directory categories">
+        <ul>
+          {AI_DIRECTORY.map((category) => (
+            <li>
+              <a href={ROUTE_REGISTRY.pathFor("directory") + "#directory-" + category.id}>
+                <span>{category.title}</span>
+                <small>{category.entries.length}</small>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </section>
+
     {
       entries.length === 0 ? (
         <p class="empty-state">The first resources are being prepared.</p>
       ) : (
         resourceGroups.map((group) => (
           <section class="resource-group" aria-labelledby={`resources-${group.format}`}>
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">{group.eyebrow}</p>
-                <h2 id={`resources-${group.format}`}>{group.title}</h2>
-              </div>
-            </div>
+            <SectionHeading
+              id={`resources-${group.format}`}
+              eyebrow={group.eyebrow}
+              title={group.title}
+            />
             <ul class="case-grid">
               {group.entries.map((entry) => (
                 <li>
-                  <article class="case-card">
-                    <p class="case-meta">{entry.data.format} · {entry.data.pillar.replaceAll("-", " ")}</p>
-                    <div>
-                      <h3>
-                        <a
-                            href={ROUTE_REGISTRY.pathFor(
-                              entry.data.format === "tool" ? "tools-slug" : "resources-slug",
-                              { slug: entry.data.slug },
-                            )}
-                          >
-                          {entry.data.title}
-                        </a>
-                      </h3>
-                      <p>{entry.data.description}</p>
-                    </div>
-                  </article>
+                  <CollectionCard
+                    href={ROUTE_REGISTRY.pathFor(
+                      entry.data.format === "tool" ? "tools-slug" : "resources-slug",
+                      { slug: entry.data.slug },
+                    )}
+                    title={entry.data.title}
+                    description={entry.data.description}
+                    meta={`${entry.data.format} · ${entry.data.pillar.replaceAll("-", " ")}`}
+                    headingLevel={3}
+                    density="compact"
+                  />
                 </li>
               ))}
             </ul>
@@ -110,12 +161,12 @@ const graph = buildEntityGraph({
     <PageCta
       id="resources-next-step"
       eyebrow="Found a loop worth fixing"
-      title="Bring the result of your check."
-      body="We can trace one repeated job and decide what should stay human."
-      primaryHref={contactHref}
-      primaryLabel="Start a conversation"
-      secondaryHref={ROUTE_REGISTRY.pathFor("case-studies")}
-      secondaryLabel="See the proof first"
+      title="Check one task on your own."
+      body="Run the readiness checklist before you book a call. It shows what to fix first."
+      primaryHref={checklistHref}
+      primaryLabel="Use the checklist"
+      secondaryHref={contactHref}
+      secondaryLabel="Start a conversation"
     />
   </section>
 </BaseLayout>

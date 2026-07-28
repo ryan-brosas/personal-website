@@ -5,7 +5,7 @@ slug: llm-watcher
 visibility: noindex
 owner: ryan
 title: LLM Watcher
-description: The development home for LLM Watcher. Its inputs, checks, and outputs are not defined publicly yet.
+description: The dev home for LLM Watcher. Its inputs, checks, and outputs are not set yet.
 pillar: agent-reliability
 intents:
   - implementation

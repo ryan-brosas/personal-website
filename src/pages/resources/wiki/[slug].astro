@@ -1,0 +1,79 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import JsonLd from "../../../components/JsonLd.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageCta from "../../../components/PageCta.astro";
+import EntryHeader from "../../../components/EntryHeader.astro";
+import Byline from "../../../components/Byline.astro";
+import { ROUTE_REGISTRY } from "../../../config/routes.ts";
+import { isRoutable } from "../../../lib/publishing.ts";
+import { buildEntityGraph } from "../../../lib/structured-data.ts";
+
+export const getStaticPaths = (async () => {
+  const entries = await getCollection("wiki");
+  return entries
+    .filter((entry) => isRoutable(entry.data.visibility))
+    .map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const routeId = "wiki-slug";
+// One code-owned source directory shared by every wiki entry. Per-entry source
+// URLs are not modelled until sources actually vary across entries.
+const WIKI_SOURCE_URL = "https://www.lesswrong.com/wikitags/all";
+const params = { slug: entry.data.slug };
+const site = Astro.site?.href ?? "https://example.com";
+const graph = buildEntityGraph({
+  site,
+  page: {
+    routeId,
+    params,
+    title: entry.data.title,
+    description: entry.data.description,
+    visibility: entry.data.visibility,
+    kind: "article",
+  },
+});
+---
+<BaseLayout
+  routeId={routeId}
+  params={params}
+  title={entry.data.title}
+  description={entry.data.description}
+  noindex={entry.data.visibility === "noindex"}
+  ogType="article"
+>
+  <JsonLd graph={graph} />
+  <Breadcrumbs routeId={routeId} params={params} leafLabel={entry.data.title} />
+
+  <article class="case-study-shell">
+    <EntryHeader title={entry.data.title} description={entry.data.description} />
+    <Byline />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <section class="prose" aria-labelledby="wiki-source-title">
+      <h2 id="wiki-source-title">Source</h2>
+      <p>
+        This entry is an original summary written for this site. For the fuller
+        concept map, <a href={WIKI_SOURCE_URL} rel="external noopener">see related concepts on LessWrong</a>.
+      </p>
+    </section>
+
+    <PageCta
+      id="wiki-entry-next-step"
+      eyebrow="One term at a time"
+      title="Turn this idea into a step."
+      body="We can map one wiki term to one real task and check it before it scales."
+      primaryHref={ROUTE_REGISTRY.pathFor("contact")}
+      primaryLabel="Start a conversation"
+      secondaryHref={ROUTE_REGISTRY.pathFor("wiki")}
+      secondaryLabel="Back to the wiki"
+    />
+  </article>
+</BaseLayout>

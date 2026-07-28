@@ -1,0 +1,18 @@
+---
+type TitleMeasure = "default" | "wide";
+
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  eyebrow?: string;
+  titleMeasure?: TitleMeasure;
+}
+
+const { id, title, description, eyebrow, titleMeasure = "default" } = Astro.props;
+---
+<header class:list={["page-header", titleMeasure === "wide" && "page-header--wide-title"]}>
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <h1 id={id}>{title}</h1>
+  <p class="page-lead">{description}</p>
+</header>

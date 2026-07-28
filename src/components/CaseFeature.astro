@@ -1,0 +1,52 @@
+---
+export interface ArchitectureItem {
+  readonly label: string;
+  readonly status: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  primaryHref: string;
+  primaryLabel: string;
+  secondaryHref: string;
+  secondaryLabel: string;
+  items: readonly ArchitectureItem[];
+}
+
+const {
+  id,
+  eyebrow,
+  title,
+  body,
+  primaryHref,
+  primaryLabel,
+  secondaryHref,
+  secondaryLabel,
+  items,
+} = Astro.props;
+---
+<div class="case-feature">
+  <div class="case-feature__copy">
+    <div>
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 id={id}>{title}</h2>
+    </div>
+    <div>
+      <p>{body}</p>
+      <div class="button-row case-feature__actions">
+        <a class="button button--secondary" href={primaryHref}>{primaryLabel}</a>
+        <a href={secondaryHref}>{secondaryLabel}</a>
+      </div>
+    </div>
+  </div>
+  <div class="case-feature__visual" aria-hidden="true">
+    <div class="architecture-map">
+      {items.map((item) => (
+        <div><strong>{item.label}</strong><span>{item.status}</span></div>
+      ))}
+    </div>
+  </div>
+</div>

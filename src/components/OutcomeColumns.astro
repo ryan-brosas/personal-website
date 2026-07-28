@@ -1,0 +1,32 @@
+---
+export interface OutcomeItem {
+  readonly title: string;
+  readonly detail?: string;
+}
+
+export interface OutcomeColumn {
+  readonly title: string;
+  readonly items: readonly OutcomeItem[];
+}
+
+interface Props {
+  columns: readonly OutcomeColumn[];
+}
+
+const { columns } = Astro.props;
+---
+<div class="dual-list">
+  {columns.map((column) => (
+    <div>
+      <h3>{column.title}</h3>
+      <ul>
+        {column.items.map((item) => (
+          <li>
+            <strong>{item.title}</strong>
+            {item.detail && <p>{item.detail}</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</div>

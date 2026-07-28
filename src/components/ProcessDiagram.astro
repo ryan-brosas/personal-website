@@ -1,0 +1,27 @@
+---
+export interface ProcessStage {
+  readonly label: string;
+  readonly detail: string;
+  readonly proven?: boolean;
+}
+
+interface Props {
+  stages: readonly ProcessStage[];
+  caption: string;
+}
+
+const { stages, caption } = Astro.props;
+---
+<figure class="process-diagram">
+  <div class="process-rail" aria-hidden="true"><i></i></div>
+  <ol class="process-stages">
+    {stages.map((stage, index) => (
+      <li class:list={{ "is-proven": stage.proven }}>
+        <span>{String(index + 1).padStart(2, "0")}</span>
+        <b>{stage.label}</b>
+        <small>{stage.detail}</small>
+      </li>
+    ))}
+  </ol>
+  <figcaption>{caption}</figcaption>
+</figure>

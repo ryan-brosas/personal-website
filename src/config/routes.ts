@@ -73,6 +73,15 @@ const ROUTE_DEFINITIONS: RouteDefinition[] = [
     navOrder: 27,
   },
   {
+    id: "directory",
+    kind: "singleton",
+    path: "/resources/directory/",
+    visibility: "public",
+    gate: "resources-hub",
+    navPlacement: "none",
+    parent: "resources",
+  },
+  {
     id: "resources-slug",
     kind: "collection",
     path: "/resources/[slug]/",
@@ -101,6 +110,26 @@ const ROUTE_DEFINITIONS: RouteDefinition[] = [
     navPlacement: "none",
     collection: "tools",
     parent: "tools",
+    isDynamic: true,
+  },
+  {
+    id: "wiki",
+    kind: "hub",
+    path: "/resources/wiki/",
+    visibility: "public",
+    gate: "resources-hub",
+    navPlacement: "none",
+    parent: "resources",
+  },
+  {
+    id: "wiki-slug",
+    kind: "collection",
+    path: "/resources/wiki/[slug]/",
+    visibility: "public",
+    gate: "resources-hub",
+    navPlacement: "none",
+    collection: "wiki",
+    parent: "wiki",
     isDynamic: true,
   },
   {
@@ -164,3 +193,10 @@ export const ROOT_ROUTE_POLICY: { path: string; visibility: Visibility } = (() =
   if (!home) throw new Error("ROUTE_REGISTRY is missing the required 'home' route");
   return { path: home.path, visibility: home.visibility };
 })();
+
+export const CODE_OWNED_DISCOVERY_POLICIES: ReadonlyArray<{ path: string; visibility: Visibility }> =
+  ["home", "directory"].map((id) => {
+    const route = ROUTE_REGISTRY.byId(id);
+    if (!route) throw new Error(`ROUTE_REGISTRY is missing the required '${id}' route`);
+    return { path: route.path, visibility: route.visibility };
+  });

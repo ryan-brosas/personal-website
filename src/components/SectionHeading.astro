@@ -1,0 +1,19 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  eyebrow?: string;
+  layout?: "split" | "stacked";
+  titleHref?: string;
+}
+
+const { id, title, eyebrow, layout = "split", titleHref } = Astro.props;
+const hasDescription = Astro.slots.has("default");
+---
+<div class:list={["section-heading", `section-heading--${layout}`]}>
+  <div class="section-heading__title">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h2 id={id}>{titleHref ? <a href={titleHref}>{title}</a> : title}</h2>
+  </div>
+  {hasDescription && <div class="section-heading__description"><slot /></div>}
+</div>

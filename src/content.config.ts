@@ -8,6 +8,7 @@ import {
   CaseStudyRecordSchema,
   EditorialResourceRecordSchema,
   ToolRecordSchema,
+  WikiRecordSchema,
   ProofPointRecordSchema,
 } from "./lib/content-schemas.ts";
 
@@ -32,7 +33,7 @@ const caseStudies = defineCollection({
 
 const resources = defineCollection({
   loader: glob({
-    pattern: ["**/*.md", "!tools/**/*.md"],
+    pattern: ["**/*.md", "!tools/**/*.md", "!wiki/**/*.md"],
     base: "./src/content/resources",
   }),
   schema: EditorialResourceRecordSchema,
@@ -41,6 +42,11 @@ const resources = defineCollection({
 const tools = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/resources/tools" }),
   schema: ToolRecordSchema,
+});
+
+const wiki = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/resources/wiki" }),
+  schema: WikiRecordSchema,
 });
 
 // Homepage evidence rail. Adding a figure means adding a file here; it only
@@ -60,6 +66,7 @@ export const collections = {
   "case-studies": caseStudies,
   resources,
   tools,
+  wiki,
   proof,
   settings,
 };

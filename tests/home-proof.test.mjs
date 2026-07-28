@@ -227,9 +227,15 @@ describe("T16/F1 — rendered homepage facts are reconciled with the validated s
     .join("---");
 
   test("verified facts render through homepageVerifiedClaims()", () => {
+    const component = readFileSync(
+      new URL("../src/components/VerifiedClaims.astro", import.meta.url),
+      "utf-8",
+    );
     assert.match(pageSource, /const claims = homepageVerifiedClaims\(\)/);
-    assert.match(renderedBody, /claims\.map\(\(claim\) =>/);
-    assert.match(renderedBody, /\{claim\.statement\}/);
+    assert.match(pageSource, /import VerifiedClaims/);
+    assert.match(renderedBody, /<VerifiedClaims claims=\{claims\}/);
+    assert.match(component, /claims\.map\(\(claim\) =>/);
+    assert.match(component, /\{claim\.statement\}/);
   });
 
   test("each rendered fact is a validated SELF_PROJECT_CLAIMS statement", () => {

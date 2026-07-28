@@ -14,9 +14,17 @@ test("GitHub verifies pull requests and main before deployment", () => {
   assert.match(workflow, /permissions:\s*\n\s+contents:\s+read/);
   assert.match(workflow, /actions\/checkout@v4/);
   assert.match(workflow, /actions\/setup-node@v4/);
-  for (const command of ["npm ci", "npm run check", "npm test", "npm run build", "npm run verify"]) {
-    assert.ok(workflow.includes(`run: ${command}`), `CI runs ${command}`);
-  }
+  const commands = ["npm ci", "npm run check", "npm run build", "npm test", "npm run verify"];
+  const positions = commands.map((command) => {
+    const position = workflow.indexOf(`run: ${command}`);
+    assert.ok(position >= 0, `CI runs ${command}`);
+    return position;
+  });
+  assert.deepEqual(
+    positions,
+    positions.toSorted((a, b) => a - b),
+    "CI builds before suites that inspect dist/",
+  );
 });
 
 test("verified main builds deploy atomically to the production VPS", () => {

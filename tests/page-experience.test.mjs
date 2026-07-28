@@ -41,10 +41,324 @@ test("every public non-home HTML route closes with a clear next step", () => {
   }
 });
 
+test("resource discovery pages lead with a useful low-commitment action", () => {
+  for (const route of ["/resources/", "/resources/tools/", "/resources/wiki/"]) {
+    const html = readRoute(route);
+    const cta = html.slice(html.indexOf('class="page-cta cta-panel"'));
+    assert.match(
+      cta,
+      /href="\/resources\/ai-workflow-readiness\/"[^>]*>Use the checklist<\/a>/,
+      route + " leads to the readiness checklist",
+    );
+  }
+});
+
+test("resource groups keep descriptions close and adjacent groups separated", () => {
+  const page = fs.readFileSync(
+    path.join(repoRoot, "src", "pages", "resources", "index.astro"),
+    "utf-8",
+  );
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.match(
+    page,
+    /<section class="resource-group" aria-labelledby="resources-wiki">[\s\S]*?<SectionHeading[\s\S]*?id="resources-wiki"[\s\S]*?<p>Short definitions[\s\S]*?<ul class="wiki-preview-list">[\s\S]*?View all \{wikiEntries\.length\} concepts[\s\S]*?<\/section>/,
+  );
+  assert.doesNotMatch(
+    page,
+    /aria-labelledby="resources-wiki"[\s\S]{0,500}<p class="page-lead">/,
+  );
+  assert.match(
+    css,
+    /\.resource-group \+ \.resource-group\s*\{[^}]*margin-block-start:\s*var\(--space-8\)/s,
+  );
+});
+
+test("homepage lists and process patterns share their Brand Lab components", () => {
+  const patterns = [
+    ["SignalList", "signal-list"],
+    ["ProcessDiagram", "process-diagram"],
+    ["EntryPoints", "entry-points"],
+  ];
+  const home = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
+  const lab = fs.readFileSync(
+    path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
+    "utf-8",
+  );
+
+  for (const [componentName, className] of patterns) {
+    const componentPath = path.join(repoRoot, "src", "components", `${componentName}.astro`);
+    assert.ok(fs.existsSync(componentPath), `${componentName} owns its pattern markup`);
+    const component = fs.readFileSync(componentPath, "utf-8");
+    assert.match(component, new RegExp(`class="${className}"`));
+    assert.match(home, new RegExp(`import ${componentName}`));
+    assert.match(home, new RegExp(`<${componentName}`));
+    assert.match(lab, new RegExp(`import ${componentName}`));
+    assert.match(lab, new RegExp(`<${componentName}`));
+    assert.doesNotMatch(home, new RegExp(`<(?:ol|ul|figure) class="${className}"`));
+    assert.doesNotMatch(lab, new RegExp(`<(?:ol|ul|figure) class="${className}"`));
+  }
+});
+
+test("the homepage outcome columns are a shared Brand Lab composition", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "OutcomeColumns.astro");
+  assert.ok(fs.existsSync(componentPath), "OutcomeColumns owns the two-column list");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /class="dual-list"/);
+
+  const home = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
+  assert.match(home, /import OutcomeColumns/);
+  assert.match(home, /<OutcomeColumns/);
+  assert.doesNotMatch(home, /<div class="dual-list">/);
+
+  const lab = fs.readFileSync(
+    path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
+    "utf-8",
+  );
+  assert.match(lab, /data-pattern="dual-list"/);
+  assert.match(lab, /<OutcomeColumns/);
+});
+
+test("the homepage case feature is a shared Brand Lab composition", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "CaseFeature.astro");
+  assert.ok(fs.existsSync(componentPath), "CaseFeature owns the proof feature composition");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /class="case-feature"/);
+  assert.match(component, /class="architecture-map"/);
+
+  const home = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
+  assert.match(home, /import CaseFeature/);
+  assert.match(home, /<CaseFeature/);
+  assert.doesNotMatch(home, /<div class="case-feature">/);
+
+  const lab = fs.readFileSync(
+    path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
+    "utf-8",
+  );
+  assert.match(lab, /data-pattern="case-feature"/);
+  assert.match(lab, /<CaseFeature/);
+});
+
+test("the homepage delegates its hero and loop diagram to shared components", () => {
+  const heroPath = path.join(repoRoot, "src", "components", "HomeHero.astro");
+  const loopPath = path.join(repoRoot, "src", "components", "LoopField.astro");
+  assert.ok(fs.existsSync(heroPath), "HomeHero owns the homepage opening");
+  assert.ok(fs.existsSync(loopPath), "LoopField owns the two-loop diagram");
+
+  const hero = fs.readFileSync(heroPath, "utf-8");
+  const loop = fs.readFileSync(loopPath, "utf-8");
+  assert.match(hero, /class="hero"/);
+  assert.match(hero, /<LoopField/);
+  assert.match(loop, /<div class="figure-frame">\s*<div class="loop-field">/);
+
+  const home = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
+  assert.match(home, /import HomeHero/);
+  assert.match(home, /<HomeHero/);
+  assert.doesNotMatch(home, /<section class="hero"|<div class="loop-field">/);
+
+  const lab = fs.readFileSync(
+    path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
+    "utf-8",
+  );
+  assert.match(lab, /import LoopField/);
+  assert.match(lab, /<LoopField/);
+  assert.doesNotMatch(lab, /<div class="loop-field">/);
+});
+
+test("commercial pages delegate their cohesive hero to one component", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "CommercialHero.astro");
+  assert.ok(fs.existsSync(componentPath), "CommercialHero owns the route-specific visual composition");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /class="page-header commercial-hero"/);
+  for (const variant of ["about", "services", "contact"]) {
+    assert.match(component, new RegExp(`page-visual--${variant}`));
+  }
+
+  const route = fs.readFileSync(path.join(repoRoot, "src", "pages", "[page].astro"), "utf-8");
+  assert.match(route, /import CommercialHero/);
+  assert.match(route, /<CommercialHero/);
+  assert.doesNotMatch(route, /<header class="page-header commercial-hero">/);
+  assert.doesNotMatch(route, /HeroOperator|HeroSystemMap/);
+});
+
+test("editorial entries use one shared header composition", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "EntryHeader.astro");
+  assert.ok(fs.existsSync(componentPath), "EntryHeader owns the repeated entry heading markup");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /class="case-study-header"/);
+  assert.match(component, /class="case-study-lead"/);
+  assert.match(component, /headingLevel/);
+
+  for (const relativePath of [
+    "src/pages/case-studies/[slug].astro",
+    "src/pages/resources/[slug].astro",
+    "src/pages/resources/tools/[slug].astro",
+    "src/pages/resources/wiki/[slug].astro",
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    assert.match(source, /import EntryHeader/);
+    assert.match(source, /<EntryHeader/);
+    assert.doesNotMatch(source, /<header class="case-study-header">/);
+  }
+});
+
+test("editorial entries render the validated site-author byline", () => {
+  for (const relativePath of [
+    "src/pages/case-studies/[slug].astro",
+    "src/pages/resources/[slug].astro",
+    "src/pages/resources/tools/[slug].astro",
+    "src/pages/resources/wiki/[slug].astro",
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    assert.match(source, /import Byline/);
+    assert.match(source, /<EntryHeader[\s\S]*?<Byline \/>/);
+  }
+});
+
+test("first prose headings do not add phantom section spacing", () => {
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.match(
+    css,
+    /\.prose > \* \+ h2,\s*\.prose > \* \+ h3\s*\{[^}]*margin-block-start:\s*var\(--space-8\)/s,
+  );
+  assert.doesNotMatch(css, /\.prose h2,\s*\.prose h3\s*\{[^}]*margin-block-start/s);
+});
+
+test("entry bylines keep a shared gap before prose", () => {
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.match(
+    css,
+    /\.byline \+ \.prose\s*\{[^}]*margin-block-start:\s*var\(--space-4\)/s,
+  );
+});
+
+test("page headers use one shared route-title composition", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "PageHeader.astro");
+  assert.ok(fs.existsSync(componentPath), "PageHeader owns the repeated route-title composition");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /class:list=\{\["page-header"/);
+  assert.match(component, /<h1 id=\{id\}>\{title\}<\/h1>/);
+  assert.match(component, /class="page-lead"/);
+
+  for (const relativePath of [
+    "src/pages/404.astro",
+    "src/pages/case-studies/index.astro",
+    "src/pages/resources/index.astro",
+    "src/pages/resources/tools/index.astro",
+    "src/pages/resources/wiki/index.astro",
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    assert.match(source, /import PageHeader/);
+    assert.match(source, /<PageHeader/);
+    assert.doesNotMatch(source, /<header class="page-header">/);
+  }
+});
+
+test("section headings use one shared composition", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "SectionHeading.astro");
+  assert.ok(fs.existsSync(componentPath), "SectionHeading owns the repeated heading composition");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /class:list=\{\["section-heading"/);
+  assert.match(component, /<h2 id=\{id\}>\{titleHref \? <a href=\{titleHref\}>\{title\}<\/a> : title\}<\/h2>/);
+
+  for (const relativePath of [
+    "src/pages/index.astro",
+    "src/pages/resources/index.astro",
+    "src/pages/resources/wiki/index.astro",
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    assert.match(source, /import SectionHeading/);
+    assert.match(source, /<SectionHeading/);
+    assert.doesNotMatch(source, /<div class="section-heading">/);
+  }
+});
+
+test("CTA panels share one base composition", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "CtaPanel.astro");
+  assert.ok(fs.existsSync(componentPath), "CtaPanel owns the repeated panel markup");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /"cta-panel"/);
+  assert.match(component, /aria-labelledby=\{id\}/);
+
+  for (const relativePath of [
+    "src/components/PageCta.astro",
+    "src/components/brand/BrandSystemLab.astro",
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    assert.match(source, /import CtaPanel/);
+    assert.match(source, /<CtaPanel/);
+    assert.doesNotMatch(source, /<(?:div|section) class="[^"]*cta-panel/);
+  }
+
+  const homepage = fs.readFileSync(path.join(repoRoot, "src/pages/index.astro"), "utf-8");
+  assert.match(homepage, /import PageCta/);
+  assert.match(homepage, /<PageCta/);
+  assert.doesNotMatch(homepage, /import CtaPanel|<CtaPanel/);
+});
+
+test("secondary buttons remain readable when inverted panels use a light hover surface", () => {
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.match(css, /\.page-cta \.button--secondary:hover\s*\{[^}]*color:\s*var\(--text-1\)[^}]*border-color:\s*var\(--text-1\)/s);
+  assert.match(css, /\.case-feature__copy \.button--secondary:hover\s*\{[^}]*color:\s*var\(--text-1\)[^}]*border-color:\s*var\(--text-1\)/s);
+});
+
+test("collection cards share one semantic-level-independent component", () => {
+  const componentPath = path.join(repoRoot, "src", "components", "CollectionCard.astro");
+  assert.ok(fs.existsSync(componentPath), "CollectionCard owns collection article markup");
+  const component = fs.readFileSync(componentPath, "utf-8");
+  assert.match(component, /class:list=\{\["case-card"/);
+  assert.match(component, /class="case-card__title"/);
+  assert.match(component, /headingLevel/);
+
+  for (const relativePath of [
+    "src/pages/case-studies/index.astro",
+    "src/pages/resources/index.astro",
+    "src/pages/resources/tools/index.astro",
+    "src/pages/resources/wiki/index.astro",
+  ]) {
+    const source = fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    assert.match(source, /import CollectionCard/);
+    assert.match(source, /<CollectionCard/);
+    assert.doesNotMatch(source, /<article class="case-card">/);
+  }
+
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.match(css, /\.case-card__title\s*\{/);
+  assert.doesNotMatch(css, /\.case-card h2\s*\{/);
+});
+
+test("collection hubs choose explicit compact card density", () => {
+  const header = fs.readFileSync(path.join(repoRoot, "src", "components", "PageHeader.astro"), "utf-8");
+  const card = fs.readFileSync(path.join(repoRoot, "src", "components", "CollectionCard.astro"), "utf-8");
+  const wiki = fs.readFileSync(path.join(repoRoot, "src", "pages", "resources", "wiki", "index.astro"), "utf-8");
+  const tools = fs.readFileSync(path.join(repoRoot, "src", "pages", "resources", "tools", "index.astro"), "utf-8");
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+
+  assert.match(header, /titleMeasure/);
+  assert.match(header, /page-header--wide-title/);
+  assert.match(card, /density/);
+  assert.match(card, /case-card--compact/);
+  assert.match(wiki, /titleMeasure="wide"/);
+  assert.match(wiki, /density="compact"/);
+  assert.match(tools, /density="compact"/);
+  for (const relativePath of [
+    "src/pages/case-studies/index.astro",
+    "src/pages/resources/index.astro",
+  ]) {
+    const hub = fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    assert.match(hub, /density="compact"/, `${relativePath} avoids placeholder feature height`);
+  }
+  assert.ok(css.indexOf(".case-card--compact {") > css.indexOf(".case-card {"), "compact density wins the cascade");
+  assert.match(css, /\.case-grid li:only-child \.case-card:not\(\.case-card--compact\)/);
+  assert.doesNotMatch(wiki, /page-shell--wiki/);
+  assert.doesNotMatch(css, /\.page-shell--wiki/);
+  assert.match(css, /\.page-header--wide-title h1\s*\{[^}]*max-width:\s*none/s);
+  assert.match(css, /\.case-card--compact\s*\{[^}]*min-height:\s*0/s);
+});
+
 test("collection hubs use the Brand Lab card structure", () => {
   for (const route of ["/case-studies/", "/resources/"]) {
     const html = readRoute(route);
-    assert.match(html, /<li>\s*<article class="case-card">/);
+    assert.match(html, /<li>\s*<article class="case-card case-card--compact">/);
     assert.doesNotMatch(html, /<li class="case-card">/);
   }
 });
@@ -54,8 +368,20 @@ test("the Brand Lab owns the shared workflow and closing CTA patterns", () => {
     path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
     "utf-8",
   );
+  assert.match(lab, /data-pattern="page-header"/);
+  assert.match(lab, /<PageHeader/);
+  assert.match(lab, /data-pattern="commercial-hero"/);
+  assert.match(lab, /<CommercialHero/);
+  assert.match(lab, /data-pattern="entry-header"/);
+  assert.match(lab, /<EntryHeader/);
+  assert.match(lab, /data-pattern="loop-field"/);
+  assert.match(lab, /<LoopField/);
   assert.match(lab, /data-pattern="workflow-rail"/);
   assert.match(lab, /<WorkflowRail/);
+  assert.match(lab, /data-pattern="case-card"/);
+  assert.match(lab, /<CollectionCard/);
+  assert.match(lab, /data-pattern="cta-panel"/);
+  assert.match(lab, /<CtaPanel/);
   assert.match(lab, /data-pattern="page-cta"/);
   assert.match(lab, /<PageCta/);
 });
@@ -81,15 +407,24 @@ test("the workflow rail is a static ordered sequence, not fake live progress", (
 });
 
 test("page motion progressively enhances scrolling and interaction", () => {
-  const component = fs.readFileSync(
+  const header = fs.readFileSync(
     path.join(repoRoot, "src", "components", "SiteHeader.astro"),
     "utf-8",
   );
+  const component = fs.readFileSync(
+    path.join(repoRoot, "src", "components", "MotionEnhancement.astro"),
+    "utf-8",
+  );
   const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.match(header, /import MotionEnhancement/);
+  assert.match(header, /<MotionEnhancement/);
+  assert.doesNotMatch(header, /<script/);
   assert.match(component, /data-nav-enhancement/);
   assert.match(component, /IntersectionObserver/);
   assert.match(component, /prefers-reduced-motion:\s*reduce/);
   assert.match(component, /data-motion-ready/);
+  assert.match(component, /DOMContentLoaded/);
+  assert.match(component, /enhancePage/);
   assert.match(css, /--motion-enter:\s*200ms/);
   assert.match(css, /--motion-enter-ease:\s*cubic-bezier\(0\.23, 1, 0\.32, 1\)/);
   assert.match(css, /html\[data-motion-ready\][^}]*data-reveal="pending"[^}]*opacity:/s);
@@ -125,6 +460,46 @@ test("the self-project case study tells a challenge-to-result story without inve
   }
   assert.match(caseStudy, /self-project, not a client success story/i);
   assert.match(caseStudy, /no invented metrics/i);
+});
+
+test("display headings use a readable shared measure without empty grid tracks", () => {
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.doesNotMatch(
+    css,
+    /\.page-shell--services \.prose h2[^{]*\{[^}]*grid-template-columns/s,
+    "services prose heading carries no grid declaration (base or responsive)",
+  );
+  assert.match(css, /--measure-heading:\s*18ch/);
+  assert.match(css, /\.section-heading h2 \{[^}]*max-width:\s*var\(--measure-heading\)/s);
+  assert.match(css, /\.cta-panel h2 \{[^}]*max-width:\s*var\(--measure-heading\)/s);
+  assert.match(css, /\.page-header h1 \{[^}]*max-width:\s*var\(--measure-heading\)/s);
+  assert.doesNotMatch(
+    css,
+    /\.page-header--wide-title h1\s*\{[^}]*(?:font-size|line-height)/s,
+    "the wide-title variant changes measure without changing the shared H1 scale",
+  );
+});
+
+test("the 404 recovery actions use the shared button spacing", () => {
+  const page = fs.readFileSync(path.join(repoRoot, "src", "pages", "404.astro"), "utf-8");
+  assert.match(
+    page,
+    /<div class="button-row">[\s\S]*?Return to the home page[\s\S]*?Browse resources[\s\S]*?<\/div>/,
+  );
+});
+
+test("commercial route modifiers target structures that current content actually renders", () => {
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  const about = fs.readFileSync(path.join(repoRoot, "src", "content", "pages", "about.md"), "utf-8");
+  const contact = fs.readFileSync(path.join(repoRoot, "src", "content", "pages", "contact.md"), "utf-8");
+  const services = fs.readFileSync(path.join(repoRoot, "src", "content", "pages", "services.md"), "utf-8");
+
+  assert.doesNotMatch(about, /^[-*] |^\d+\. /m);
+  assert.doesNotMatch(css, /\.page-shell--about \.prose (?:ul|li)/);
+  assert.match(contact, /^1\. /m);
+  assert.match(css, /\.page-shell--contact \.prose ol/);
+  assert.match(services, /^## /m);
+  assert.match(css, /\.page-shell--services \.prose h2/);
 });
 
 test("page patterns contain no stale wrappers or unused selector contracts", () => {

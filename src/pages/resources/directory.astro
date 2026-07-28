@@ -1,0 +1,78 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import JsonLd from "../../components/JsonLd.astro";
+import PageCta from "../../components/PageCta.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import SectionHeading from "../../components/SectionHeading.astro";
+import { ROUTE_REGISTRY } from "../../config/routes.ts";
+import { AI_DIRECTORY } from "../../data/ai-directory.ts";
+import { buildEntityGraph } from "../../lib/structured-data.ts";
+
+const routeId = "directory";
+const title = "AI tools directory";
+const description =
+  "Official starting points for model providers, local runtimes, agent frameworks, evaluations, and workflow automation.";
+const site = Astro.site?.href ?? "https://example.com";
+const directoryEntryCount = AI_DIRECTORY.reduce((total, category) => total + category.entries.length, 0);
+const graph = buildEntityGraph({
+  site,
+  page: { routeId, title, description, visibility: "public" },
+});
+---
+<BaseLayout routeId={routeId} title={title} description={description}>
+  <JsonLd graph={graph} />
+  <Breadcrumbs routeId={routeId} />
+
+  <section class="page-shell directory-page" aria-labelledby="directory-title">
+    <PageHeader
+      id="directory-title"
+      eyebrow="Official links, grouped by role"
+      title={title}
+      description={description}
+      titleMeasure="wide"
+    />
+
+    <form class="wiki-filter directory-filter" data-directory-filter role="search" hidden>
+      <label for="directory-search">Find a tool or provider</label>
+      <div class="wiki-filter__field">
+        <input id="directory-search" type="search" placeholder="Search names, roles, or domains" autocomplete="off" />
+        <output for="directory-search" data-directory-filter-count aria-live="polite">{directoryEntryCount} links</output>
+      </div>
+    </form>
+
+    <div class="directory-groups">
+      {AI_DIRECTORY.map((category) => (
+        <section class="directory-group" aria-labelledby={`directory-${category.id}`} data-directory-group={category.id}>
+          <SectionHeading id={`directory-${category.id}`} title={category.title} layout="stacked">
+            <p>{category.description}</p>
+          </SectionHeading>
+          <ul class="directory-list">
+            {category.entries.map((entry) => (
+              <li data-directory-item data-directory-search={`${category.title} ${entry.name} ${entry.description} ${new URL(entry.url).hostname}`.toLowerCase()}>
+                <a href={entry.url} rel="external">
+                  <strong>{entry.name}</strong>
+                  <span>{entry.description}</span>
+                  <small>{new URL(entry.url).hostname.replace(/^www\./, "")}</small>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <p class="directory-filter-empty" data-directory-filter-empty hidden>No directory links match that search.</p>
+
+    <PageCta
+      id="directory-next-step"
+      eyebrow="Choose by workflow, not logo"
+      title="Start with the job and its checks."
+      body="Use the directory to inspect official documentation after you know the trigger, context, review point, and recovery path."
+      primaryHref={ROUTE_REGISTRY.pathFor("resources-slug", { slug: "ai-workflow-readiness" })}
+      primaryLabel="Use the readiness checklist"
+      secondaryHref={ROUTE_REGISTRY.pathFor("resources")}
+      secondaryLabel="Back to resources"
+    />
+  </section>
+</BaseLayout>

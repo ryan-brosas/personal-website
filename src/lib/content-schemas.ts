@@ -273,6 +273,22 @@ export const ToolRecordSchema = ResourceRecordSchema.refine(
 );
 export type ToolRecord = z.infer<typeof ToolRecordSchema>;
 
+// §wiki — plain-language concept index nested under Resources. Each entry is an
+// ORIGINAL grade-6 summary written for this site; it links back to the external
+// source directory (sourceUrl) rather than copying upstream prose. The body is
+// the readable rewrite; frontmatter owns the slug, group, pillar, and source.
+// §wiki — plain-language concept index nested under Resources. The site-wide
+// `pillar` is the sole grouping key (no parallel wiki-only taxonomy). Each entry
+// is an ORIGINAL grade-6 summary; the shared external source directory is a
+// code-owned constant on the entry page, not a per-record field.
+export const WikiRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchema)
+  .merge(TopicFieldsSchema)
+  .extend({
+    kind: z.literal("wiki"),
+    slug: z.string().min(1),
+  });
+export type WikiRecord = z.infer<typeof WikiRecordSchema>;
+
 // A homepage evidence-rail figure. sourceId is required, so a proof point with
 // no backing source cannot be authored at all; lib/proof-points.ts additionally
 // withholds any entry whose source is unregistered or internal-only.

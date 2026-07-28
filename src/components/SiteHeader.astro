@@ -15,14 +15,18 @@ import { ROOT_ROUTE } from "../lib/routes.ts";
 import { resolveSiteNavigation } from "../lib/navigation.ts";
 import Logo from "../assets/brand/logo-charcoal.svg";
 import iconSprite from "../assets/brand/icons.svg?raw";
+import MotionEnhancement from "./MotionEnhancement.astro";
 
 const { siteTitle, primary: navItems } = await resolveSiteNavigation();
 
 // The nav's Home item owns the root current-page state, so the brand lockup stays
 // a plain link: two elements marking the same current page would be ambiguous.
 const current = Astro.url.pathname;
-const isCurrent = (href: string) =>
-  href === ROOT_ROUTE ? current === "/" : current === href;
+const currentState = (href: string): "page" | "location" | undefined => {
+  if (current === href) return "page";
+  if (href !== ROOT_ROUTE && current.startsWith(href)) return "location";
+  return undefined;
+};
 ---
 <header class="site-header">
   <a class="brand" href={ROOT_ROUTE}>
@@ -49,7 +53,7 @@ const isCurrent = (href: string) =>
             <a
               href={item.href}
               class:list={{ "nav-cta": item.emphasis }}
-              aria-current={isCurrent(item.href) ? "page" : undefined}
+              aria-current={currentState(item.href)}
             >
               {item.label}
             </a>
@@ -59,77 +63,5 @@ const isCurrent = (href: string) =>
     </ul>
   </nav>
   <div class="icon-sprite" aria-hidden="true" set:html={iconSprite} />
-  <script is:inline data-nav-enhancement>
-    (function () {
-      try {
-        var header = document.querySelector(".site-header");
-        var button = header && header.querySelector(".nav-toggle");
-        var nav = document.getElementById("primary-navigation");
-        if (!header || !button || !nav) return;
-        var setOpen = function (open) {
-          header.setAttribute("data-open", open ? "true" : "false");
-          button.setAttribute("aria-expanded", open ? "true" : "false");
-        };
-        button.addEventListener("click", function () {
-          var isOpen = header.getAttribute("data-open") === "true";
-          setOpen(!isOpen);
-        });
-        nav.addEventListener("click", function (e) {
-          if (e.target.closest("a")) setOpen(false);
-        });
-        document.addEventListener("keydown", function (e) {
-          if (e.key === "Escape" && header.getAttribute("data-open") === "true") {
-            setOpen(false);
-            button.focus();
-          }
-        });
-        setOpen(false);
-        header.setAttribute("data-nav-ready", "true");
-      } catch (e) {
-        // Failure leaves the base CSS: links visible, toggle hidden.
-      }
-
-      try {
-        if (!("IntersectionObserver" in window)) return;
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-        var selector = [
-          ".home-section",
-          ".workflow-rail",
-          ".case-grid > li",
-          ".prose > h2",
-          ".prose > h3",
-          ".prose > ul",
-          ".prose > ol",
-          ".evidence-note",
-          ".page-cta",
-        ].join(",");
-        var items = Array.from(document.querySelectorAll(selector));
-        if (items.length === 0) return;
-
-        var observer = new IntersectionObserver(
-          function (entries) {
-            entries.forEach(function (entry) {
-              if (!entry.isIntersecting) return;
-              entry.target.setAttribute("data-reveal", "visible");
-              observer.unobserve(entry.target);
-            });
-          },
-          { rootMargin: "0px 0px -8% 0px", threshold: 0.18 },
-        );
-
-        items.forEach(function (item) {
-          if (item.getBoundingClientRect().top < window.innerHeight * 0.92) {
-            item.setAttribute("data-reveal", "settled");
-            return;
-          }
-          item.setAttribute("data-reveal", "pending");
-          observer.observe(item);
-        });
-        document.documentElement.setAttribute("data-motion-ready", "true");
-      } catch (e) {
-        document.documentElement.removeAttribute("data-motion-ready");
-      }
-    })();
-  </script>
+  <MotionEnhancement />
 </header>

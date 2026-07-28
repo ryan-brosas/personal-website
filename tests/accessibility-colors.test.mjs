@@ -43,10 +43,20 @@ describe("semantic color contrast", () => {
     assert.match(brandLab, /\.brand-lab__fieldset input\s*\{[^}]*border:\s*1px solid var\(--control-border\)/s);
   });
 
-  test("the focus ring remains at least 3:1 on light and dark surfaces", () => {
-    for (const surface of ["canvas", "surface", "surface-dark"]) {
-      assert.ok(contrast(token("focus-ring"), token(surface)) >= 3, surface);
+  test("the rendered two-tone focus ring covers every production surface", () => {
+    const dark = token("text-1");
+    const light = token("canvas");
+    for (const surface of ["canvas", "surface", "surface-dark", "brand", "signal"]) {
+      assert.ok(
+        Math.max(contrast(dark, token(surface)), contrast(light, token(surface))) >= 3,
+        surface,
+      );
     }
+    assert.doesNotMatch(css, /--focus-ring:/, "no unused single-colour focus token remains");
+    assert.match(
+      css,
+      /:focus-visible\s*\{[^}]*outline:[^;]*var\(--text-1\)[^}]*box-shadow:[^;]*var\(--canvas\)/s,
+    );
   });
   test("the original four pigments keep distinct semantic roles", () => {
     assert.equal(token("canvas"), "#fdf9e5");

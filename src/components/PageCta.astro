@@ -1,4 +1,6 @@
 ---
+import CtaPanel from "./CtaPanel.astro";
+
 interface Props {
   id: string;
   eyebrow: string;
@@ -9,6 +11,7 @@ interface Props {
   primaryRel?: string;
   secondaryHref?: string;
   secondaryLabel?: string;
+  class?: string;
 }
 
 const {
@@ -21,14 +24,16 @@ const {
   primaryRel,
   secondaryHref,
   secondaryLabel,
+  class: className,
 } = Astro.props;
 ---
-<section class="page-cta cta-panel" aria-labelledby={id}>
-  <div>
-    <p class="eyebrow">{eyebrow}</p>
-    <h2 id={id}>{title}</h2>
-    <p>{body}</p>
-  </div>
+<CtaPanel
+  class={`page-cta${className ? ` ${className}` : ""}`}
+  id={id}
+  eyebrow={eyebrow}
+  title={title}
+  body={body}
+>
   <div class="button-row">
     <a class="button button--primary" href={primaryHref} rel={primaryRel}>{primaryLabel}</a>
     {
@@ -39,4 +44,4 @@ const {
       )
     }
   </div>
-</section>
+</CtaPanel>

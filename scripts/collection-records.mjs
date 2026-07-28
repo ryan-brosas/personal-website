@@ -74,9 +74,11 @@ export const pageRoutes = (dir = PAGES_DIR) => resolveRoutes(readPageVisibilitie
 export const readCollectionRecords = (contentRoot = CONTENT_ROOT) => {
   const resourcesDir = path.join(contentRoot, "resources");
   const toolsDir = path.join(resourcesDir, "tools");
+  const wikiDir = path.join(resourcesDir, "wiki");
   const sources = new Map([
-    ["resources", { dir: resourcesDir, ignored: new Set([toolsDir]) }],
+    ["resources", { dir: resourcesDir, ignored: new Set([toolsDir, wikiDir]) }],
     ["tools", { dir: toolsDir, ignored: new Set() }],
+    ["wiki", { dir: wikiDir, ignored: new Set() }],
   ]);
   return Object.fromEntries(
     collectionNames().map((name) => {

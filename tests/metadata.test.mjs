@@ -5,6 +5,8 @@
 // parameterizes the OG block. Pure module — Node-testable, no astro runtime.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { buildPageMetadata } from "../src/lib/metadata.ts";
 
 describe("T9 buildPageMetadata", () => {
@@ -63,4 +65,36 @@ describe("T9 buildPageMetadata", () => {
   test("throws on an unknown route id (fail-fast)", () => {
     assert.throws(() => buildPageMetadata("does-not-exist"), /unknown route id/);
   });
+});
+
+
+test("built canonical and Open Graph metadata agree on every page", () => {
+  const dist = path.resolve(import.meta.dirname, "..", "dist");
+  const htmlFiles = fs.readdirSync(dist, { recursive: true })
+    .filter((entry) => typeof entry === "string" && entry.endsWith(".html"));
+  const decode = (value) => (value ?? "")
+    .replaceAll(/&amp;|&#38;/g, "&")
+    .replaceAll(/&quot;|&#34;/g, '"')
+    .replaceAll(/&#39;|&apos;/g, "'");
+
+  for (const relativePath of htmlFiles) {
+    const html = fs.readFileSync(path.join(dist, relativePath), "utf-8");
+    const capture = (pattern) => html.match(pattern)?.[1];
+    const title = decode(capture(/<title>([^<]+)<\/title>/));
+    const description = decode(capture(/<meta name="description" content="([^"]+)"/));
+    const canonical = capture(/<link rel="canonical" href="([^"]+)"/);
+    const ogTitle = decode(capture(/<meta property="og:title" content="([^"]+)"/));
+    const ogDescription = decode(capture(/<meta property="og:description" content="([^"]+)"/));
+    const ogUrl = capture(/<meta property="og:url" content="([^"]+)"/);
+    const ogImage = capture(/<meta property="og:image" content="([^"]+)"/);
+
+    assert.ok(title, `${relativePath} has a title`);
+    assert.ok(description, `${relativePath} has a description`);
+    assert.match(canonical, /^https:\/\//, `${relativePath} has an absolute canonical`);
+    assert.equal(ogTitle, title, `${relativePath} Open Graph title matches`);
+    assert.equal(ogDescription, description, `${relativePath} Open Graph description matches`);
+    assert.equal(ogUrl, canonical, `${relativePath} Open Graph URL matches`);
+    assert.match(ogImage, /^https:\/\//, `${relativePath} Open Graph image is absolute`);
+  }
+  assert.ok(htmlFiles.length > 0);
 });

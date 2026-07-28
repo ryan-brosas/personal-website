@@ -1,0 +1,15 @@
+---
+export interface VerifiedClaim {
+  readonly statement: string;
+}
+
+interface Props {
+  claims: readonly VerifiedClaim[];
+  label?: string;
+}
+
+const { claims, label = "Verified project facts" } = Astro.props;
+---
+<ul class="homepage-claims" aria-label={label}>
+  {claims.map((claim) => <li>{claim.statement}</li>)}
+</ul>

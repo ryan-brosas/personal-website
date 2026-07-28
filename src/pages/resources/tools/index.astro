@@ -3,6 +3,8 @@ import { getCollection } from "astro:content";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
 import JsonLd from "../../../components/JsonLd.astro";
 import PageCta from "../../../components/PageCta.astro";
+import PageHeader from "../../../components/PageHeader.astro";
+import CollectionCard from "../../../components/CollectionCard.astro";
 import { ROUTE_REGISTRY } from "../../../config/routes.ts";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { isDiscoverable, isRoutable } from "../../../lib/publishing.ts";
@@ -10,7 +12,7 @@ import { buildEntityGraph } from "../../../lib/structured-data.ts";
 
 const routeId = "tools";
 const title = "Tools & Demos";
-const description = "Interactive tools and demos, including work that is still being prepared for a public launch.";
+const description = "Interactive tools and demos. Some are still being prepared for a public launch.";
 const entries = (await getCollection("tools"))
   .filter((entry) => isRoutable(entry.data.visibility))
   .sort((a, b) => a.data.title.localeCompare(b.data.title));
@@ -26,11 +28,12 @@ const graph = buildEntityGraph({
   <Breadcrumbs routeId={routeId} />
 
   <section class="page-shell" aria-labelledby="tools-title">
-    <header class="page-header">
-      <p class="eyebrow">Resources · Tools</p>
-      <h1 id="tools-title">{title}</h1>
-      <p class="page-lead">{description}</p>
-    </header>
+    <PageHeader
+      id="tools-title"
+      eyebrow="Resources · Tools"
+      title={title}
+      description={description}
+    />
 
     {
       entries.length === 0 ? (
@@ -39,17 +42,14 @@ const graph = buildEntityGraph({
         <ul class="case-grid">
           {entries.map((entry) => (
             <li>
-              <article class="case-card">
-                <p class="case-meta">Tool · {entry.data.pillar.replaceAll("-", " ")}</p>
-                <div>
-                  <h2>
-                    <a href={ROUTE_REGISTRY.pathFor("tools-slug", { slug: entry.data.slug })}>
-                      {entry.data.title}
-                    </a>
-                  </h2>
-                  <p>{entry.data.description}</p>
-                </div>
-              </article>
+              <CollectionCard
+                href={ROUTE_REGISTRY.pathFor("tools-slug", { slug: entry.data.slug })}
+                title={entry.data.title}
+                description={entry.data.description}
+                meta={`Tool · ${entry.data.pillar.replaceAll("-", " ")}`}
+                headingLevel={2}
+                density="compact"
+              />
             </li>
           ))}
         </ul>
@@ -58,13 +58,13 @@ const graph = buildEntityGraph({
 
     <PageCta
       id="tools-next-step"
-      eyebrow="More than a demo"
-      title="See how the work is checked."
-      body="Each public tool will link to the proof, limits, and build decisions behind it."
-      primaryHref={ROUTE_REGISTRY.pathFor("resources")}
-      primaryLabel="Browse all resources"
-      secondaryHref={ROUTE_REGISTRY.pathFor("case-studies")}
-      secondaryLabel="Read the case studies"
+      eyebrow="Before you pick a tool"
+      title="Check if the work is ready to automate."
+      body="Run the readiness checklist first. It names the trigger, context, checks, and handoff a tool needs."
+      primaryHref={ROUTE_REGISTRY.pathFor("resources-slug", { slug: "ai-workflow-readiness" })}
+      primaryLabel="Use the checklist"
+      secondaryHref={ROUTE_REGISTRY.pathFor("resources")}
+      secondaryLabel="Browse all resources"
     />
   </section>
 </BaseLayout>

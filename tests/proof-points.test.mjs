@@ -66,12 +66,15 @@ test("no entries yields no strip rather than an empty shell", () => {
   assert.deepEqual(selectPublicProofPoints([], SOURCES), []);
 });
 
-test("the homepage renders the strip only when points survive the gate", async () => {
+test("the homepage renders the shared strip only when points survive the gate", async () => {
   const fs = await import("node:fs");
-  const home = fs.readFileSync(
-    new URL("../src/pages/index.astro", import.meta.url),
-    "utf-8",
-  );
+  const home = fs.readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf-8");
+  const componentPath = new URL("../src/components/ProofStrip.astro", import.meta.url);
+  assert.equal(fs.existsSync(componentPath), true);
+  const component = fs.readFileSync(componentPath, "utf-8");
   assert.match(home, /proofPoints\.length > 0 &&/);
-  assert.match(home, /class="proof-strip"/);
+  assert.match(home, /import ProofStrip/);
+  assert.match(home, /<ProofStrip items=\{proofPoints\}/);
+  assert.doesNotMatch(home, /<ul class="proof-strip"/);
+  assert.match(component, /<ul class="proof-strip"/);
 });

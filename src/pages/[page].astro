@@ -4,8 +4,8 @@ import { getCollection, getEntry, render } from "astro:content";
 import CommercialLayout from "../layouts/CommercialLayout.astro";
 import WorkflowRail from "../components/WorkflowRail.astro";
 import PageCta from "../components/PageCta.astro";
-import HeroOperator from "../assets/brand/operator-mascot.svg";
-import HeroSystemMap from "../assets/brand/hero-system-conductor.svg";
+import CommercialHero from "../components/CommercialHero.astro";
+import type { CommercialPageId } from "../components/CommercialHero.astro";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 import { isRoutable } from "../lib/publishing.ts";
 import { assertMarkdownRendered } from "../lib/markdown-safety.ts";
@@ -33,14 +33,15 @@ export const getStaticPaths = (async () => {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-const kind: EntityGraphPageKind = entry.id === "services" ? "service" : "webpage";
+const pageId = entry.id as CommercialPageId;
+const kind: EntityGraphPageKind = pageId === "services" ? "service" : "webpage";
 const contact =
-  entry.id === "contact" ? (await getEntry("settings", "site"))?.data.contact : undefined;
-if (entry.id === "contact" && !contact) {
+  pageId === "contact" ? (await getEntry("settings", "site"))?.data.contact : undefined;
+if (pageId === "contact" && !contact) {
   throw new Error("contact entry requires a validated settings.data.contact block");
 }
 
-const eyebrows: Record<string, string> = {
+const eyebrows: Record<CommercialPageId, string> = {
   about: "The operator behind the systems",
   services: "One task · One clear loop",
   contact: "Start with the recurring work",
@@ -100,42 +101,12 @@ const pageCta = {
   kind={kind}
 >
   <article class={`page-shell page-shell--${entry.id}`}>
-    <header class="page-header commercial-hero">
-      <div class="page-header__copy">
-        <p class="eyebrow">{eyebrows[entry.id] ?? "Ryan Brosas"}</p>
-        <h1>{entry.data.title}</h1>
-        <p class="page-lead">{entry.data.description}</p>
-      </div>
-
-      {
-        entry.id === "about" && (
-          <aside class="page-visual page-visual--about" aria-label="Operator profile">
-            <HeroOperator aria-hidden="true" focusable="false" />
-          </aside>
-        )
-      }
-
-      {
-        entry.id === "services" && (
-          <aside class="page-visual page-visual--services" aria-label="System design options">
-            <HeroSystemMap aria-hidden="true" focusable="false" />
-            <ul class="system-form-list" aria-label="Possible system forms">
-              <li>Agent</li>
-              <li>Script</li>
-              <li>Process</li>
-            </ul>
-          </aside>
-        )
-      }
-
-      {
-        entry.id === "contact" && (
-          <aside class="page-visual page-visual--contact" aria-label="Bring one stubborn loop">
-            <p>Bring one stubborn loop</p>
-          </aside>
-        )
-      }
-    </header>
+    <CommercialHero
+      pageId={pageId}
+      eyebrow={eyebrows[pageId]}
+      title={entry.data.title}
+      description={entry.data.description}
+    />
 
     {
       entry.id === "services" && (

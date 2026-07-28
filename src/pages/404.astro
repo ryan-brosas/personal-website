@@ -1,17 +1,23 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHeader from "../components/PageHeader.astro";
 import { ROOT_ROUTE } from "../lib/routes.ts";
+import { ROUTE_REGISTRY } from "../config/routes.ts";
 
 const title = "Page not found | Ryan Brosas";
 const description = "The page you were looking for could not be found.";
 ---
 <BaseLayout routeId="404" title={title} description={description} noindex>
-  <section class="page-shell">
-    <header class="page-header">
-      <p class="eyebrow">404 · Recovery path</p>
-      <h1>Page not found</h1>
-      <p class="page-lead">This route ended without a useful result. The home page is the safe fallback.</p>
-    </header>
-    <a class="button button--primary" href={ROOT_ROUTE}>Return to the home page</a>
+  <section class="page-shell" aria-labelledby="not-found-title">
+    <PageHeader
+      id="not-found-title"
+      eyebrow="404 · Recovery path"
+      title="Page not found"
+      description="This route ended without a useful result. The home page is the safe fallback."
+    />
+    <div class="button-row">
+      <a class="button button--primary" href={ROOT_ROUTE}>Return to the home page</a>
+      <a class="button button--secondary" href={ROUTE_REGISTRY.pathFor("resources")}>Browse resources</a>
+    </div>
   </section>
 </BaseLayout>

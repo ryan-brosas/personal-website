@@ -4,7 +4,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { renderSitemap } from "../lib/discovery.ts";
 import { resolveRoutes, resolveCollectionDiscoveryRoutes } from "../lib/site-routes.ts";
-import { ROOT_ROUTE_POLICY } from "../config/routes.ts";
+import { CODE_OWNED_DISCOVERY_POLICIES } from "../config/routes.ts";
 import type { Visibility } from "../lib/publishing.ts";
 import { getCollectionRouteRecords } from "../content/collection-route-records.ts";
 
@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ site }) => {
   }
   const collectionRecords = await getCollectionRouteRecords();
   const routes = [
-    ROOT_ROUTE_POLICY,
+    ...CODE_OWNED_DISCOVERY_POLICIES,
     ...resolveRoutes(visibilities),
     ...resolveCollectionDiscoveryRoutes(collectionRecords),
   ];

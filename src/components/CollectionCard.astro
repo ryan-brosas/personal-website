@@ -1,0 +1,25 @@
+---
+import type { HTMLTag } from "astro/types";
+
+type HeadingLevel = 2 | 3;
+type CardDensity = "feature" | "compact";
+
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  headingLevel?: HeadingLevel;
+  density?: CardDensity;
+  meta?: string;
+}
+
+const { href, title, description, headingLevel = 2, density = "feature", meta } = Astro.props;
+const Tag = `h${headingLevel}` as HTMLTag;
+---
+<article class:list={["case-card", density === "compact" && "case-card--compact"]}>
+  {meta && <p class="case-meta">{meta}</p>}
+  <div>
+    <Tag class="case-card__title"><a href={href}>{title}</a></Tag>
+    <p>{description}</p>
+  </div>
+</article>

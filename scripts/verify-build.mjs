@@ -309,7 +309,7 @@ export const resolveBuildManifest = ({
     (definition) =>
       definition.isDynamic !== true &&
       isHtmlRoute(definition.path) &&
-      (definition.id === "home" || definition.kind === "hub") &&
+      (definition.id === "home" || definition.id === "directory" || definition.kind === "hub") &&
       isRoutable(definition.visibility),
   );
   const expectedHtmlRoutes = [

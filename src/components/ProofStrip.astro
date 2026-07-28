@@ -1,0 +1,23 @@
+---
+export interface ProofStripItem {
+  readonly label: string;
+  readonly value: string;
+  readonly detail: string;
+}
+
+interface Props {
+  items: readonly ProofStripItem[];
+  label?: string;
+}
+
+const { items, label = "Verified numbers" } = Astro.props;
+---
+<ul class="proof-strip" aria-label={label}>
+  {items.map((item) => (
+    <li>
+      <span>{item.label}</span>
+      <strong>{item.value}</strong>
+      <p>{item.detail}</p>
+    </li>
+  ))}
+</ul>

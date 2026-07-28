@@ -1,0 +1,21 @@
+---
+import type { HTMLTag } from "astro/types";
+
+type HeadingLevel = 1 | 2;
+
+interface Props {
+  title: string;
+  description: string;
+  eyebrow?: string;
+  headingLevel?: HeadingLevel;
+  id?: string;
+}
+
+const { title, description, eyebrow, headingLevel = 1, id } = Astro.props;
+const Tag = `h${headingLevel}` as HTMLTag;
+---
+<header class="case-study-header">
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <Tag id={id}>{title}</Tag>
+  <p class="case-study-lead">{description}</p>
+</header>

@@ -1,0 +1,23 @@
+---
+export interface EntryPoint {
+  readonly href: string;
+  readonly title: string;
+  readonly detail: string;
+}
+
+interface Props {
+  items: readonly EntryPoint[];
+}
+
+const { items } = Astro.props;
+---
+<ul class="entry-points">
+  {items.map((item) => (
+    <li>
+      <a href={item.href}>
+        <strong>{item.title}</strong>
+        <span>{item.detail}</span>
+      </a>
+    </li>
+  ))}
+</ul>

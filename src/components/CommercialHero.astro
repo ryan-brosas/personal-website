@@ -1,0 +1,55 @@
+---
+import type { HTMLTag } from "astro/types";
+import HeroOperator from "../assets/brand/operator-mascot.svg";
+import HeroSystemMap from "../assets/brand/hero-system-conductor.svg";
+
+export type CommercialPageId = "about" | "services" | "contact";
+type HeadingLevel = 1 | 2;
+
+interface Props {
+  pageId: CommercialPageId;
+  eyebrow: string;
+  title: string;
+  description: string;
+  headingLevel?: HeadingLevel;
+}
+
+const { pageId, eyebrow, title, description, headingLevel = 1 } = Astro.props;
+const Tag = `h${headingLevel}` as HTMLTag;
+---
+<header class="page-header commercial-hero">
+  <div class="page-header__copy">
+    <p class="eyebrow">{eyebrow}</p>
+    <Tag>{title}</Tag>
+    <p class="page-lead">{description}</p>
+  </div>
+
+  {
+    pageId === "about" && (
+      <aside class="page-visual page-visual--about" aria-label="Operator profile">
+        <HeroOperator aria-hidden="true" focusable="false" />
+      </aside>
+    )
+  }
+
+  {
+    pageId === "services" && (
+      <aside class="page-visual page-visual--services" aria-label="System design options">
+        <HeroSystemMap aria-hidden="true" focusable="false" />
+        <ul class="system-form-list" aria-label="Possible system forms">
+          <li>Agent</li>
+          <li>Script</li>
+          <li>Process</li>
+        </ul>
+      </aside>
+    )
+  }
+
+  {
+    pageId === "contact" && (
+      <aside class="page-visual page-visual--contact" aria-label="Bring one stubborn loop">
+        <p>Bring one stubborn loop</p>
+      </aside>
+    )
+  }
+</header>

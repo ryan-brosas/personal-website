@@ -1,5 +1,94 @@
-<script is:inline data-motion-enhancement>
+<script is:inline data-nav-enhancement>
   (function () {
+    try {
+      var header = document.querySelector(".site-header");
+      var button = header && header.querySelector(".nav-toggle");
+      var nav = document.getElementById("primary-navigation");
+      if (!header || !button || !nav) return;
+      var setOpen = function (open) {
+        header.setAttribute("data-open", open ? "true" : "false");
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+      };
+      button.addEventListener("click", function () {
+        var isOpen = header.getAttribute("data-open") === "true";
+        setOpen(!isOpen);
+      });
+      nav.addEventListener("click", function (e) {
+        if (e.target.closest("a")) setOpen(false);
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && header.getAttribute("data-open") === "true") {
+          setOpen(false);
+          button.focus();
+        }
+      });
+      setOpen(false);
+      header.setAttribute("data-nav-ready", "true");
+    } catch (e) {
+      // Failure leaves the base CSS: links visible, toggle hidden.
+    }
+
+    var enhancePage = function () {
+    try {
+      var form = document.querySelector("[data-wiki-filter]");
+      if (form) {
+        var input = form.querySelector("input[type='search']");
+        var count = form.querySelector("[data-wiki-filter-count]");
+        var empty = document.querySelector("[data-wiki-filter-empty]");
+        var terms = Array.from(document.querySelectorAll("[data-wiki-term]"));
+        var groups = Array.from(document.querySelectorAll("[data-wiki-group]"));
+        var updateWikiFilter = function () {
+          var query = input.value.trim().toLowerCase();
+          var visible = 0;
+          terms.forEach(function (item) {
+            var matches = !query || item.dataset.wikiSearch.includes(query);
+            item.hidden = !matches;
+            if (matches) visible += 1;
+          });
+          groups.forEach(function (group) {
+            group.hidden = !group.querySelector("[data-wiki-term]:not([hidden])");
+          });
+          count.textContent = visible + (visible === 1 ? " concept" : " concepts");
+          empty.hidden = visible !== 0;
+        };
+        input.addEventListener("input", updateWikiFilter);
+        form.addEventListener("submit", function (event) { event.preventDefault(); });
+        form.hidden = false;
+      }
+    } catch (e) {
+      // Failure leaves the complete server-rendered directory visible.
+    }
+
+    try {
+      var directoryForm = document.querySelector("[data-directory-filter]");
+      if (directoryForm) {
+        var directoryInput = directoryForm.querySelector("input[type='search']");
+        var directoryCount = directoryForm.querySelector("[data-directory-filter-count]");
+        var directoryEmpty = document.querySelector("[data-directory-filter-empty]");
+        var directoryItems = Array.from(document.querySelectorAll("[data-directory-item]"));
+        var directoryGroups = Array.from(document.querySelectorAll("[data-directory-group]"));
+        var updateDirectoryFilter = function () {
+          var query = directoryInput.value.trim().toLowerCase();
+          var visible = 0;
+          directoryItems.forEach(function (directoryItem) {
+            var matches = !query || directoryItem.dataset.directorySearch.includes(query);
+            directoryItem.hidden = !matches;
+            if (matches) visible += 1;
+          });
+          directoryGroups.forEach(function (group) {
+            group.hidden = !group.querySelector("[data-directory-item]:not([hidden])");
+          });
+          directoryCount.textContent = visible + (visible === 1 ? " link" : " links");
+          directoryEmpty.hidden = visible !== 0;
+        };
+        directoryInput.addEventListener("input", updateDirectoryFilter);
+        directoryForm.addEventListener("submit", function (event) { event.preventDefault(); });
+        directoryForm.hidden = false;
+      }
+    } catch (e) {
+      // Failure leaves every directory category and official link visible.
+    }
+
     try {
       if (!("IntersectionObserver" in window)) return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -38,8 +127,15 @@
         observer.observe(item);
       });
       document.documentElement.setAttribute("data-motion-ready", "true");
-    } catch {
+    } catch (e) {
       document.documentElement.removeAttribute("data-motion-ready");
+    }
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", enhancePage, { once: true });
+    } else {
+      enhancePage();
     }
   })();
 </script>

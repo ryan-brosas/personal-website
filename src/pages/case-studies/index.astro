@@ -4,6 +4,8 @@ import JsonLd from "../../components/JsonLd.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import WorkflowRail from "../../components/WorkflowRail.astro";
 import PageCta from "../../components/PageCta.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import CollectionCard from "../../components/CollectionCard.astro";
 import { getCollection } from "astro:content";
 import { isDiscoverable } from "../../lib/publishing.ts";
 import { buildEntityGraph } from "../../lib/structured-data.ts";
@@ -12,7 +14,7 @@ import { ROUTE_REGISTRY } from "../../config/routes.ts";
 const routeId = "case-studies";
 const title = "Case Studies";
 const description =
-  "Transparent, evidence-backed accounts of systems, trade-offs, and how the work was made.";
+  "Real builds with the trade-offs and checks behind them.";
 
 const entries = (await getCollection("case-studies"))
   .filter((entry) => isDiscoverable(entry.data.visibility))
@@ -36,11 +38,12 @@ const graph = buildEntityGraph({
   <Breadcrumbs routeId={routeId} />
 
   <section class="page-shell" aria-labelledby="case-studies-title">
-    <header class="page-header">
-      <p class="eyebrow">The work, with the wiring exposed</p>
-      <h1 id="case-studies-title">{title}</h1>
-      <p class="page-lead">{description}</p>
-    </header>
+    <PageHeader
+      id="case-studies-title"
+      eyebrow="The work, with the wiring exposed"
+      title={title}
+      description={description}
+    />
 
     <WorkflowRail
       label="What each case exposes"
@@ -56,17 +59,14 @@ const graph = buildEntityGraph({
       {
         entries.map((entry) => (
           <li>
-            <article class="case-card">
-              <p class="case-meta">{entry.data.kind.replace("-", " ")} · {entry.data.pillar.replaceAll("-", " ")}</p>
-              <div>
-              <h2>
-                <a href={ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: entry.data.slug })}>
-                  {entry.data.title}
-                </a>
-              </h2>
-                <p>{entry.data.description}</p>
-              </div>
-            </article>
+            <CollectionCard
+              href={ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: entry.data.slug })}
+              title={entry.data.title}
+              description={entry.data.description}
+              meta={`${entry.data.kind.replace("-", " ")} · ${entry.data.pillar.replaceAll("-", " ")}`}
+              headingLevel={2}
+              density="compact"
+            />
           </li>
         ))
       }
@@ -75,8 +75,8 @@ const graph = buildEntityGraph({
     <PageCta
       id="case-studies-next-step"
       eyebrow="Start with one real loop"
-      title="What work would you want exposed this clearly?"
-      body="Bring the current path, the handoffs, and the point where trust breaks."
+      title="What work do you want shown this clearly?"
+      body="Bring the current path, the handoffs, and where trust breaks."
       primaryHref={contactHref}
       primaryLabel="Start a conversation"
       secondaryHref={ROUTE_REGISTRY.pathFor("services")}
