@@ -38,33 +38,18 @@ const { expectedHtmlRoutes, expectedDiscoverableRoutes, expectedFileEndpoints } 
     collectionDiscoveryRoutes: collectionDiscoveryRoutes(),
   });
 
-// Assert exactly one NAV-ENHANCEMENT script exists and it is the marked inline
-// nav enhancement (no external src, no other client scripts, no generated
-// _astro/*.js bundles). JSON-LD and other metadata <script> blocks are excluded
-// from the count — they carry no behavioral JS and do not violate the a11y
-// contract that only the single nav enhancement script runs client-side.
-const assertOneNavScript = (html) => {
+// The shell owns one bounded inline progressive-enhancement seam. JSON-LD and
+// other metadata scripts are data, not behavioral JavaScript.
+const assertProgressiveScripts = (html) => {
   const scripts = [...html.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
-  // Filter out metadata scripts (JSON-LD, import maps, etc.) — only count
-  // behavioral scripts that could run client-side.
   const behavioral = scripts.filter(
-    (t) =>
-      !/type\s*=\s*["']application\/ld\+json["']/i.test(t) &&
-      !/type\s*=\s*["']importmap["']/i.test(t),
+    (tag) =>
+      !/type\s*=\s*["']application\/ld\+json["']/i.test(tag) &&
+      !/type\s*=\s*["']importmap["']/i.test(tag),
   );
-  assert.equal(
-    behavioral.length,
-    1,
-    `expected exactly one behavioral script (got ${behavioral.length}); scripts: ${JSON.stringify(scripts)}`,
-  );
-  assert.ok(
-    /data-nav-enhancement/i.test(behavioral[0]),
-    "the single behavioral script must be the nav enhancement",
-  );
-  assert.ok(
-    !/\bsrc\s*=/i.test(behavioral[0]),
-    "the nav enhancement script must be inline (no src attribute)",
-  );
+  assert.equal(behavioral.length, 1, "the shell has exactly one behavioral enhancement");
+  assert.match(behavioral[0], /data-nav-enhancement/i);
+  assert.ok(!/\bsrc\s*=/i.test(behavioral[0]), "the shell enhancement stays inline");
 };
 const LOGO_SOURCE = path.join(repoRoot, "src/assets/brand/logo-charcoal.svg");
 const LOGO_SOURCE_SHA256 = "a5e1589808b8c2a27a021bceef787ca7198e968273fe6a567c58e68515aa8cf8";
@@ -211,7 +196,7 @@ describe("B1 root shell", () => {
     assert.ok(types.includes("WebPage"), "graph has a WebPage node (public page, INV-03)");
 
     // JSON-LD is a data block, excluded from the one-behavioral-script contract.
-    assertOneNavScript(html);
+    assertProgressiveScripts(html);
   });
 
   test("root / is included in the sitemap now that the gate promoted it to public", () => {
@@ -260,7 +245,7 @@ describe("B2 shared shell", () => {
     assert.ok(/href="\/about\/"/i.test(html), "about link present (routable record)");
     assert.ok(/href="\/services\/"/i.test(html), "services link present (routable record)");
     assert.ok(/href="\/contact\/"/i.test(html), "contact link present (routable record)");
-    assertOneNavScript(html);
+    assertProgressiveScripts(html);
   });
 
   test("applicable visible-focus CSS is present", () => {
@@ -431,7 +416,7 @@ describe("C2 about route", () => {
       "about body paragraph renders the approved copy",
     );
 
-    assertOneNavScript(html);
+    assertProgressiveScripts(html);
   });
 });
 
@@ -565,7 +550,7 @@ describe("C2 noindex variant (copied production)", () => {
     assert.ok(!locs.includes("https://example.com/about/"), "variant about is not in the sitemap");
 
     assert.ok(/href="\/about\/"/i.test(html), "variant about link appears in nav");
-    assertOneNavScript(html);
+    assertProgressiveScripts(html);
 
     // Services stays public in the variant (only About was rewritten to noindex).
     const servicesHtml = readHtml(variantDist, "/services/");
@@ -739,7 +724,7 @@ describe("C3 services route", () => {
       "services body paragraph renders the approved copy",
     );
 
-    assertOneNavScript(html);
+    assertProgressiveScripts(html);
   });
 });
 
@@ -848,7 +833,7 @@ describe("C4 contact route", () => {
     assert.ok(!/<iframe[\s>]/i.test(html), "no iframe");
     assert.ok(!/href="\/privacy\/"/i.test(html), "no /privacy/ link (privacyRequired is false)");
 
-    assertOneNavScript(html);
+    assertProgressiveScripts(html);
   });
 });
 
@@ -994,7 +979,7 @@ describe("D2 token shell", () => {
     selectorConsumes(".site-header", "var(--nav-border)");
     selectorConsumes(".site-header nav a", "var(--nav-fg)");
     selectorConsumes(".site-header nav a", "var(--link-decoration)");
-    selectorConsumes(".skip-link", "var(--link-fg)");
+    selectorConsumes(".skip-link", "var(--text-inverse)");
     selectorConsumes("main a", "var(--link-fg)");
     selectorConsumes("footer nav a", "var(--link-fg)");
     selectorConsumes("footer nav a", "var(--link-decoration)");
@@ -1200,6 +1185,7 @@ describe("D3 progressive navigation", () => {
   test("global.css defines the progressive disclosure CSS contract", () => {
     const globalCssPath = path.join(repoRoot, "src", "styles", "global.css");
     assert.ok(fs.existsSync(globalCssPath), "src/styles/global.css must exist");
+
     const css = fs.readFileSync(globalCssPath, "utf-8");
     // Base/unready: toggle hidden, nav visible.
     assert.ok(/\.nav-toggle\s*\{[^}]*display:\s*none/i.test(css), "toggle hidden by default");
@@ -1325,8 +1311,8 @@ describe("T11 authority layouts (Commercial + CaseStudy)", () => {
       `skip-to-content link present on ${route}`,
     );
 
-    // Exactly one BEHAVIORAL inline script (assertOneNavScript excludes JSON-LD).
-    assertOneNavScript(html);
+    // Exactly one behavioral enhancement; JSON-LD remains data only.
+    assertProgressiveScripts(html);
 
     // Registry-derived breadcrumb trail rendered (Breadcrumbs component).
     assert.ok(
@@ -1428,7 +1414,7 @@ test("commercial pages use route-specific editorial hero modules", () => {
   const about = readHtml(distDir, "/about/");
   assert.match(about, /class="page-visual page-visual--about"/);
   assert.match(about, /<title>The Operator<\/title>/);
-  assert.match(about, />Philippines<\/dd>/);
+  assert.doesNotMatch(about, /<dl>/, "the visual does not repeat profile facts from the page body");
 
   const services = readHtml(distDir, "/services/");
   assert.match(services, /class="page-visual page-visual--services"/);
@@ -1437,10 +1423,8 @@ test("commercial pages use route-specific editorial hero modules", () => {
 
   const contact = readHtml(distDir, "/contact/");
   assert.match(contact, /class="page-visual page-visual--contact"/);
-  assert.match(contact, /class="intake-sequence"/);
-  assert.match(contact, />Recurring work<\/strong>/);
-  assert.match(contact, />Current workaround<\/strong>/);
-  assert.match(contact, />Breaking point<\/strong>/);
+  assert.match(contact, />Bring one stubborn loop<\/p>/);
+  assert.doesNotMatch(contact, /class="intake-sequence"/, "the visual does not repeat the intake copy");
 });
 
 test("homepage uses the hero composition and approved local typography", () => {

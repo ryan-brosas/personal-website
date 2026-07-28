@@ -117,6 +117,8 @@
   --grid-columns-wide: 16;
   --motion-fast: 160ms;
   --motion-ease: ease;
+  --motion-enter: 200ms;
+  --motion-enter-ease: cubic-bezier(0.23, 1, 0.32, 1);
   /* Ambient figure motion. Multiples of the base unit so decorative timing stays
    * on the same scale as interaction timing instead of being invented per figure. */
   --motion-ambient: calc(var(--motion-fast) * 36);
@@ -284,7 +286,7 @@ a:hover {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--surface-dark);
-  color: var(--link-fg);
+  color: var(--text-inverse);
   text-decoration: underline;
   text-decoration-color: var(--link-decoration);
 }
@@ -480,11 +482,16 @@ main a {
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;
-  transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease);
+  transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
 }
 
 .button:hover {
+  transform: translateY(-2px);
   text-decoration: none;
+}
+
+.button:active {
+  transform: translateY(0);
 }
 
 .button--primary {
@@ -938,6 +945,77 @@ main a {
   text-transform: uppercase;
 }
 
+/* ---------- Workflow rail ---------- */
+.workflow-rail {
+  margin: var(--space-8) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+
+.workflow-rail__steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  border-inline-start: 1px solid var(--line);
+  list-style: none;
+}
+
+.workflow-rail__steps li {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  min-height: 9rem;
+  padding: var(--space-3);
+  border-inline-end: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--canvas);
+}
+
+.workflow-rail__steps span {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+.workflow-rail__steps strong {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.15;
+}
+
+.workflow-rail__steps small {
+  color: var(--text-2);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.workflow-rail figcaption {
+  margin-block-start: var(--space-3);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.page-cta {
+  margin-block-start: var(--space-10);
+}
+
+.page-cta .button-row {
+  justify-content: flex-end;
+}
+
+.page-cta .button--secondary {
+  color: var(--text-inverse);
+  border-color: var(--text-inverse);
+}
+
 /* ---------- Home sections ---------- */
 .home-section {
   padding: var(--space-12) 0;
@@ -1155,9 +1233,16 @@ main a {
 /* ---------- Page / case-study shells ---------- */
 .page-shell,
 .case-study-shell {
-  max-width: 64rem;
   margin-inline: auto;
   padding: var(--space-8) 0 var(--space-10);
+}
+
+.page-shell {
+  max-width: 64rem;
+}
+
+.case-study-shell {
+  width: 100%;
 }
 
 .page-header,
@@ -1169,9 +1254,25 @@ main a {
   border-bottom: 1px solid var(--line);
 }
 
-.page-header h1,
-.case-study-header h1 {
+.page-header h1 {
   max-width: 13ch;
+}
+
+.case-study-header {
+  grid-template-columns: minmax(0, 1.2fr) minmax(min(100%, 20rem), 0.8fr);
+  column-gap: var(--space-8);
+}
+
+.case-study-header .eyebrow {
+  grid-column: 1 / -1;
+}
+
+.case-study-header h1 {
+  max-width: none;
+}
+
+.case-study-header .case-study-lead {
+  align-self: end;
 }
 
 .page-lead,
@@ -1204,7 +1305,6 @@ main a {
 
 .page-visual--about {
   display: grid;
-  grid-template-rows: 1fr auto;
   background: var(--signal);
 }
 
@@ -1215,44 +1315,6 @@ main a {
   justify-self: center;
 }
 
-.page-visual--about dl {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin: 0;
-  border-top: 1px solid var(--text-1);
-  background: var(--surface);
-}
-
-.page-visual--about dl div {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-2);
-  border-inline-end: 1px solid var(--line-strong);
-}
-
-.page-visual--about dl div:last-child {
-  border-inline-end: 0;
-}
-
-.page-visual dt,
-.page-visual dd {
-  margin: 0;
-}
-
-.page-visual dt {
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.page-visual dd {
-  font-size: 0.82rem;
-  font-weight: 600;
-}
 
 .page-visual--services {
   display: grid;
@@ -1290,8 +1352,8 @@ main a {
 
 .page-visual--contact {
   display: grid;
-  align-content: space-between;
-  gap: var(--space-6);
+  min-height: 24rem;
+  align-content: center;
   padding: var(--space-5);
   background: var(--surface-dark);
   color: var(--text-inverse);
@@ -1307,32 +1369,6 @@ main a {
   line-height: 0.95;
 }
 
-.intake-sequence {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid color-mix(in oklch, var(--text-inverse) 30%, transparent);
-  list-style: none;
-}
-
-.intake-sequence li {
-  display: grid;
-  grid-template-columns: 2rem 1fr;
-  gap: var(--space-2);
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid color-mix(in oklch, var(--text-inverse) 30%, transparent);
-}
-
-.intake-sequence span {
-  color: var(--brand);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-}
-
-.intake-sequence strong {
-  font-size: 1rem;
-  font-weight: 550;
-}
 
 .commercial-body {
   display: grid;
@@ -1433,6 +1469,13 @@ main a {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
   background: var(--surface);
+  transition: transform calc(var(--motion-fast) * 2) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease);
+}
+
+.case-card:has(a:hover),
+.case-card:focus-within {
+  transform: translateY(calc(-1 * var(--space-1)));
+  border-color: var(--text-1);
 }
 
 .case-grid li:first-child .case-card {
@@ -1733,6 +1776,30 @@ footer nav a {
   background-size: var(--texture-grid-size) var(--texture-grid-size);
 }
 
+/* ---------- Scroll and interaction motion ---------- */
+/* The single shell enhancement marks off-screen sections only after its
+ * observer is ready. Unsupported or failed enhancement keeps content visible. */
+html[data-motion-ready] [data-reveal="pending"] {
+  opacity: 0.25;
+  transform: translateY(var(--space-5));
+}
+
+html[data-motion-ready] [data-reveal="visible"] {
+  animation: section-reveal var(--motion-enter) var(--motion-enter-ease) both;
+}
+
+@keyframes section-reveal {
+  from {
+    opacity: 0.25;
+    transform: translateY(var(--space-5));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 820px) {
   .site-header {
@@ -1776,8 +1843,13 @@ footer nav a {
   .section-heading,
   .case-feature,
   .cta-panel,
-  .commercial-hero {
+  .commercial-hero,
+  .case-study-header {
     grid-template-columns: 1fr;
+  }
+
+  .case-study-header .eyebrow {
+    grid-column: auto;
   }
 
   .page-header__copy {
@@ -1840,18 +1912,6 @@ footer nav a {
     border-inline-end: 0;
   }
 
-  .page-visual--about dl {
-    grid-template-columns: 1fr;
-  }
-
-  .page-visual--about dl div {
-    border-inline-end: 0;
-    border-bottom: 1px solid var(--line-strong);
-  }
-
-  .page-visual--about dl div:last-child {
-    border-bottom: 0;
-  }
 
   .proof-strip li {
     border-inline-end: 0;
@@ -1897,6 +1957,14 @@ footer nav a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  @keyframes section-reveal {
+    from,
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   .loop-field__track i {
     animation: none;
   }

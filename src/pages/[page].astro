@@ -2,6 +2,8 @@
 import type { GetStaticPaths } from "astro";
 import { getCollection, getEntry, render } from "astro:content";
 import CommercialLayout from "../layouts/CommercialLayout.astro";
+import WorkflowRail from "../components/WorkflowRail.astro";
+import PageCta from "../components/PageCta.astro";
 import HeroOperator from "../assets/brand/operator-mascot.svg";
 import HeroSystemMap from "../assets/brand/hero-system-conductor.svg";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
@@ -43,6 +45,51 @@ const eyebrows: Record<string, string> = {
   services: "Design · Build · Handoff",
   contact: "Start with the recurring work",
 };
+
+const contactHref = ROUTE_REGISTRY.pathFor("contact");
+const caseStudiesHref = ROUTE_REGISTRY.pathFor("case-studies");
+const servicesHref = ROUTE_REGISTRY.pathFor("services");
+const serviceRail = {
+  label: "How the work moves",
+  steps: [
+    { label: "Trace", detail: "Follow the job as it runs now." },
+    { label: "Build", detail: "Make the smallest useful system." },
+    { label: "Prove", detail: "Check the output on real work." },
+    { label: "Hand off", detail: "Leave a path someone else can run." },
+  ],
+  caption: "The build follows the work, not the tool.",
+};
+
+const pageCta = {
+  services: {
+    eyebrow: "Start with one stubborn loop",
+    title: "What keeps landing back on you?",
+    body: "Bring the repeated job, the current workaround, and the point where it breaks.",
+    primaryHref: contactHref,
+    primaryLabel: "Bring me the work",
+    secondaryHref: caseStudiesHref,
+    secondaryLabel: "See the proof first",
+  },
+  about: {
+    eyebrow: "See the approach in practice",
+    title: "Start with the work, not the AI.",
+    body: "See how the method works, then bring one loop when you are ready.",
+    primaryHref: servicesHref,
+    primaryLabel: "See how I work",
+    secondaryHref: caseStudiesHref,
+    secondaryLabel: "Read the case study",
+  },
+  contact: {
+    eyebrow: "No tidy brief needed",
+    title: "Bring the rough version.",
+    body: "We will decide if the next step is an agent, a script, a process change, or nothing at all.",
+    primaryHref: contact?.schedulerUrl ?? contactHref,
+    primaryLabel: "Schedule a conversation",
+    primaryRel: "noopener noreferrer",
+    secondaryHref: contact ? `mailto:${contact.emailFallback}` : undefined,
+    secondaryLabel: contact?.emailFallback,
+  },
+}[entry.id as "services" | "about" | "contact"];
 ---
 <CommercialLayout
   routeId={entry.id}
@@ -64,11 +111,6 @@ const eyebrows: Record<string, string> = {
         entry.id === "about" && (
           <aside class="page-visual page-visual--about" aria-label="Operator profile">
             <HeroOperator aria-hidden="true" focusable="false" />
-            <dl>
-              <div><dt>Based</dt><dd>Philippines</dd></div>
-              <div><dt>Mode</dt><dd>Remote</dd></div>
-              <div><dt>Focus</dt><dd>Recurring operations</dd></div>
-            </dl>
           </aside>
         )
       }
@@ -88,35 +130,40 @@ const eyebrows: Record<string, string> = {
 
       {
         entry.id === "contact" && (
-          <aside class="page-visual page-visual--contact" aria-label="What to bring to the first conversation">
+          <aside class="page-visual page-visual--contact" aria-label="Bring one stubborn loop">
             <p>Bring one stubborn loop</p>
-            <ol class="intake-sequence">
-              <li><span>01</span><strong>Recurring work</strong></li>
-              <li><span>02</span><strong>Current workaround</strong></li>
-              <li><span>03</span><strong>Breaking point</strong></li>
-            </ol>
           </aside>
         )
       }
     </header>
+
+    {
+      entry.id === "services" && (
+        <WorkflowRail
+          label={serviceRail.label}
+          steps={serviceRail.steps}
+          caption={serviceRail.caption}
+        />
+      )
+    }
 
     <div class="commercial-body">
       <div class="prose">
         <Content />
       </div>
 
-      {
-        contact && (
-          <div class="contact-actions">
-            <a class="button button--primary" href={contact.schedulerUrl} rel="noopener noreferrer">
-              Schedule a conversation
-            </a>
-            <a class="button button--secondary" href={`mailto:${contact.emailFallback}`}>
-              {contact.emailFallback}
-            </a>
-          </div>
-        )
-      }
     </div>
+
+    <PageCta
+      id={`${entry.id}-next-step`}
+      eyebrow={pageCta.eyebrow}
+      title={pageCta.title}
+      body={pageCta.body}
+      primaryHref={pageCta.primaryHref}
+      primaryLabel={pageCta.primaryLabel}
+      primaryRel={pageCta.primaryRel}
+      secondaryHref={pageCta.secondaryHref}
+      secondaryLabel={pageCta.secondaryLabel}
+    />
   </article>
 </CommercialLayout>

@@ -1,0 +1,27 @@
+---
+export interface WorkflowStep {
+  readonly label: string;
+  readonly detail: string;
+}
+
+interface Props {
+  label: string;
+  steps: readonly WorkflowStep[];
+  caption: string;
+}
+
+const { label, steps, caption } = Astro.props;
+---
+<figure class="workflow-rail">
+  <p class="eyebrow">{label}</p>
+  <ol class="workflow-rail__steps">
+    {steps.map((step, index) => (
+      <li>
+        <span>{String(index + 1).padStart(2, "0")}</span>
+        <strong>{step.label}</strong>
+        <small>{step.detail}</small>
+      </li>
+    ))}
+  </ol>
+  <figcaption>{caption}</figcaption>
+</figure>

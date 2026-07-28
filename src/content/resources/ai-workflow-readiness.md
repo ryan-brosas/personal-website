@@ -5,7 +5,7 @@ slug: ai-workflow-readiness
 visibility: public
 owner: ryan
 title: AI Workflow Readiness Checklist
-description: A practical checklist for deciding whether recurring work is ready to become an AI-assisted workflow.
+description: A plain checklist for deciding if repeated work is ready for an AI assisted workflow.
 pillar: ai-workflow-systems
 intents:
   - implementation
@@ -14,13 +14,39 @@ audience:
   - operator
 ---
 
-## Before you automate
+Use this before you pick a model or tool. Start with one job that keeps coming back. If you cannot describe the work yet, that is the first thing to fix.
 
-Define the recurring trigger, required context, review criteria, handoff owner, and recovery path.
+## Name the trigger
 
-## Checklist
+- The work starts from an event you can point to.
+- The same kind of result is needed each time.
+- The job happens often enough to learn from.
 
-- The work repeats often enough to describe.
-- Inputs and source boundaries are known.
-- A human owner can review the result.
-- Failure and escalation paths are explicit.
+If the trigger changes every time, keep watching the work before you automate it.
+
+## Gather the context
+
+- The source files and facts are known.
+- The system can tell which source it may trust.
+- Private data has a clear boundary.
+- Missing facts stop the run or send it to a person.
+
+A prompt cannot repair a missing source boundary.
+
+## Set the check
+
+- A person can describe a good result.
+- The output can be checked before it moves on.
+- The system shows what it used and what it changed.
+- A failed check does not pass as finished work.
+
+## Plan the handoff
+
+- One person owns review.
+- Odd cases have somewhere to go.
+- A failed run leaves enough detail to try again.
+- Someone else can follow the notes without rebuilding the whole brief.
+
+## Read the result
+
+If every group is clear, the work may be ready for a small test. If one group is weak, fix that boundary first. The next step may be an agent, a script, a review step, or no automation at all.

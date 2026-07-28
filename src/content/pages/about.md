@@ -4,7 +4,7 @@ description: "Ryan Brosas builds AI work systems with clear context, checks, han
 visibility: public
 ---
 
-I am Ryan Brosas. I build AI systems for work that keeps coming back. My job is to make four things clear: what the system knows, what it checks, when it hands work to a person, and what happens when it breaks.
+I am Ryan Brosas. I build AI systems for work that keeps coming back. My job is to make four things clear. What the system knows. What it checks. When it hands work to a person. What happens when it breaks.
 
 I live in the Philippines and work with small, founder-led teams. I focus on the layer around the AI. That means the facts it gets, the calls it may make, the proof it shows, and the path it takes when things go wrong.
 

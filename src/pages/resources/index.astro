@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import JsonLd from "../../components/JsonLd.astro";
+import WorkflowRail from "../../components/WorkflowRail.astro";
+import PageCta from "../../components/PageCta.astro";
 import { ROUTE_REGISTRY } from "../../config/routes.ts";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { isDiscoverable } from "../../lib/publishing.ts";
@@ -15,6 +17,7 @@ const entries = (await getCollection("resources"))
   .filter((entry) => isDiscoverable(entry.data.visibility))
   .sort((a, b) => a.data.title.localeCompare(b.data.title));
 const visibility = entries.length > 0 ? "public" : "noindex";
+const contactHref = ROUTE_REGISTRY.pathFor("contact");
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({
   site,
@@ -37,26 +40,49 @@ const graph = buildEntityGraph({
       <p class="page-lead">{description}</p>
     </header>
 
+    <WorkflowRail
+      label="Use the resource, then decide"
+      steps={[
+        { label: "Spot", detail: "Name the repeated work and its trigger." },
+        { label: "Check", detail: "Test the context, review, and recovery path." },
+        { label: "Choose", detail: "Keep it manual or build the smallest loop." },
+      ]}
+      caption="A useful check can tell you not to automate yet."
+    />
+
     {
       entries.length === 0 ? (
         <p class="empty-state">The first resources are being prepared.</p>
       ) : (
         <ul class="case-grid">
           {entries.map((entry) => (
-            <li class="case-card">
-              <p class="case-meta">{entry.data.format} · {entry.data.pillar.replaceAll("-", " ")}</p>
-              <div>
-                <h2>
-                  <a href={ROUTE_REGISTRY.pathFor("resources-slug", { slug: entry.data.slug })}>
-                    {entry.data.title}
-                  </a>
-                </h2>
-                <p>{entry.data.description}</p>
-              </div>
+            <li>
+              <article class="case-card">
+                <p class="case-meta">{entry.data.format} · {entry.data.pillar.replaceAll("-", " ")}</p>
+                <div>
+                  <h2>
+                    <a href={ROUTE_REGISTRY.pathFor("resources-slug", { slug: entry.data.slug })}>
+                      {entry.data.title}
+                    </a>
+                  </h2>
+                  <p>{entry.data.description}</p>
+                </div>
+              </article>
             </li>
           ))}
         </ul>
       )
     }
+
+    <PageCta
+      id="resources-next-step"
+      eyebrow="Found a loop worth fixing"
+      title="Bring the result of your check."
+      body="We can trace one repeated job and decide what should stay human."
+      primaryHref={contactHref}
+      primaryLabel="Start a conversation"
+      secondaryHref={ROUTE_REGISTRY.pathFor("case-studies")}
+      secondaryLabel="See the proof first"
+    />
   </section>
 </BaseLayout>

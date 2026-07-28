@@ -4,13 +4,13 @@ description: "Build an agent, a script, or a better process around work that kee
 visibility: public
 ---
 
-I start with the work that keeps coming back. Then I make four things clear: what it knows, what it checks, when it hands off, and how it recovers. The right answer may be an agent, a script, or a change in process. It depends on the work.
+I start with the work that keeps coming back. Then I make four things clear. What it knows. What it checks. When it hands off. How it recovers. The right answer may be an agent, a script, or a change in process. It depends on the work.
 
 Bring me a job that keeps landing on the same person. A report someone builds by hand. A handoff that keeps losing facts. An AI output nobody trusts. A process that only works while you watch it.
 
 ## Workflow diagnosis
 
-We trace the real path from start to finish. That includes the source files, the calls made, the checks, the handoffs, and the odd cases. You end up with a clear picture: what to automate, what should stay human, and where the loop breaks now.
+We trace the real path from start to finish. That includes the source files, the calls made, the checks, the handoffs, and the odd cases. You end up with a clear picture of what to automate, what should stay human, and where the loop breaks now.
 
 ## System design and build
 

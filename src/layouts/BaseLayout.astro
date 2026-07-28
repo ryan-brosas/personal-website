@@ -2,7 +2,7 @@
 // M2 (Plan 03, Child 4) — shared document shell. Standards-mode HTML, head via
 // SeoHead, skip link, SiteHeader, one <main id="main"><slot /></main>. Brand
 // tokens flow from the canonical tokens.css through global.css; the :focus-visible
-// rule comes from tokens.css. No motion, no client script.
+// rule comes from tokens.css. Optional motion is layered on without hiding the static baseline.
 // W3·T9: the shell no longer takes free-form canonical/title strings. It takes a
 // registry `routeId` and calls buildPageMetadata, so canonical + robots policy
 // derive from the ONE route registry. title/description/noindex are optional

@@ -29,7 +29,7 @@ const CHROME_CANDIDATES = [
 const EXPECTED = {
   "/": {
     canonical: "https://example.com/",
-    robots: null,
+    robots: "index,follow",
     h1: "Ryan Brosas",
     navCurrent: null,
     brandCurrent: true,
@@ -39,7 +39,7 @@ const EXPECTED = {
   },
   "/about/": {
     canonical: "https://example.com/about/",
-    robots: null,
+    robots: "index,follow",
     h1: "About Ryan Brosas",
     navCurrent: "About",
     brandCurrent: false,
@@ -49,7 +49,7 @@ const EXPECTED = {
   },
   "/services/": {
     canonical: "https://example.com/services/",
-    robots: null,
+    robots: "index,follow",
     h1: "Work With Me",
     navCurrent: "Work With Me",
     brandCurrent: false,
@@ -59,7 +59,7 @@ const EXPECTED = {
   },
   "/contact/": {
     canonical: "https://example.com/contact/",
-    robots: null,
+    robots: "index,follow",
     h1: "Contact",
     navCurrent: "Contact",
     brandCurrent: false,
@@ -69,7 +69,7 @@ const EXPECTED = {
   },
   "/case-studies/": {
     canonical: "https://example.com/case-studies/",
-    robots: null,
+    robots: "index,follow",
     h1: "Case Studies",
     navCurrent: "Case Studies",
     brandCurrent: false,
@@ -79,8 +79,8 @@ const EXPECTED = {
   },
   "/case-studies/this-site/": {
     canonical: "https://example.com/case-studies/this-site/",
-    robots: null,
-    h1: "Building This Website: A Transparent Self-Project",
+    robots: "index,follow",
+    h1: "Building This Website",
     navCurrent: null,
     brandCurrent: false,
     headerCurrent: false,
@@ -89,7 +89,7 @@ const EXPECTED = {
   },
   "/resources/": {
     canonical: "https://example.com/resources/",
-    robots: null,
+    robots: "index,follow",
     h1: "Resources",
     navCurrent: "Resources",
     brandCurrent: false,
@@ -99,7 +99,7 @@ const EXPECTED = {
   },
   "/resources/ai-workflow-readiness/": {
     canonical: "https://example.com/resources/ai-workflow-readiness/",
-    robots: null,
+    robots: "index,follow",
     h1: "AI Workflow Readiness Checklist",
     navCurrent: null,
     brandCurrent: false,
@@ -130,7 +130,7 @@ const MAIL_TEXT = "ryanjoserbrosas@gmail.com";
 function routeSlug(route) {
   if (route === "/") return "root";
   if (route === "/404.html") return "404";
-  return route.replace(/^\/|\/$/g, "");
+  return route.replace(/^\/|\/$/g, "").replaceAll("/", "-");
 }
 
 function assertEvidencePath(p) {
@@ -257,6 +257,8 @@ async function selfTest() {
   });
   assert.equal(routeSlug("/"), "root");
   assert.equal(routeSlug("/about/"), "about");
+  assert.equal(routeSlug("/case-studies/this-site/"), "case-studies-this-site");
+  assert.equal(routeSlug("/resources/ai-workflow-readiness/"), "resources-ai-workflow-readiness");
   assert.equal(routeSlug("/404.html"), "404");
   assert.throws(() => assertEvidencePath("../escape"), /outside/, "reject .. escape");
   assert.throws(() => assertEvidencePath("/etc/passwd"), /outside/, "reject absolute outside");

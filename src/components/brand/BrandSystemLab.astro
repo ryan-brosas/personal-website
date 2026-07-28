@@ -1,5 +1,7 @@
 ---
 import BrandHeading from "./BrandHeading.astro";
+import WorkflowRail from "../WorkflowRail.astro";
+import PageCta from "../PageCta.astro";
 import BrandLogo from "../../assets/brand/logo-charcoal.svg";
 import OperatorMascot from "../../assets/brand/operator-mascot.svg";
 import SystemConductor from "../../assets/brand/hero-system-conductor.svg";
@@ -479,6 +481,33 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
           <h2>Case Studies</h2>
           <p class="page-lead">Transparent, evidence-backed accounts of systems, trade-offs, and how the work was made.</p>
         </header>
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="workflow-rail">
+        <p class="brand-lab__specimen-rule"><code>.workflow-rail</code> · a static orientation sequence for service and collection openings. Use it only when the steps add information the page body does not repeat.</p>
+        <WorkflowRail
+          label="Reusable page flow"
+          steps={[
+            { label: "Find", detail: "Name the repeated job and its trigger." },
+            { label: "Shape", detail: "Set the context, checks, and human calls." },
+            { label: "Prove", detail: "Run the smallest loop and inspect the result." },
+          ]}
+          caption="The ordered words carry the full meaning without simulated progress."
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="page-cta">
+        <p class="brand-lab__specimen-rule"><code>.page-cta</code> · the shared closing plate. One clear primary action, with an optional secondary route when the reader may need more proof first.</p>
+        <PageCta
+          id="brand-lab-page-cta"
+          eyebrow="One useful next step"
+          title="Bring the loop that keeps coming back."
+          body="Start with the work, the current workaround, and the point where it breaks."
+          primaryHref="#brand-gallery"
+          primaryLabel="Start a conversation"
+          secondaryHref="#brand-gallery"
+          secondaryLabel="See the proof first"
+        />
       </div>
 
       <div class="brand-lab__specimen" data-pattern="signal-list">

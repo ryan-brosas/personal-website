@@ -3,6 +3,8 @@ import type { GetStaticPaths } from "astro";
 import { getCollection, render } from "astro:content";
 import CaseStudyLayout from "../../layouts/CaseStudyLayout.astro";
 import EvidenceNote from "../../components/EvidenceNote.astro";
+import PageCta from "../../components/PageCta.astro";
+import { ROUTE_REGISTRY } from "../../config/routes.ts";
 import { isRoutable } from "../../lib/publishing.ts";
 import { resolvePublicClaim } from "../../lib/evidence.ts";
 import type { ClaimRecord, SourceRegistry } from "../../lib/evidence.ts";
@@ -60,5 +62,16 @@ if (entry.data.visibility === "public") {
     </div>
 
     {claim && <EvidenceNote claim={claim} registry={registry} />}
+
+    <PageCta
+      id="case-study-next-step"
+      eyebrow="Have a loop like this"
+      title="Build the smallest version you can prove."
+      body="Start with one repeated job, its source facts, and the point where a person must stay in charge."
+      primaryHref={ROUTE_REGISTRY.pathFor("contact")}
+      primaryLabel="Bring me the work"
+      secondaryHref={ROUTE_REGISTRY.pathFor("case-studies")}
+      secondaryLabel="See all case studies"
+    />
   </article>
 </CaseStudyLayout>

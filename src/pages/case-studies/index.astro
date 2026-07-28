@@ -2,6 +2,8 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import JsonLd from "../../components/JsonLd.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import WorkflowRail from "../../components/WorkflowRail.astro";
+import PageCta from "../../components/PageCta.astro";
 import { getCollection } from "astro:content";
 import { isDiscoverable } from "../../lib/publishing.ts";
 import { buildEntityGraph } from "../../lib/structured-data.ts";
@@ -17,6 +19,7 @@ const entries = (await getCollection("case-studies"))
   .sort((a, b) => a.data.slug.localeCompare(b.data.slug));
 
 const visibility = entries.length > 0 ? "public" : "noindex";
+const contactHref = ROUTE_REGISTRY.pathFor("contact");
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({
   site,
@@ -39,22 +42,45 @@ const graph = buildEntityGraph({
       <p class="page-lead">{description}</p>
     </header>
 
+    <WorkflowRail
+      label="What each case exposes"
+      steps={[
+        { label: "Problem", detail: "The recurring work and its real cost." },
+        { label: "System", detail: "The smallest useful build around it." },
+        { label: "Proof", detail: "The checks and public evidence attached." },
+      ]}
+      caption="No result appears here without a source boundary."
+    />
+
     <ul class="case-grid">
       {
         entries.map((entry) => (
-          <li class="case-card">
-            <p class="case-meta">{entry.data.kind.replace("-", " ")} · {entry.data.pillar.replaceAll("-", " ")}</p>
-            <div>
+          <li>
+            <article class="case-card">
+              <p class="case-meta">{entry.data.kind.replace("-", " ")} · {entry.data.pillar.replaceAll("-", " ")}</p>
+              <div>
               <h2>
                 <a href={ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: entry.data.slug })}>
                   {entry.data.title}
                 </a>
               </h2>
-              <p>{entry.data.description}</p>
-            </div>
+                <p>{entry.data.description}</p>
+              </div>
+            </article>
           </li>
         ))
       }
     </ul>
+
+    <PageCta
+      id="case-studies-next-step"
+      eyebrow="Start with one real loop"
+      title="What work would you want exposed this clearly?"
+      body="Bring the current path, the handoffs, and the point where trust breaks."
+      primaryHref={contactHref}
+      primaryLabel="Start a conversation"
+      secondaryHref={ROUTE_REGISTRY.pathFor("services")}
+      secondaryLabel="See how I work"
+    />
   </section>
 </BaseLayout>

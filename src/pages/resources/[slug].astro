@@ -4,6 +4,8 @@ import { getCollection, render } from "astro:content";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import JsonLd from "../../components/JsonLd.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageCta from "../../components/PageCta.astro";
+import { ROUTE_REGISTRY } from "../../config/routes.ts";
 import { isRoutable } from "../../lib/publishing.ts";
 import { buildEntityGraph } from "../../lib/structured-data.ts";
 
@@ -49,5 +51,16 @@ const graph = buildEntityGraph({
     <div class="prose">
       <Content />
     </div>
+
+    <PageCta
+      id="resource-next-step"
+      eyebrow="Ready to test one loop"
+      title="Bring the checklist result."
+      body="We can turn the gaps into a small, testable next step without forcing an AI build."
+      primaryHref={ROUTE_REGISTRY.pathFor("contact")}
+      primaryLabel="Start a conversation"
+      secondaryHref={ROUTE_REGISTRY.pathFor("resources")}
+      secondaryLabel="See all resources"
+    />
   </article>
 </BaseLayout>
