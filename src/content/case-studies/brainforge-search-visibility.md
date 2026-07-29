@@ -1,5 +1,5 @@
 ---
-title: "Built to Be Found"
+title: "Building Search Reach"
 description: "A consultancy blog was built for search and set up so AI answer engines may cite it without training on it."
 visibility: public
 owner: ryan
