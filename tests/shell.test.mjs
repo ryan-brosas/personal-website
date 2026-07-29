@@ -798,6 +798,11 @@ describe("C4 contact route", () => {
       "contact h1 includes the approved title",
     );
 
+    const contactDescription =
+      "Bring one job that keeps coming back, how you handle it now, and where it breaks.";
+    assert.ok(html.includes(contactDescription), "contact description speaks directly to the reader");
+    assert.ok(!html.includes("Bring Ryan Brosas one job"), "contact description avoids third person");
+
     // The useful intake brief renders — proves <Content/> is wired, not blank.
     assert.ok(html.includes("Bring these three things"), "contact intake brief renders");
 

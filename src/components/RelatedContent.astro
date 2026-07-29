@@ -1,9 +1,6 @@
 ---
-// T12 — related-content list. Renders ONLY refs whose target is public (via the
-// authority seam → getRelatedList). Non-public / unresolvable targets (draft,
-// noindex, missing) are dropped to [] — no throw — so a partially-published graph
-// still builds and a public page never links a non-public target (INV-11). An empty
-// result renders NOTHING. Server-rendered only; works without JS.
+// Renders only public related targets (INV-11). Draft, noindex, missing, and
+// unresolvable targets produce no link; an empty result produces no markup.
 import { relatedRefs } from "./authority.ts";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 import type { RelationshipRef } from "../lib/relationships.ts";

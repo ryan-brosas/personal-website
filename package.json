@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "astro dev",
     "brand:lab": "PUBLIC_BRAND_LAB=true astro dev --host 0.0.0.0 --port 4325 --mode brand-lab",
+    "a11y:capture": "node scripts/a11y-capture.mjs --strict",
     "check": "astro check",
     "build": "astro build",
     "preview": "astro preview",

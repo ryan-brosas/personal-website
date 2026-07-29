@@ -1,4 +1,4 @@
-// W3·T9 (SEO/GEO authority refactor) — the single page-metadata builder. Every
+// Page-metadata builder. Every
 // route's SEO head flows through buildPageMetadata: it looks the route up in the
 // ONE registry (INV-06), derives the canonical URL via ROUTE_REGISTRY.canonicalFor
 // (never a free-form string — INV-01), derives noindex from the route's registry

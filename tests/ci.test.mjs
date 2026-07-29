@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
@@ -51,4 +52,34 @@ test("verified main builds deploy atomically to the production VPS", () => {
   assert.match(caddy, /^www\.ryanjosebrosas\.dev \{/m);
   assert.match(caddy, /root \* \/srv\/personal-website\/current/);
   assert.match(caddy, /file_server/);
+  assert.match(caddy, /Strict-Transport-Security "max-age=31536000; includeSubDomains"/);
+  assert.match(caddy, /Permissions-Policy "camera=\(\), microphone=\(\), geolocation=\(\), payment=\(\), usb=\(\)"/);
+
+  const distDir = path.join(repoRoot, "dist");
+  const behavioralHashes = new Set();
+  for (const relativePath of fs.readdirSync(distDir, { recursive: true })) {
+    if (typeof relativePath !== "string" || !relativePath.endsWith(".html")) continue;
+    const html = fs.readFileSync(path.join(distDir, relativePath), "utf-8");
+    for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+      if (/type=["']application\/ld\+json["']/i.test(match[1])) continue;
+      behavioralHashes.add(`sha256-${createHash("sha256").update(match[2]).digest("base64")}`);
+    }
+  }
+  assert.equal(behavioralHashes.size, 1, "all pages share one behavioral inline script");
+  const [behavioralHash] = behavioralHashes;
+  for (const directive of [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "connect-src 'self'",
+    "font-src 'self'",
+    "form-action 'none'",
+    "frame-ancestors 'none'",
+    "img-src 'self' data:",
+    "object-src 'none'",
+    `script-src 'self' '${behavioralHash}'`,
+    "style-src 'self'",
+    "upgrade-insecure-requests",
+  ]) {
+    assert.ok(caddy.includes(directive), `CSP includes ${directive}`);
+  }
 });

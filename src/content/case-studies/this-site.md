@@ -1,5 +1,5 @@
 ---
-title: "A Portfolio That Checks Its Work"
+title: "Building This Website"
 description: "How a rough portfolio became a clear site with shared rules, build checks, and a safe deploy."
 visibility: public
 owner: ryan

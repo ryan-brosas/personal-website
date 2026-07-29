@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import BrandSystemLab from "../components/brand/BrandSystemLab.astro";
 import JsonLd from "../components/JsonLd.astro";
 import HomeHero from "../components/HomeHero.astro";
 import SectionHeading from "../components/SectionHeading.astro";
@@ -16,7 +17,7 @@ import { homepageVerifiedClaims } from "../lib/home-proof.ts";
 import { selectPublicProofPoints } from "../lib/proof-points.ts";
 import { getCollection } from "astro:content";
 import sourcesJson from "../data/sources.json" with { type: "json" };
-import type { SourceRegistry } from "../lib/evidence.ts";
+import { parseSourceRegistryOrThrow } from "../config/entities.ts";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 
 const routeId = "home";
@@ -54,16 +55,14 @@ const entryPoints = [
 
 // Evidence rail. Entries are content (src/content/proof/*.md) but only reach the
 // page through the shared evidence kernel, so an unbacked figure never renders.
+const sourceRegistry = parseSourceRegistryOrThrow(sourcesJson);
 const proofPoints = selectPublicProofPoints(
   (await getCollection("proof")).map((entry) => ({ id: entry.id, ...entry.data })),
-  sourcesJson as unknown as SourceRegistry,
+  sourceRegistry,
 );
 
 const site = Astro.site?.href ?? "https://example.com";
 const graph = buildEntityGraph({ site, page: { routeId, title, description, visibility } });
-const BrandSystemLab = showBrandLab
-  ? (await import("../components/brand/BrandSystemLab.astro")).default
-  : undefined;
 ---
 <BaseLayout routeId={routeId} title={title} description={description}>
   <JsonLd graph={graph} />

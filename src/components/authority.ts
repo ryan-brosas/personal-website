@@ -1,10 +1,6 @@
-// T12 — pure presentation-decision seam shared by the authority components
-// (Byline / EvidenceNote / FreshnessNotice / RelatedContent). Each function
-// DELEGATES to the T7/T8 policy kernels (entities / evidence / freshness /
-// relationships) and NEVER reimplements claim, freshness, or relationship logic.
-// Keeping the decisions in one Node-importable module lets the .astro components
-// stay thin render wrappers and lets the behavior be unit-tested without an Astro
-// runtime (tests/components.test.mjs).
+// Node-importable presentation decisions for authority components. Each function
+// delegates to the entity, evidence, freshness, or relationship policy rather
+// than reimplementing it in an Astro render wrapper.
 import { PERSON_ENTITY } from "../config/entities.ts";
 import type { PersonEntity } from "../config/entities.ts";
 import { resolvePublicClaim } from "../lib/evidence.ts";

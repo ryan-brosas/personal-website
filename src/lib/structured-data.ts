@@ -1,4 +1,4 @@
-// W3·T10 (SEO/GEO authority refactor) — the JSON-LD entity-graph builder.
+// JSON-LD entity-graph builder.
 // Produces a single schema.org `@graph` describing the site + the current page:
 // Person (#person) / WebSite (#website) as site identity, plus a WebPage
 // (<canonical>#webpage), optional Service / Article, and a BreadcrumbList for the
@@ -24,6 +24,10 @@ export interface JsonLdGraph {
   "@context": "https://schema.org";
   "@graph": JsonLdNode[];
 }
+
+/** Serializes graph data without allowing a value to terminate its script element. */
+export const serializeJsonLd = (graph: JsonLdGraph): string =>
+  JSON.stringify(graph).replaceAll("<", "\\u003c");
 
 /** Page kind → which extra graph node (if any) accompanies the WebPage. */
 export type EntityGraphPageKind = "webpage" | "service" | "article";

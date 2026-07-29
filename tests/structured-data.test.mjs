@@ -10,10 +10,22 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it, test } from "node:test";
-import { buildEntityGraph } from "../src/lib/structured-data.ts";
+import { buildEntityGraph, serializeJsonLd } from "../src/lib/structured-data.ts";
 
 const SITE = "https://ryanjosebrosas.dev";
 const typeOf = (graph, type) => graph["@graph"].find((n) => n["@type"] === type);
+
+test("JSON-LD serialization cannot terminate its script data block", () => {
+  const unsafeName = "</script><script>alert(1)</script>";
+  const serialized = serializeJsonLd({
+    "@context": "https://schema.org",
+    "@graph": [{ "@type": "WebPage", name: unsafeName }],
+  });
+
+  assert.doesNotMatch(serialized, /<\/script/i);
+  assert.match(serialized, /\\u003c\/script>/);
+  assert.equal(JSON.parse(serialized)["@graph"][0].name, unsafeName);
+});
 
 describe("structured-data — buildEntityGraph", () => {
   it("wraps nodes in a schema.org @graph envelope", () => {

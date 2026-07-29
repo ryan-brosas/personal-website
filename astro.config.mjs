@@ -2,7 +2,7 @@ import { defineConfig } from "astro/config";
 import markdownSafety from "./src/lib/markdown-safety.ts";
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 
-// W1·T3 / INV-12: SITE_ORIGIN is injected at build time via env var. Resolution +
+// INV-12: SITE_ORIGIN is injected at build time via env var. Resolution +
 // the production guard live in the pure `resolveSiteOrigin` (src/lib/site-origin.ts,
 // unit-tested in tests/site-origin.test.mjs):
 //   • PRODUCTION_BUILD=true → SITE_ORIGIN MUST be a real origin (throws on absent
@@ -12,7 +12,7 @@ import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 //     placeholder, but an EXPLICIT placeholder value still throws (operator copy
 //     -paste guard).
 //
-// M2 C1: markdown body safety guard. Astro 5.18.2 hardcodes
+// Markdown body safety: Astro 5.18.2 hardcodes
 // allowDangerousHtml:true and runs custom rehypePlugins before rehypeRaw, so
 // this plugin sees raw hast nodes and throws on raw HTML, on* event
 // attributes, and javascript:/data: protocols. allowDangerousHtml stays

@@ -1,4 +1,4 @@
-// T8 relationship helper (Plan seo-geo-authority-refactor, design §12, INV-11).
+// Related-content policy (INV-11).
 // Reuses the publishing kernel's public->public-ONLY `resolveRelationship`
 // (NEVER weakened here) and adds a UI-safety helper that returns an EMPTY related
 // list for any non-public target (draft/noindex/missing collection/missing id),

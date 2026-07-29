@@ -1,4 +1,4 @@
-// W1·T2 (SEO/GEO authority refactor) — the route-registry kernel: the single
+// Route-registry kernel: the single
 // executable source of route truth. Pure module (no astro runtime imports, no
 // `any`), Node-testable. `defineRoutes` validates a route inventory at
 // construction time (fail-fast) and returns derived helpers; every other module

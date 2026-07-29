@@ -1,4 +1,4 @@
-// M2 (Plan 03, Child 1) single route-visibility resolver. Pure module —
+// Route-visibility resolver. Pure module —
 // Node-testable. Maps page records (injected as an ID->visibility map by the
 // Astro-runtime caller) to {path, visibility} tuples filtered by isRoutable.
 // Consumed by getStaticPaths(), the sitemap endpoint, and the verifier.

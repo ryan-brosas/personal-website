@@ -1,4 +1,4 @@
-// W1·T3 / INV-12 — the production origin guard, extracted as a PURE function so
+// Production origin guard (INV-12), kept pure so
 // the "real production build" rejection is Node-testable without spawning astro.
 //
 // Vite forces NODE_ENV=production in EVERY build (including `astro check` and the

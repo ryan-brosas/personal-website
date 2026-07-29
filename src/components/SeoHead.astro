@@ -1,9 +1,7 @@
 ---
-// M2 / W3·T9 — shared SEO head. Accepts EXACTLY one pre-resolved PageMetadata
-// object (from src/lib/metadata.ts) — no free-form title/description/canonical
-// props. Canonical is derived from ROUTE_REGISTRY inside buildPageMetadata (never
-// a prop), so HTML routes keep their trailing slash and file endpoints (e.g.
-// /404.html) stay slashless. OG tags are parameterized from metadata.og.
+// Renders one pre-resolved PageMetadata object. buildPageMetadata owns canonical
+// and robots policy, preventing free-form route metadata from bypassing the
+// registry contract.
 import type { PageMetadata } from "../lib/metadata.ts";
 
 interface Props {

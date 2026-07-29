@@ -1,6 +1,6 @@
-// M2 Accessibility Acceptance — A1 evidence capture.
-// Dependency-free: Node 24 built-ins + installed Chromium over the Chrome
-// DevTools Protocol. NO Playwright (not installed). Builds the site, serves it
+// Accessibility evidence capture.
+// Dependency-free: Node built-ins + installed Chromium over the Chrome DevTools
+// Protocol. No Playwright dependency. Builds the site, serves it
 // on a loopback preview, and captures real browser evidence across the registered
 // route matrix plus one keyboard-focus capture per route. Fail-closed: any page
 // console error, failed request, or non-loopback request fails the run.
@@ -11,6 +11,12 @@ import { tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { createServer } from "node:net";
 import assert from "node:assert/strict";
+import { resolveBuildManifest } from "./verify-build.mjs";
+import {
+  collectionDiscoveryRoutes,
+  collectionEntryRoutes,
+  readPageVisibilities,
+} from "./collection-records.mjs";
 
 const OUT = ".playwright-mcp/m2-accessibility-acceptance";
 const SHOTS = join(OUT, "screenshots");
@@ -25,8 +31,9 @@ const CHROME_CANDIDATES = [
   "/usr/bin/chromium-browser",
 ].filter(Boolean);
 
-// Expected values grounded in built dist/ output (verified 2026-07-22).
-const EXPECTED = {
+// Exact expectations for routes with page-specific behavior or stable copy.
+// All remaining HTML routes come from the authoritative build manifest.
+const EXPECTED_OVERRIDES = {
   "/": {
     canonical: "https://example.com/",
     robots: "index,follow",
@@ -148,7 +155,37 @@ const EXPECTED = {
     recovery: { href: "/", text: "Return to the home page" },
   },
 };
-const ROUTES = Object.keys(EXPECTED);
+
+const buildManifest = resolveBuildManifest({
+  pageVisibilities: readPageVisibilities(),
+  collectionEntryRoutes: collectionEntryRoutes(),
+  collectionDiscoveryRoutes: collectionDiscoveryRoutes(),
+});
+const discoverableRoutes = new Set(buildManifest.expectedDiscoverableRoutes);
+const ROUTES = [...new Set(buildManifest.expectedHtmlRoutes)].sort((a, b) => {
+  if (a === "/") return -1;
+  if (b === "/") return 1;
+  return a.localeCompare(b);
+});
+ROUTES.push("/404.html");
+const EXPECTED = Object.fromEntries(
+  ROUTES.map((route) => [
+    route,
+    {
+      canonical: `https://example.com${route}`,
+      robots:
+        route !== "/404.html" && discoverableRoutes.has(route)
+          ? "index,follow"
+          : "noindex,follow",
+      navCurrent: null,
+      brandCurrent: false,
+      headerCurrent: false,
+      sched: false,
+      recovery: route === "/404.html" ? { href: "/", text: "Return to the home page" } : null,
+      ...EXPECTED_OVERRIDES[route],
+    },
+  ]),
+);
 const MATRIX_SCENARIOS = ROUTES.length * 9;
 const STRICT_CAPTURES = MATRIX_SCENARIOS + ROUTES.length;
 const SCHED_HREF = "https://calendly.com/ryanjoserbrosas/30min";
@@ -311,7 +348,9 @@ async function selfTest() {
   assert.equal(isExpected404("/404.html", 404, "Document"), true);
   assert.equal(isExpected404("/404.html", 404, "Image"), false);
   assert.equal(isExpected404("/about/", 404, "Document"), false);
-  console.log(`self-test: PASS (matrix ${MATRIX_SCENARIOS}, routes, path guard, contrast, classify, 404)`);
+  console.log(
+    `self-test: PASS (matrix ${MATRIX_SCENARIOS}, ${ROUTES.length} routes, path guard, contrast, classify, 404)`,
+  );
 }
 // __PART_B__
 async function launchBrowser() {
@@ -621,7 +660,11 @@ async function runScenario(browser, sc, origin) {
     check("canonical", exp.canonical, dom.canonicalHref);
     check("robots", exp.robots, dom.robots);
     check("h1Count", 1, dom.h1Count);
-    check("h1", exp.h1, dom.h1Text);
+    if (exp.h1 === undefined) {
+      check("h1NonEmpty", true, typeof dom.h1Text === "string" && dom.h1Text.length > 0);
+    } else {
+      check("h1", exp.h1, dom.h1Text);
+    }
     check("navCurrent", exp.navCurrent, dom.navCurrent);
     check("brandCurrent", exp.brandCurrent, dom.brandCurrent);
     check("headerCurrent", exp.headerCurrent, dom.headerCurrent);
@@ -1167,6 +1210,32 @@ async function main() {
   const head = spawnSync("git", ["rev-parse", "HEAD"], { cwd: ROOT }).stdout.toString().trim();
   if (args.expectedCommit && head !== args.expectedCommit) {
     console.error("audited commit mismatch: HEAD=" + head + " expected=" + args.expectedCommit);
+    process.exit(1);
+  }
+
+  const sourceStatus = spawnSync(
+    "git",
+    [
+      "status",
+      "--porcelain",
+      "--untracked-files=all",
+      "--",
+      "src",
+      "public",
+      "astro.config.mjs",
+      "package.json",
+      "package-lock.json",
+      "scripts/a11y-capture.mjs",
+    ],
+    { cwd: ROOT, encoding: "utf-8" },
+  );
+  if (sourceStatus.status !== 0) {
+    console.error("could not determine accessibility evidence source state");
+    process.exit(1);
+  }
+  if (sourceStatus.stdout.trim() !== "") {
+    console.error("refusing to attribute accessibility evidence to HEAD with dirty build inputs:");
+    console.error(sourceStatus.stdout.trim());
     process.exit(1);
   }
 

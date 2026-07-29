@@ -1,4 +1,4 @@
-// M1 (Plan 01) discovery rendering — pure functions for sitemap and robots.
+// Pure sitemap and robots rendering.
 // Consumed by the thin endpoint wrappers (src/pages/sitemap.xml.ts,
 // src/pages/robots.txt.ts) and by Node tests. No astro:* imports; pure.
 import { isDiscoverable } from "./publishing.ts";

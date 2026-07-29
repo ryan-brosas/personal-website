@@ -439,7 +439,7 @@ a:hover {
 main {
   width: min(100%, var(--content-max));
   margin-inline: auto;
-  padding: var(--space-4) var(--space-3) var(--space-12);
+  padding: 0 var(--space-3);
 }
 
 main a {
@@ -614,7 +614,7 @@ main a {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: var(--space-8);
   align-items: center;
-  padding-block: var(--space-10) var(--space-12);
+  padding-block: var(--rhythm-section);
   border-bottom: 1px solid var(--line);
 }
 
@@ -942,7 +942,7 @@ main a {
 
 /* ---------- Workflow rail ---------- */
 .workflow-rail {
-  margin: var(--space-8) 0;
+  margin: var(--rhythm-block) 0;
   padding: var(--space-4);
   border: 1px solid var(--line-strong);
   background: var(--surface);
@@ -1001,12 +1001,9 @@ main a {
   text-transform: uppercase;
 }
 
-.page-cta {
+.page-shell .page-cta,
+.case-study-shell .page-cta {
   margin-block-start: var(--rhythm-section);
-}
-
-.home-section.page-cta {
-  margin-block-start: 0;
 }
 
 .page-cta .button-row {
@@ -1025,7 +1022,7 @@ main a {
 
 /* ---------- Home sections ---------- */
 .home-section {
-  padding: var(--space-12) 0;
+  padding: var(--rhythm-section) 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1038,7 +1035,7 @@ main a {
   display: grid;
   grid-template-columns: minmax(18rem, 1fr) minmax(0, 1fr);
   gap: var(--space-6);
-  margin-block-end: var(--space-8);
+  margin-block-end: var(--rhythm-block);
 }
 
 .section-heading h2 {
@@ -1232,7 +1229,7 @@ main a {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: var(--space-6);
-  padding: var(--space-8);
+  padding: var(--rhythm-block);
   border-radius: 0;
   background: var(--surface-dark);
   color: var(--text-inverse);
@@ -1266,7 +1263,7 @@ main a {
 .page-shell,
 .case-study-shell {
   margin-inline: auto;
-  padding: var(--space-8) 0 var(--space-10);
+  padding: var(--rhythm-section) 0;
 }
 
 .page-shell {
@@ -1281,8 +1278,8 @@ main a {
 .case-study-header {
   display: grid;
   gap: var(--space-3);
-  margin-block-end: var(--space-8);
-  padding-block-end: var(--space-6);
+  margin-block-end: var(--rhythm-block);
+  padding-block-end: var(--rhythm-block);
   border-bottom: 1px solid var(--line);
 }
 
@@ -1695,7 +1692,7 @@ main a {
 /* Adjacent resource groups (resources hub, wiki hub) need vertical
    rhythm; the group itself carries no margin, so without this they stack flush. */
 .resource-group + .resource-group {
-  margin-block-start: var(--space-8);
+  margin-block-start: var(--rhythm-section);
 }
 
 /* ---------- Case grid / cards ---------- */
@@ -2160,7 +2157,7 @@ html[data-motion-ready] [data-reveal="visible"] {
   }
 
   main {
-    padding: var(--space-3) var(--space-2) var(--space-8);
+    padding-inline: var(--space-2);
   }
 
   .site-header {

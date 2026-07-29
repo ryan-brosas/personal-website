@@ -1,11 +1,9 @@
-// Author identity + source/claim authority registry (Plan seo-geo-authority-refactor,
-// T7, design §12.4-12.5). Pure, Node-importable module: TS domain types (string-literal
-// unions only — tsconfig `erasableSyntaxOnly` forbids enums/namespaces) plus a zod
-// boundary schema for the public-safe source registry and a pure claim->source resolver.
+// Author identity and source/claim authority registry. This Node-importable module
+// uses string-literal domain types because `erasableSyntaxOnly` forbids enums and
+// namespaces. A Zod boundary validates the public-safe source registry.
 //
-// The `sources.json` file is the untrusted evidence registry; nothing here invents
-// external testimonials, metrics, or `sameAs` profiles. Only owner-verified, public-safe
-// records may be seeded (D-15 deferred — `sameAs` stays empty until profiles are confirmed).
+// `sources.json` is untrusted input. Only owner-verified, public-safe records may
+// be seeded, and `sameAs` stays empty until profiles are confirmed.
 import { z } from "astro/zod";
 import type { ValidateResult } from "../lib/publishing.ts";
 import { TopicPillarSchema } from "../lib/content-schemas.ts";
@@ -20,9 +18,8 @@ export type VerifiedExternalProfile = {
   readonly public: true;
 };
 
-// §12.4 the single author entity. `id`/`name` are fixed literals; `knowsAbout` is seeded
-// from the closed topic-pillar set (T6 `TopicPillar`) so the entity graph and topic model
-// never drift apart.
+// The single author entity uses fixed identity literals. `knowsAbout` comes from
+// the closed topic-pillar set so the entity graph and content model cannot drift.
 export type PersonEntity = {
   readonly id: "ryan-brosas";
   readonly name: "Ryan Brosas";
@@ -104,9 +101,11 @@ export const SourceRecordSchema = z.object({
 
 export const SourceRegistrySchema = z.record(SourceRecordSchema);
 
-// Parse an untrusted registry object (e.g. the imported sources.json) into typed
-// records, enforcing that each record's `id` matches its registry key.
-export const parseSourceRegistry = (input: unknown): ValidateResult => {
+type SourceRegistryParseResult =
+  | { readonly ok: true; readonly data: SourceRegistry }
+  | { readonly ok: false; readonly error: string };
+
+const parseSourceRegistryData = (input: unknown): SourceRegistryParseResult => {
   const parsed = SourceRegistrySchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.message };
   for (const [key, record] of Object.entries(parsed.data)) {
@@ -119,13 +118,23 @@ export const parseSourceRegistry = (input: unknown): ValidateResult => {
       return { ok: false, error: "public-source-requires-location" };
     }
   }
-  return { ok: true };
+  return { ok: true, data: parsed.data };
 };
 
-// ── Claim resolution ────────────────────────────────────────────────────────
-// An approved claim MUST cite at least one source id present in the registry.
-// Non-approved claims (blocked/retired) are not gated on source presence — they
-// never render on a public page (enforced downstream by the evidence policy, T8).
+export const parseSourceRegistry = (input: unknown): ValidateResult => {
+  const parsed = parseSourceRegistryData(input);
+  return parsed.ok ? { ok: true } : parsed;
+};
+
+/** Returns validated source records or fails the build boundary. */
+export const parseSourceRegistryOrThrow = (input: unknown): SourceRegistry => {
+  const parsed = parseSourceRegistryData(input);
+  if (!parsed.ok) throw new Error(`source registry validation failed: ${parsed.error}`);
+  return parsed.data;
+};
+
+// Approved claims must cite at least one registered source. Blocked and retired
+// claims do not render publicly, so source presence does not gate them.
 export const resolveClaimSources = (
   claim: ClaimRecord,
   registry: SourceRegistry,
@@ -137,13 +146,12 @@ export const resolveClaimSources = (
   return { ok: true };
 };
 
-// ── Seeds ───────────────────────────────────────────────────────────────────
-// Topic pillars (closed set) sourced from T6's `TopicPillarSchema` so the person
-// entity's expertise and the content topic model share one authority.
+// Topic pillars come from TopicPillarSchema so the person entity and content
+// model share one authority.
 const TOPIC_PILLARS: readonly string[] = TopicPillarSchema.options;
 
 // The single author entity. `sameAs` is intentionally empty: no external profile is
-// owner-verified yet (D-15 deferred). Do NOT add URLs here without a confirmed,
+// owner-verified yet. Do not add URLs here without a confirmed,
 // public, owner-verified profile.
 export const PERSON_ENTITY: PersonEntity = {
   id: "ryan-brosas",

@@ -1,7 +1,8 @@
-// M1 (Plan 01) publishing policy kernel. Pure Zod schemas + pure functions
-// consumed by both src/content.config.ts (adapter) and Node tests via safeParse.
-// Imports `astro/zod` (a real, Node-resolvable subpath re-export of zod 3.x),
-// NOT the runtime-only `astro:content` virtual module.
+/**
+ * Publishing schemas and pure visibility/evidence helpers shared by
+ * `src/content.config.ts` and Node tests. `astro/zod` keeps this module
+ * importable without the runtime-only `astro:content` virtual module.
+ */
 import { z } from "astro/zod";
 
 // Visibility (per-record publication state, fail-closed default draft).
@@ -39,7 +40,6 @@ export const EvidenceSchema = z.discriminatedUnion("kind", [
   ProposedEvidence,
   OpenEvidence,
 ]);
-export type Evidence = z.infer<typeof EvidenceSchema>;
 
 export type SourceRegistry = Record<string, unknown>;
 export type ValidateResult = { ok: boolean; error?: string };
@@ -65,7 +65,6 @@ export const DateFieldsSchema = z.object({
   updatedAt: z.string().datetime().optional(),
   reviewedAt: z.string().datetime().optional(),
 });
-export type DateFields = z.infer<typeof DateFieldsSchema>;
 
 // Relationship-target resolution against an injected synthetic collection map.
 // Rejects hidden (missing collection/target), draft, and noindex targets; only

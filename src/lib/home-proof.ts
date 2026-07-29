@@ -1,38 +1,18 @@
-// W4·T16 (SEO/GEO authority refactor) — the homepage promotion proof gate.
-//
-// The homepage ("/" / ROUTE_REGISTRY "home") ships noindex in the first release
-// and is promoted to public ONLY when a machine-executable, ALL-true proof gate
-// holds (design §home-proof gate, INV-07). This module splits that gate into:
-//
-//   1. `homepageProofGate` — a PURE, injectable function (case study record +
-//      source registry + homepage claims in; a discriminated result out). It is
-//      the testable core and reuses the T8 evidence kernel (`resolvePublicClaim`)
-//      — it never re-implements or weakens claim/source resolution. Node-testable
-//      in both directions without any filesystem or Astro runtime.
-//
-//   2. `resolveHomeVisibility` — the EDGE loader that reads the real inputs (the
-//      tracked self-project case study frontmatter, the public-safe source
-//      registry, and the seeded homepage claims) and runs the pure gate to derive
-//      the "home" route's visibility. Fail-closed: any read/parse error keeps the
-//      homepage noindex, never silently promoting it.
-//
-// The gate covers the record-level conditions (case study public + verified,
-// resolvable evidence with a labelled source; every homepage claim carries a
-// resolvable evidence ref). The build-level condition (`/` present in the
-// verifier's expectedDiscoverableRoutes after `npm run build && npm run verify`)
-// is enforced by the verifier + the shell suite, whose draft-flip QA scenario
-// re-derives this visibility in a fresh build process.
+/**
+ * Promotes the homepage only when the self-project case study is public with
+ * verified, resolvable evidence and every registered homepage claim resolves.
+ * homepageProofGate is the injectable policy; resolveHomeVisibility loads the
+ * tracked case study and converts its read or frontmatter failure to noindex. A
+ * malformed source registry fails the build at its validation boundary.
+ */
 import { resolvePublicClaim } from "./evidence.ts";
 import type { ClaimRecord, SourceRegistry } from "./evidence.ts";
 import type { Visibility } from "./publishing.ts";
 
 declare const process: { cwd(): string };
 
-// ── Pure gate ────────────────────────────────────────────────────────────────
-
-// The minimal projection of the self-project case study the gate needs: its
-// publication visibility and its single `evidence` object (T6 schema — one
-// object, not an array). `undefined` models an absent case study file.
+// The gate needs publication visibility and one evidence object. `undefined`
+// models an absent case-study file.
 export interface HomeProofCaseStudy {
   readonly visibility: string;
   readonly evidence: { readonly kind: string; readonly sourceId: string };
@@ -41,10 +21,9 @@ export interface HomeProofCaseStudy {
 export interface HomeProofInput {
   // The tracked self-project case study, or undefined when the file is absent.
   readonly caseStudy: HomeProofCaseStudy | undefined;
-  // The public-safe source registry (T7 sources.json), keyed by source id.
+  // The public-safe source registry, keyed by source id.
   readonly sources: SourceRegistry;
-  // The homepage's registered, approved factual claims (T7 SELF_PROJECT_CLAIMS). Every one
-  // must resolve to a public-safe source or the homepage stays noindex.
+  // Every registered homepage claim must resolve to a public-safe source.
   readonly claims: readonly ClaimRecord[];
 }
 
@@ -68,7 +47,7 @@ const deny = (reason: string): HomeProofResult => ({
  *      evidence whose `sourceId` resolves in the public-safe source registry;
  *   2. that resolved source has a non-empty label;
  *   3. every registered homepage proof claim resolves to a public-safe source (no unbacked claim).
- * Evidence resolution is delegated to the T8 kernel (`resolvePublicClaim`), which
+ * Evidence resolution is delegated to `resolvePublicClaim`, which
  * also rejects an internal-only source backing a public claim — never re-derived here.
  */
 export const homepageProofGate = (input: HomeProofInput): HomeProofResult => {
@@ -117,18 +96,10 @@ export const homepageProofGate = (input: HomeProofInput): HomeProofResult => {
 // flipping the case study to draft (or removing its source) keeps `/` noindex.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { SELF_PROJECT_CLAIMS } from "../config/entities.ts";
-import { parseSourceRegistry } from "../config/entities.ts";
+import { SELF_PROJECT_CLAIMS, parseSourceRegistryOrThrow } from "../config/entities.ts";
 import sourcesJson from "../data/sources.json" with { type: "json" };
 
-// sources.json is the T7 boundary-validated public-safe registry. Validate it at
-// the edge before trusting it: a malformed registry fails the build (fail-closed)
-// rather than silently producing a wrong promotion decision from a raw cast.
-const sourcesValidation = parseSourceRegistry(sourcesJson);
-if (!sourcesValidation.ok) {
-  throw new Error(`sources.json failed boundary validation: ${sourcesValidation.error}`);
-}
-const SOURCES = sourcesJson as unknown as SourceRegistry;
+const SOURCES = parseSourceRegistryOrThrow(sourcesJson);
 
 const CASE_STUDY_PATH = import.meta.url.includes("/src/lib/home-proof.")
   ? fileURLToPath(new URL("../content/case-studies/this-site.md", import.meta.url))
@@ -188,13 +159,9 @@ export const resolveHomeVisibility = (): Visibility =>
   }).visibility;
 
 /**
- * T16 — the verified facts the homepage may render. It is exactly the subset
- * of `SELF_PROJECT_CLAIMS` whose backing source resolves public-safe through the
- * SAME authority the proof gate uses (`resolvePublicClaim`). index.astro renders
- * this list verbatim, so the rendered verified facts can never drift from the
- * validated claim set (no unbacked copy) and never surfaces an internal-only /
- * unresolvable claim. When the gate has promoted "/" to public, every seeded
- * claim resolves, so the full set renders; otherwise the homepage is noindex.
+ * Returns the registered homepage claims whose backing sources resolve through
+ * the same public-safe policy used by the promotion gate. Rendering this result
+ * prevents unbacked or internal-only claims from drifting into homepage copy.
  */
 export const homepageVerifiedClaims = (registry: SourceRegistry = SOURCES): ClaimRecord[] =>
   SELF_PROJECT_CLAIMS.map((claim) => ({

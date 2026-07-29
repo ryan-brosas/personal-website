@@ -1,13 +1,8 @@
 ---
-// M2 (Plan 03, Child 4) — shared document shell. Standards-mode HTML, head via
-// SeoHead, skip link, SiteHeader, one <main id="main"><slot /></main>. Brand
-// tokens flow from the canonical tokens.css through global.css; the :focus-visible
-// rule comes from tokens.css. Optional motion is layered on without hiding the static baseline.
-// W3·T9: the shell no longer takes free-form canonical/title strings. It takes a
-// registry `routeId` and calls buildPageMetadata, so canonical + robots policy
-// derive from the ONE route registry. title/description/noindex are optional
-// overrides (page copy lives outside the registry; noindex overrides the
-// registry visibility for the 404 endpoint and content-driven noindex pages).
+// Shared document shell with metadata, skip navigation, one main landmark, site
+// navigation, footer, and optional motion. buildPageMetadata derives canonical and
+// robots policy from routeId; page copy and controlled noindex cases may override
+// their corresponding metadata fields.
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";

@@ -1,6 +1,6 @@
 ---
 title: "Contact"
-description: "Bring Ryan Brosas one job that keeps coming back, how you handle it now, and where it breaks."
+description: "Bring one job that keeps coming back, how you handle it now, and where it breaks."
 visibility: public
 ---
 

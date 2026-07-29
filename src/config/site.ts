@@ -1,9 +1,6 @@
-// Backward-compatibility shim (W1·T2). PAGES and NAV_ORDER are now DERIVED from
-// the single route registry (src/config/routes.ts) so existing callers
-// (SiteHeader, [page].astro) keep working while route truth lives in one place
-// (INV-06). This module no longer authors routes; it only projects the
-// registry's primary-nav entries into the legacy PageConfig shape. A later W1
-// slice removes remaining PAGES callers and this shim.
+// Compatibility projection from the route registry into the PageConfig shape
+// used by navigation and content adapters. This module never authors route truth
+// (INV-06); new route consumers should use ROUTE_REGISTRY directly.
 import { ROUTE_REGISTRY } from "./routes.ts";
 import type { NavLabelKey } from "../lib/route-registry.ts";
 import type { Visibility } from "../lib/publishing.ts";

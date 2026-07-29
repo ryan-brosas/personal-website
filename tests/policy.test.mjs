@@ -46,6 +46,7 @@ import {
   PERSON_ENTITY,
   SELF_PROJECT_CLAIMS,
   parseSourceRegistry,
+  parseSourceRegistryOrThrow,
   resolveClaimSources,
 } from "../src/config/entities.ts";
 
@@ -202,6 +203,14 @@ describe("T7 person entity + source/claim registry", () => {
     });
     assert.equal(result.ok, false);
     assert.equal(result.error, "public-source-requires-location");
+  });
+
+  test("the fail-fast registry parser returns validated typed records", () => {
+    assert.deepEqual(parseSourceRegistryOrThrow(sourcesRegistry), sourcesRegistry);
+    assert.throws(
+      () => parseSourceRegistryOrThrow({ source: { id: "source" } }),
+      /source registry validation failed/,
+    );
   });
 
   test("PERSON_ENTITY carries the fixed identity and topic pillars", () => {

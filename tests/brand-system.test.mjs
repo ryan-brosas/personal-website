@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
@@ -277,6 +278,7 @@ test("semantic tokens are consumed or explicitly published foundations", () => {
     "color-paper",
     "color-raised",
     "color-signal",
+    "space-12",
     "space-16",
   ]);
 });
@@ -380,6 +382,10 @@ test("layout rhythm comes from tokens, not per-pattern guesses", () => {
   assert.match(css, /\.signal-list li\s*\{[^}]*padding:\s*var\(--rhythm-row\) 0/s);
   assert.match(css, /\.page-header__copy\s*\{[^}]*align-content:\s*start/s);
   assert.doesNotMatch(css, /\.page-header__copy\s*\{[^}]*min-height:\s*30rem/s);
+  assert.match(
+    css,
+    /@media \(max-width: 600px\)\s*\{[\s\S]*?main\s*\{\s*padding-inline:\s*var\(--space-2\);\s*\}/,
+  );
 });
 
 test("the proof strip is a complete component, not orphaned responsive rules", () => {
@@ -445,7 +451,21 @@ test("Brand Lab has one explicit development command", () => {
   );
   const homeSource = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
   assert.match(homeSource, /import\.meta\.env\.PUBLIC_BRAND_LAB === "true"/);
+  assert.match(homeSource, /import BrandSystemLab from "\.\.\/components\/brand\/BrandSystemLab\.astro"/);
+  assert.doesNotMatch(homeSource, /await import\("\.\.\/components\/brand\/BrandSystemLab\.astro"\)/);
   assert.match(homeSource, /showBrandLab \? "Ryan Brosas \| Brand Lab"/);
+});
+
+test("accessibility evidence is strict and follows the build route manifest", () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf-8"));
+  assert.equal(packageJson.scripts["a11y:capture"], "node scripts/a11y-capture.mjs --strict");
+
+  const result = spawnSync(process.execPath, ["scripts/a11y-capture.mjs", "--self-test"], {
+    cwd: repoRoot,
+    encoding: "utf-8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /matrix 270, 30 routes/);
 });
 
 test("adopted illustrations use the original approved palette", () => {

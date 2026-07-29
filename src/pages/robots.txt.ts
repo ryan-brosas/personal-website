@@ -1,5 +1,4 @@
-// M1 (Plan 01) — thin endpoint wrapper for /robots.txt.
-// Renders from the configured origin via the pure renderRobots function.
+// Renders /robots.txt from the configured origin and code-owned crawler policy.
 import type { APIRoute } from "astro";
 import { renderRobots } from "../lib/discovery.ts";
 import { CRAWLER_POLICY } from "../config/crawlers.ts";

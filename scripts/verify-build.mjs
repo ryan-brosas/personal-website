@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// M1 (Plan 01) — read-only build verifier.
+// Read-only build verifier.
 // Checks generated dist/ against a manifest: expected HTML routes (with
 // self-canonicals), expected file endpoints, no unexpected routes, no
 // sitemap leaks of draft/noindex. Never writes or deletes build output.
@@ -60,9 +60,8 @@ const extractDeclaredDownloads = (html) => {
   return downloads;
 };
 
-// Narrow _astro/ asset allowlist: only bundled CSS/SVG/image/font extensions are
-// accepted. HTML and JS are rejected (M2 has no client scripts; a later plan
-// that adds them must explicitly extend this set).
+// The _astro/ allowlist accepts only the asset types this static build emits.
+// HTML and JavaScript require an explicit contract change.
 const ALLOWED_ASTRO_EXTENSIONS = new Set([
   ".css",
   ".svg",

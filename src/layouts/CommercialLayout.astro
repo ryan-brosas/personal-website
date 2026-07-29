@@ -1,21 +1,8 @@
 ---
-// W3·T11 (SEO/GEO authority refactor) — the commercial (Service) page layout. It
-// WRAPS BaseLayout: the shared shell owns <html>/<head>/SeoHead, the skip link,
-// the single <main id="main">, the header/footer, and the one nav-enhancement
-// script — this layout NEVER re-implements them, so the a11y contract enforced by
-// tests/shell.test.mjs is preserved by construction. On top of the shell it adds
-// exactly two page-level authority artifacts:
-//   1. a JSON-LD entity graph — a DATA block (type="application/ld+json"), not
-//      behavioral JS, so it is excluded from the shell "one behavioral script"
-//      contract and never bundles into _astro/*.js (JsonLd uses is:inline);
-//   2. a registry-derived breadcrumb trail (no client script).
-// The graph is keyed off Astro.site (the real origin from astro.config) so the
-// canonical + @id anchors stay deterministic. `kind` selects the extra page node:
-// it defaults to "service" (the commercial services page), but a caller may pass
-// "webpage" for a commercial-shell page that is NOT a service (about/contact) so
-// no Service node is emitted for content that is not a service. Like the WebPage/
-// BreadcrumbList nodes, the Service node is emitted only for a public page
-// (INV-03, enforced inside buildEntityGraph).
+// Commercial pages reuse BaseLayout and add registry-derived breadcrumbs plus a
+// JSON-LD graph keyed to Astro.site. `kind` defaults to service; about and contact
+// pass webpage so structured data matches visible content. buildEntityGraph omits
+// page-level nodes for non-public content (INV-03).
 import BaseLayout from "./BaseLayout.astro";
 import JsonLd from "../components/JsonLd.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";

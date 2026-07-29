@@ -1,6 +1,5 @@
-// T8 evidence policy kernel (Plan seo-geo-authority-refactor, design §12.5, INV-09).
-// Claim -> source resolution against the public-safe source registry
-// (T7 `src/data/sources.json`). A claim resolves ONLY when it is approved, has at
+// Evidence policy (INV-09): claim-to-source resolution against the public-safe
+// registry in `src/data/sources.json`. A claim resolves ONLY when it is approved, has at
 // least one source id, and every id is present in the registry. `assertClaimResolvable`
 // is the build gate: it throws on any unresolvable claim so a public page cannot ship
 // a metric/testimonial with a missing or non-approved evidence ref.
@@ -47,8 +46,7 @@ export const resolveClaim = (claim: ClaimRecord, registry: SourceRegistry): Evid
   return { ok: true, sources };
 };
 
-// Public-page variant: an internal-only source can validate an internal draft but
-// cannot back a public claim (design §12.5 — no public link/exposed path).
+// An internal-only source may validate a draft but cannot back a public claim.
 export const resolvePublicClaim = (
   claim: ClaimRecord,
   registry: SourceRegistry,

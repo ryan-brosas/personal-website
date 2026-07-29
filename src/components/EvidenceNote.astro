@@ -1,9 +1,6 @@
 ---
-// T12 — claim evidence note. Renders ONLY the public-safe backing sources of an
-// approved claim (via the authority seam → resolvePublicClaim). A blocked, retired,
-// unresolvable, or internal-only-backed claim resolves to [] and renders NOTHING —
-// a public page never surfaces a non-approved or leaky claim (INV-09, design §12.5).
-// Server-rendered only; works without JS.
+// Renders public-safe sources for an approved claim (INV-09). Blocked, retired,
+// unresolvable, and internal-only-backed claims produce no markup.
 import { evidenceSources } from "./authority.ts";
 import type { ClaimRecord, SourceRegistry } from "../lib/evidence.ts";
 

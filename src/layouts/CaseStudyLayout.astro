@@ -1,18 +1,7 @@
 ---
-// W3·T11 (SEO/GEO authority refactor) — the case-study (Article) page layout. It
-// WRAPS BaseLayout: the shared shell owns <html>/<head>/SeoHead, the skip link,
-// the single <main id="main">, the header/footer, and the one nav-enhancement
-// script — this layout NEVER re-implements them, so the a11y contract enforced by
-// tests/shell.test.mjs is preserved by construction. On top of the shell it adds
-// exactly two page-level authority artifacts:
-//   1. a JSON-LD entity graph — a DATA block (type="application/ld+json"), not
-//      behavioral JS, so it is excluded from the shell "one behavioral script"
-//      contract and never bundles into _astro/*.js (JsonLd uses is:inline);
-//   2. a registry-derived breadcrumb trail (no client script).
-// The graph is keyed off Astro.site (the real origin from astro.config) so the
-// canonical + @id anchors stay deterministic. kind:"article" marks the extra
-// Article node, which — like the WebPage/BreadcrumbList nodes — is emitted only
-// for a public page (INV-03, enforced inside buildEntityGraph).
+// Case-study pages reuse BaseLayout and add registry-derived breadcrumbs plus an
+// Article graph keyed to Astro.site. buildEntityGraph emits page-level nodes only
+// for public content (INV-03).
 import BaseLayout from "./BaseLayout.astro";
 import JsonLd from "../components/JsonLd.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";

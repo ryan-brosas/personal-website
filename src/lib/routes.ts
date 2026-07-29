@@ -1,8 +1,6 @@
-// M1 canonical-path helpers. Pure module (no astro runtime imports, no any) —
-// Node-testable. Route TRUTH (inventory, visibility, nav, parents) now lives in
-// the single route registry (src/config/routes.ts via src/lib/route-registry.ts,
-// INV-06); this module keeps only the low-level canonical-path primitives that
-// the registry and discovery layer build on.
+// Canonical-path helpers. Route inventory, visibility, navigation, and parents
+// live in the route registry (INV-06); this module owns only the low-level path
+// primitives used by the registry and discovery layer.
 //
 // Route contract (docs/sitemap.md:25):
 // - HTML routes use canonical trailing slashes.

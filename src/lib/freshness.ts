@@ -1,4 +1,4 @@
-// T8 freshness policy kernel (Plan seo-geo-authority-refactor, design §13, INV-13).
+// Freshness policy (INV-13).
 // INV-13: `modifiedAt` changes ONLY for a substantive visible change — formatting-
 // or frontmatter-only edits must never manufacture freshness. Plus stale detection
 // against `expiresAt` (hard freshness gate) and `reviewedAt` (review cadence).

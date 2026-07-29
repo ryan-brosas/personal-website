@@ -74,7 +74,7 @@ test("resource groups keep descriptions close and adjacent groups separated", ()
   );
   assert.match(
     css,
-    /\.resource-group \+ \.resource-group\s*\{[^}]*margin-block-start:\s*var\(--space-8\)/s,
+    /\.resource-group \+ \.resource-group\s*\{[^}]*margin-block-start:\s*var\(--rhythm-section\)/s,
   );
 });
 
@@ -419,6 +419,7 @@ test("the workflow rail is a static ordered sequence, not fake live progress", (
   assert.doesNotMatch(component, /Live path|data-page-motion|workflow-rail__progress/);
   assert.doesNotMatch(css, /\.workflow-rail__progress/);
   assert.match(component, /<ol class="workflow-rail__steps">/);
+  assert.match(css, /\.workflow-rail\s*\{[^}]*margin:\s*var\(--rhythm-block\) 0/s);
   assert.match(css, /\.workflow-rail > \.eyebrow\s*\{[^}]*margin-block-end:\s*var\(--space-3\)/s);
 });
 
@@ -453,7 +454,7 @@ test("entry pages use the full editorial width and concise case-study naming", (
     path.join(repoRoot, "src", "content", "case-studies", "this-site.md"),
     "utf-8",
   );
-  assert.match(caseStudy, /^title: "A Portfolio That Checks Its Work"$/m);
+  assert.match(caseStudy, /^title: "Building This Website"$/m);
   assert.doesNotMatch(caseStudy, /Transparent Self Project/);
   assert.match(css, /\.case-study-shell\s*\{[^}]*width:\s*100%/s);
   assert.match(css, /\.case-study-header\s*\{[^}]*grid-template-columns:/s);
