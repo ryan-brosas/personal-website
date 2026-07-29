@@ -1733,8 +1733,42 @@ describe("Resources content model", () => {
       EditorialResourceRecordSchema.safeParse({ ...resource, format: "tool" }).success,
       false,
     );
-    assert.equal(ToolRecordSchema.safeParse({ ...resource, format: "tool" }).success, true);
-    assert.equal(ToolRecordSchema.safeParse({ ...resource, format: "article" }).success, false);
+    const liveTool = {
+      ...resource,
+      format: "tool",
+      launchUrl: "https://dashboard.ryanjosebrosas.dev/",
+    };
+    assert.equal(ToolRecordSchema.safeParse(liveTool).success, true);
+    assert.equal(ToolRecordSchema.safeParse({ ...liveTool, format: "article" }).success, false);
+    assert.equal(ToolRecordSchema.safeParse({ ...resource, format: "tool" }).success, false);
+    assert.equal(
+      ToolRecordSchema.safeParse({ ...liveTool, launchUrl: "http://dashboard.ryanjosebrosas.dev/" })
+        .success,
+      false,
+    );
+    assert.equal(
+      ToolRecordSchema.safeParse({ ...liveTool, launchUrl: "https://example.com/" }).success,
+      false,
+    );
+    assert.doesNotThrow(() => ToolRecordSchema.safeParse({ ...liveTool, launchUrl: "not-a-url" }));
+    assert.equal(
+      ToolRecordSchema.safeParse({ ...liveTool, launchUrl: "not-a-url" }).success,
+      false,
+    );
+    assert.equal(
+      ToolRecordSchema.safeParse({
+        ...liveTool,
+        launchUrl: "https://user:secret@dashboard.ryanjosebrosas.dev/",
+      }).success,
+      false,
+    );
+    assert.equal(
+      ToolRecordSchema.safeParse({
+        ...liveTool,
+        launchUrl: "https://dashboard.ryanjosebrosas.dev:8443/",
+      }).success,
+      false,
+    );
   });
 
   test("accepts article resources and optional downloadable attachments", () => {

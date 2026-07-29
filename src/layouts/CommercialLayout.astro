@@ -7,7 +7,6 @@ import BaseLayout from "./BaseLayout.astro";
 import JsonLd from "../components/JsonLd.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildEntityGraph } from "../lib/structured-data.ts";
-import type { EntityGraphPageKind } from "../lib/structured-data.ts";
 import type { Visibility } from "../lib/publishing.ts";
 
 interface Props {
@@ -16,7 +15,7 @@ interface Props {
   description: string;
   visibility: Visibility;
   noindex?: boolean;
-  kind?: EntityGraphPageKind;
+  kind?: "webpage" | "service";
 }
 
 const { routeId, title, description, visibility, noindex, kind = "service" } = Astro.props;

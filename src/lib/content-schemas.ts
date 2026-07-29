@@ -242,10 +242,30 @@ export const EditorialResourceRecordSchema = ResourceRecordSchema.refine(
   { message: "editorial resources cannot use the tool format", path: ["format"] },
 );
 
-export const ToolRecordSchema = ResourceRecordSchema.refine(
-  (resource) => resource.format === "tool",
-  { message: "tools must use the tool format", path: ["format"] },
-);
+const ToolLaunchUrlSchema = z
+  .string()
+  .url()
+  .refine((value) => {
+    try {
+      const url = new URL(value);
+      return (
+        url.protocol === "https:" &&
+        url.hostname.endsWith(".ryanjosebrosas.dev") &&
+        url.username === "" &&
+        url.password === "" &&
+        url.port === ""
+      );
+    } catch {
+      return false;
+    }
+  }, "tool launch URLs must use HTTPS on an owned ryanjosebrosas.dev subdomain without credentials or a custom port");
+
+export const ToolRecordSchema = ResourceRecordSchema.and(
+  z.object({ launchUrl: ToolLaunchUrlSchema }),
+).refine((resource) => resource.format === "tool", {
+  message: "tools must use the tool format",
+  path: ["format"],
+});
 
 // The plain-language concept index uses the site-wide `pillar` as its sole
 // grouping key, avoiding a parallel wiki-only taxonomy. Each entry is an original

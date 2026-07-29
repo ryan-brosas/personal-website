@@ -9,7 +9,6 @@ import type { CommercialPageId } from "../components/CommercialHero.astro";
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 import { isRoutable } from "../lib/publishing.ts";
 import { assertMarkdownRendered } from "../lib/markdown-safety.ts";
-import type { EntityGraphPageKind } from "../lib/structured-data.ts";
 
 export const getStaticPaths = (async () => {
   const entries = await getCollection("pages");
@@ -34,7 +33,7 @@ export const getStaticPaths = (async () => {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const pageId = entry.id as CommercialPageId;
-const kind: EntityGraphPageKind = pageId === "services" ? "service" : "webpage";
+const kind: "service" | "webpage" = pageId === "services" ? "service" : "webpage";
 const contact =
   pageId === "contact" ? (await getEntry("settings", "site"))?.data.contact : undefined;
 if (pageId === "contact" && !contact) {

@@ -113,6 +113,15 @@ describe("T14 collection-records reader (verifier/shell single source of truth)"
     assert.equal(self.visibility, "public", "the self-project entry is public");
   });
 
+  test("reads the public Mastra résumé bot case study", () => {
+    const record = readCaseStudyRecords().find((entry) => entry.slug === "mastra-resume-bot");
+    assert.ok(record, "the Mastra résumé bot case study must be tracked");
+    assert.equal(record.visibility, "public");
+
+    const paths = caseStudyRoutes().map((entry) => entry.path);
+    assert.ok(paths.includes("/case-studies/mastra-resume-bot/"));
+  });
+
   test("caseStudyRoutes() derives the same inventory from tracked content", () => {
     const routes = caseStudyRoutes();
     const paths = routes.map((r) => r.path);

@@ -1,14 +1,14 @@
 // JSON-LD entity-graph builder.
 // Produces a single schema.org `@graph` describing the site + the current page:
 // Person (#person) / WebSite (#website) as site identity, plus a WebPage
-// (<canonical>#webpage), optional Service / Article, and a BreadcrumbList for the
-// page. Stable `@id` anchors are keyed off the EXPLICIT `site` origin passed by
+// (<canonical>#webpage), optional Service / Article / WebApplication, and a
+// BreadcrumbList for the page. Stable `@id` anchors are keyed off the EXPLICIT `site` origin passed by
 // the caller (never derived from env here) so tests and builds are deterministic
 // and the placeholder origin can never leak in. Pure module (no Astro runtime,
 // no `any`) — Node-testable.
 //
-// INV-03 (structured data describes ONLY visible content): a WebPage / Article /
-// BreadcrumbList is emitted ONLY for a `public` page. `noindex` and `draft` pages
+// INV-03 (structured data describes ONLY visible content): page-specific nodes are
+// emitted ONLY for a `public` page. `noindex` and `draft` pages
 // keep the global site identity (Person / WebSite) but contribute NO page node.
 import { ROUTE_REGISTRY } from "../config/routes.ts";
 import { PERSON_ENTITY } from "../config/entities.ts";
@@ -29,25 +29,28 @@ export interface JsonLdGraph {
 export const serializeJsonLd = (graph: JsonLdGraph): string =>
   JSON.stringify(graph).replaceAll("<", "\\u003c");
 
-/** Page kind → which extra graph node (if any) accompanies the WebPage. */
-export type EntityGraphPageKind = "webpage" | "service" | "article";
-
 /**
  * The page projection the graph builder needs. `routeId` resolves canonical +
  * breadcrumbs through the ONE registry; `visibility` gates the page node
  * (INV-03); `title`/`description` are page copy (the registry stores none).
  */
-export interface EntityGraphPage {
+interface EntityGraphPageBase {
   routeId: string;
   title: string;
   description: string;
   visibility: Visibility;
-  kind?: EntityGraphPageKind;
   // Dynamic-route params (e.g. { slug }) filling the route's [param] segments,
   // so the canonical + breadcrumb @id anchors resolve for a collection entry.
   // Static routes omit this (canonicalFor/breadcrumbsFor tolerate undefined).
   params?: Record<string, string>;
 }
+
+export type EntityGraphPage = EntityGraphPageBase &
+  (
+    | { kind?: "webpage"; externalUrl?: never }
+    | { kind: "service" | "article"; externalUrl?: never }
+    | { kind: "web-application"; externalUrl: string }
+  );
 
 export interface BuildEntityGraphInput {
   /** Absolute site origin, e.g. "https://ryanjosebrosas.dev" (trailing slash tolerated). */
@@ -95,6 +98,9 @@ const buildWebPageNode = (
   isPartOf: { "@id": `${origin}/#website` },
   about: { "@id": `${origin}/#person` },
   ...(hasBreadcrumb ? { breadcrumb: { "@id": `${canonical}#breadcrumb` } } : {}),
+  ...(page.kind === "web-application"
+    ? { mainEntity: { "@id": `${canonical}#application` } }
+    : {}),
 });
 
 const buildServiceNode = (
@@ -122,6 +128,20 @@ const buildArticleNode = (
   isPartOf: { "@id": `${origin}/#website` },
 });
 
+const buildWebApplicationNode = (
+  origin: string,
+  canonical: string,
+  page: EntityGraphPage,
+  externalUrl: string,
+): JsonLdNode => ({
+  "@type": "WebApplication",
+  "@id": `${canonical}#application`,
+  name: page.title,
+  description: page.description,
+  url: externalUrl,
+  creator: { "@id": `${origin}/#person` },
+});
+
 const buildBreadcrumbListNode = (
   origin: string,
   canonical: string,
@@ -144,8 +164,8 @@ const buildBreadcrumbListNode = (
  * Build the schema.org entity graph for one page.
  *
  * Person + WebSite are always present (global site identity). The page-specific
- * nodes (WebPage / Service / Article / BreadcrumbList) are emitted ONLY for a
- * `public` page — `noindex`/`draft` pages contribute no page node (INV-03).
+ * nodes (WebPage / Service / Article / WebApplication / BreadcrumbList) are
+ * emitted ONLY for a `public` page — `noindex`/`draft` pages contribute no page node (INV-03).
  *
  * @param site absolute origin (trailing slash tolerated); all `@id` anchors and
  *   the canonical URL are keyed off it — never off env inside this module.
@@ -173,6 +193,11 @@ export const buildEntityGraph = ({ site, page }: BuildEntityGraphInput): JsonLdG
       graph.push(buildServiceNode(origin, canonical, page));
     } else if (page.kind === "article") {
       graph.push(buildArticleNode(origin, canonical, page));
+    } else if (page.kind === "web-application") {
+      if (page.externalUrl === undefined) {
+        throw new Error("web-application pages require an externalUrl");
+      }
+      graph.push(buildWebApplicationNode(origin, canonical, page, page.externalUrl));
     }
 
     if (hasBreadcrumb) {

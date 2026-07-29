@@ -168,8 +168,8 @@ The rest of the portfolio still needs more public proof. There are no client
 result claims, approved client quotes, or made-up case study numbers filling the
 gaps.
 
-The résumé assistant is still a later service. It stays apart from the static
-site until its web request rules and safe failure path are ready.
+The résumé bot now runs as a separate live service. The portfolio links to it,
+but model work and credentials still stay outside the static Astro build.
 
 This version is a base, not an end state. The next useful step is another piece
 of work with a clear claim, source, and consent trail.

@@ -481,6 +481,60 @@ test("the self-project case study tells a challenge-to-result story without inve
   assert.match(caseStudy, /Contact page puts both ways to start in the first screen/i);
 });
 
+test("the résumé bot case study is a checked build story with explicit limits", () => {
+  const caseStudy = fs.readFileSync(
+    path.join(repoRoot, "src", "content", "case-studies", "mastra-resume-bot.md"),
+    "utf-8",
+  );
+  for (const heading of [
+    "The problem",
+    "What had to be true",
+    "What I built",
+    "What changed during the build",
+    "The result",
+    "What remains limited",
+  ]) {
+    assert.match(caseStudy, new RegExp("^## " + heading + "$", "m"));
+  }
+  assert.match(caseStudy, /^title: "A Résumé Bot That Shows Its Source"$/m);
+  assert.match(caseStudy, /sourceId: source-mastra-resume-bot-live-001/);
+  assert.match(caseStudy, /does not prove every possible answer is correct/i);
+  assert.match(
+    caseStudy,
+    /does not\s+show a hiring result, time saved, or a change in recruiter behavior/i,
+  );
+
+  const sources = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, "src", "data", "sources.json"), "utf-8"),
+  );
+  assert.equal(
+    sources["source-mastra-resume-bot-live-001"]?.publicUrl,
+    "https://resume.ryanjosebrosas.dev/",
+  );
+
+  const siteCaseStudy = fs.readFileSync(
+    path.join(repoRoot, "src", "content", "case-studies", "this-site.md"),
+    "utf-8",
+  );
+  assert.doesNotMatch(siteCaseStudy, /résumé assistant is still a later service/i);
+});
+
+test("the built résumé bot case study is public, evidenced, and discoverable", () => {
+  const route = "/case-studies/mastra-resume-bot/";
+  const html = readRoute(route);
+  assert.match(html, /<h1[^>]*>\s*A Résumé Bot That Shows Its Source\s*<\/h1>/);
+  assert.match(html, /<meta name="robots" content="index,follow">/);
+  assert.ok(html.includes('href="https://resume.ryanjosebrosas.dev/"'));
+  assert.match(html, /Live Mastra résumé bot deployment/);
+
+  const hub = readRoute("/case-studies/");
+  assert.match(hub, /href="\/case-studies\/mastra-resume-bot\/"/);
+  assert.match(hub, /A Résumé Bot That Shows Its Source/);
+
+  const sitemap = fs.readFileSync(path.join(repoRoot, "dist", "sitemap.xml"), "utf-8");
+  assert.match(sitemap, /\/case-studies\/mastra-resume-bot\//);
+});
+
 test("display headings use a readable shared measure without empty grid tracks", () => {
   const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
   assert.doesNotMatch(

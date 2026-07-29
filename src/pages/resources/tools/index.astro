@@ -12,7 +12,7 @@ import { buildEntityGraph } from "../../../lib/structured-data.ts";
 
 const routeId = "tools";
 const title = "Tools & Demos";
-const description = "Interactive tools and demos. Some are still being prepared for a public launch.";
+const description = "Live tools for inspecting AI telemetry and asking questions about Ryan’s work.";
 const entries = (await getCollection("tools"))
   .filter((entry) => isRoutable(entry.data.visibility))
   .sort((a, b) => a.data.title.localeCompare(b.data.title));
@@ -37,7 +37,7 @@ const graph = buildEntityGraph({
 
     {
       entries.length === 0 ? (
-        <p class="empty-state">The first tools are being prepared.</p>
+        <p class="empty-state">No live tools are listed yet.</p>
       ) : (
         <ul class="case-grid">
           {entries.map((entry) => (

@@ -2,10 +2,11 @@
 kind: resource
 format: tool
 slug: llm-watcher
-visibility: noindex
+visibility: public
 owner: ryan
-title: LLM Watcher
-description: The dev home for LLM Watcher. Its inputs, checks, and outputs are not set yet.
+title: Telemetry Inspector
+description: Inspect pi telemetry files by usage, cost, model, provider, and run.
+launchUrl: https://dashboard.ryanjosebrosas.dev/
 pillar: agent-reliability
 intents:
   - implementation
@@ -14,17 +15,20 @@ audience:
   - technical-reader
 ---
 
-## Purpose
+## What it does
 
-LLM Watcher is meant to make model behavior easier to inspect. The project does
-not yet define which models, events, or checks it will support.
+Load a pi telemetry JSONL file and inspect its data. You can also use sample data
+before you add a file.
 
-## Current status
+## What you can inspect
 
-The nested page and publishing boundary are ready. There is no runnable watcher,
-public data, or launch action on this site yet.
+- Usage and cost
+- Input, output, and cache reads
+- Models and providers
+- Recent runs
+- Raw data through the SQL view
 
 ## Limits
 
-This page is not evidence of live monitoring, alerts, model coverage, or stored
-results. Those claims stay out until a working build can prove them.
+The tool shows data from your file or its sample set. It does not claim to cover
+every model or send live alerts.

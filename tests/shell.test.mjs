@@ -501,7 +501,7 @@ describe("C2 noindex variant (copied production)", () => {
     if (variantCleanup) variantCleanup();
   });
 
-  test("noindex case study is routable and excluded from discovery", () => {
+  test("a noindex case study stays routable while its public sibling keeps the hub discoverable", () => {
     const route = "/case-studies/this-site/";
     const html = readHtml(variantDist, route);
     assert.ok(html, "variant case-study HTML must exist");
@@ -511,9 +511,12 @@ describe("C2 noindex variant (copied production)", () => {
     const sitemap = fs.readFileSync(path.join(variantDist, "sitemap.xml"), "utf-8");
     assert.ok(!sitemap.includes(`${SITE}${route}`), "noindex case study is absent from sitemap");
 
+    const publicSibling = `${SITE}/case-studies/mastra-resume-bot/`;
+    assert.ok(sitemap.includes(publicSibling), "public sibling remains in the sitemap");
+
     const hub = readHtml(variantDist, "/case-studies/");
-    assert.ok(hub, "case-study hub remains a recovery route");
-    assert.match(hub, /<meta\s+name="robots"\s+content="noindex,follow"/i);
+    assert.ok(hub, "case-study hub remains available");
+    assert.match(hub, /<meta\s+name="robots"\s+content="index,follow"/i);
   });
 
   test("public resource activates its entry, hub, nav, and sitemap", () => {

@@ -107,6 +107,28 @@ describe("structured-data — buildEntityGraph", () => {
     assert.ok(typeOf(graph, "Service"), "service-kind page must include a Service node");
   });
 
+  it("web application pages identify the checked live deployment", () => {
+    const graph = buildEntityGraph({
+      site: SITE,
+      page: {
+        routeId: "tools-slug",
+        params: { slug: "resume-bot" },
+        title: "Résumé Bot",
+        description: "Ask about Ryan's work.",
+        visibility: "public",
+        kind: "web-application",
+        externalUrl: "https://resume.ryanjosebrosas.dev/",
+      },
+    });
+    const application = typeOf(graph, "WebApplication");
+    const webPage = typeOf(graph, "WebPage");
+    assert.ok(application, "web-application kind emits a WebApplication node");
+    assert.equal(application["@id"], "https://ryanjosebrosas.dev/resources/tools/resume-bot/#application");
+    assert.equal(application.url, "https://resume.ryanjosebrosas.dev/");
+    assert.equal(application.creator["@id"], "https://ryanjosebrosas.dev/#person");
+    assert.equal(webPage.mainEntity["@id"], application["@id"]);
+  });
+
   it("INV-03: a noindex page emits NO WebPage node (still keeps site identity)", () => {
     const graph = buildEntityGraph({
       site: SITE,
@@ -209,6 +231,33 @@ test("built Article identity matches visible headlines and bylines", () => {
     assert.equal(article.author["@id"], person["@id"], `${relativePath} author resolves to Person`);
   }
   assert.ok(articles > 0, "the build emits public Article nodes");
+});
+
+test("built WebApplication identity matches visible copy and launch links", () => {
+  const dist = path.resolve(import.meta.dirname, "..", "dist");
+  const tools = ["llm-watcher", "resume-bot"];
+
+  for (const slug of tools) {
+    const html = fs.readFileSync(
+      path.join(dist, "resources", "tools", slug, "index.html"),
+      "utf-8",
+    );
+    const nodes = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .flatMap((match) => JSON.parse(match[1])["@graph"] ?? []);
+    const application = nodes.find((node) => node["@type"] === "WebApplication");
+    const webPage = nodes.find((node) => node["@type"] === "WebPage");
+    const person = nodes.find((node) => node["@type"] === "Person");
+    const heading = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g, " ").trim();
+    const description = html.match(/<meta name="description" content="([^"]*)"/)?.[1]
+      .replaceAll("&#39;", "'");
+
+    assert.ok(application, `${slug} emits a WebApplication node`);
+    assert.equal(application.name, heading, `${slug} application name matches H1`);
+    assert.equal(application.description, description, `${slug} description matches metadata`);
+    assert.ok(html.includes(`href="${application.url}"`), `${slug} application URL is visible`);
+    assert.equal(application.creator["@id"], person["@id"], `${slug} creator resolves to Person`);
+    assert.equal(webPage.mainEntity["@id"], application["@id"], `${slug} WebPage links its app`);
+  }
 });
 
 test("built Service identity matches visible copy and provider", () => {

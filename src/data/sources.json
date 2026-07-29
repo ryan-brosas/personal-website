@@ -8,5 +8,15 @@
     "reviewedAt": "2026-07-25T00:00:00.000Z",
     "notes": "Self-referential, directly observable evidence: the committed static output and its public source repository. No metrics, testimonials, or client data are asserted.",
     "publicUrl": "https://github.com/ryan-brosas/personal-website"
+  },
+  "source-mastra-resume-bot-live-001": {
+    "id": "source-mastra-resume-bot-live-001",
+    "title": "Live Mastra résumé bot deployment",
+    "type": "approved-artifact",
+    "owner": "ryan",
+    "permission": "public",
+    "reviewedAt": "2026-07-29T00:00:00.000Z",
+    "notes": "Directly observable self-project evidence at the live deployment. The public document endpoint, client bundle, answer response, citation payload, controlled invalid-input response, and rendered interface were checked. No hiring, traffic, sales, or time-saved result is asserted.",
+    "publicUrl": "https://resume.ryanjosebrosas.dev/"
   }
 }

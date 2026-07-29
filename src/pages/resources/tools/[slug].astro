@@ -31,6 +31,8 @@ const graph = buildEntityGraph({
     title: entry.data.title,
     description: entry.data.description,
     visibility: entry.data.visibility,
+    kind: "web-application",
+    externalUrl: entry.data.launchUrl,
   },
 });
 ---
@@ -58,13 +60,14 @@ const graph = buildEntityGraph({
 
     <PageCta
       id="tool-next-step"
-      eyebrow="Still in development"
-      title="This tool is not ready to launch yet."
-      body="The public demo, its limits, and its proof will be added when they can be checked."
-      primaryHref={ROUTE_REGISTRY.pathFor("tools")}
-      primaryLabel="See all tools"
-      secondaryHref={ROUTE_REGISTRY.pathFor("resources")}
-      secondaryLabel="Browse resources"
+      eyebrow="Live demo"
+      title={`Try ${entry.data.title}.`}
+      body="Open the live deployment and inspect it yourself."
+      primaryHref={entry.data.launchUrl}
+      primaryLabel={`Open ${entry.data.title}`}
+      primaryRel="noopener noreferrer"
+      secondaryHref={ROUTE_REGISTRY.pathFor("tools")}
+      secondaryLabel="See all tools"
     />
   </article>
 </BaseLayout>

@@ -14,7 +14,7 @@ describe("content-driven build manifest", () => {
     assert.deepEqual(inventory.resources.map((entry) => entry.slug), ["ai-workflow-readiness"]);
     assert.equal(inventory.resources[0].visibility, "public");
     assert.deepEqual(inventory.tools.map((entry) => entry.slug), ["llm-watcher", "resume-bot"]);
-    assert.ok(inventory.tools.every((entry) => entry.visibility === "noindex"));
+    assert.ok(inventory.tools.every((entry) => entry.visibility === "public"));
     assert.ok(inventory.wiki.length >= 12);
     assert.ok(inventory.wiki.every((entry) => entry.visibility === "public"));
   });

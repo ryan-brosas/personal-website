@@ -45,22 +45,32 @@ test("the wiki hub groups public terms and links to readable entries", () => {
   assert.match(entry, /see related concepts on LessWrong/);
 });
 
-test("development tools use nested noindex routes without flat duplicates", () => {
+test("live tools use public nested routes with owned launch actions", () => {
+  assert.match(resourcesHub, /href="\/resources\/tools\/llm-watcher\/"[^>]*>Telemetry Inspector<\/a>/);
+  assert.match(resourcesHub, /href="\/resources\/tools\/resume-bot\/"[^>]*>Résumé Bot<\/a>/);
+
   const hub = fs.readFileSync(
     path.join(repoRoot, "dist", "resources", "tools", "index.html"),
     "utf-8",
   );
-  assert.match(hub, /<meta name="robots" content="noindex,follow">/);
+  assert.match(hub, /<meta name="robots" content="index,follow">/);
   assert.match(hub, /href="\/resources\/tools\/llm-watcher\/"/);
   assert.match(hub, /href="\/resources\/tools\/resume-bot\/"/);
 
-  for (const [slug, title] of [["llm-watcher", "LLM Watcher"], ["resume-bot", "Résumé Bot"]]) {
+  const tools = [
+    ["llm-watcher", "Telemetry Inspector", "https://dashboard.ryanjosebrosas.dev/"],
+    ["resume-bot", "Résumé Bot", "https://resume.ryanjosebrosas.dev/"],
+  ];
+  for (const [slug, title, launchUrl] of tools) {
     const html = fs.readFileSync(
       path.join(repoRoot, "dist", "resources", "tools", slug, "index.html"),
       "utf-8",
     );
     assert.match(html, new RegExp(`<h1[^>]*>\\s*${title}\\s*<\\/h1>`));
-    assert.match(html, /<meta name="robots" content="noindex,follow">/);
+    assert.match(html, /<meta name="robots" content="index,follow">/);
+    assert.ok(html.includes(`href="${launchUrl}"`), `${slug} links to its live deployment`);
+    assert.match(html, new RegExp(`>Open ${title}<\\/a>`));
+    assert.doesNotMatch(html, /Still in development|not ready to launch/);
     const canonicalHref = html.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
     assert.ok(canonicalHref, "tool page emits a canonical URL");
     const canonical = new URL(canonicalHref);
@@ -70,7 +80,7 @@ test("development tools use nested noindex routes without flat duplicates", () =
   }
 
   const sitemap = fs.readFileSync(path.join(repoRoot, "dist", "sitemap.xml"), "utf-8");
-  assert.doesNotMatch(sitemap, /\/resources\/tools\//);
+  assert.match(sitemap, /\/resources\/tools\//);
 });
 
 

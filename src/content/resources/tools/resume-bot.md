@@ -2,10 +2,11 @@
 kind: resource
 format: tool
 slug: resume-bot
-visibility: noindex
+visibility: public
 owner: ryan
 title: Résumé Bot
-description: A resume helper in development. It reads PDF text and cites the pages it used.
+description: Ask about Ryan's work and see the résumé passage used for each answer.
+launchUrl: https://resume.ryanjosebrosas.dev/
 pillar: context-knowledge-systems
 intents:
   - implementation
@@ -15,17 +16,17 @@ audience:
   - technical-reader
 ---
 
-## Purpose
+## What it does
 
-The bot is being built to answer questions from a resume and point back to the
-pages that support an answer.
+The live Mastra résumé bot answers questions about Ryan's work. Each answer comes
+with the part of the résumé it used.
 
-## Current capability
+## What you can ask
 
-The separate Mastra project can read PDF text, find matching passages, and carry
-page numbers into answers. It also has a citation bundle for the current resume.
+Try a role, project, tool, or next step. The page also gives a few starter
+questions if you do not know where to begin.
 
 ## Limits
 
-The bot is not deployed or linked to this site. There is no public chat or web
-contract yet. Model keys stay outside the Astro build.
+Answers are limited by the current résumé and the passages the bot retrieves.
+Model keys and the Mastra service stay outside this Astro site.
