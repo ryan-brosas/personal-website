@@ -9,6 +9,17 @@ pillar: context-knowledge-systems
 evidence:
   kind: verified
   sourceId: source-mastra-resume-bot-live-001
+diagram:
+  caption: "One question goes to a short answer, then back to the source."
+  stages:
+    - label: "Load"
+      detail: "A fixed version of the three-page résumé is the only source."
+    - label: "Ask"
+      detail: "The request sends one question and short chat history."
+    - label: "Answer"
+      detail: "The service sends a short reply with source links."
+    - label: "Inspect"
+      detail: "The page and quote stay next to the answer."
 ---
 
 This is a self-project, not a client result. The live bot is the proof. It shows

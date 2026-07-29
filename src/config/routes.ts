@@ -16,10 +16,10 @@ import { resolveHomeVisibility } from "../lib/home-proof.ts";
 // primary navigation.
 const ROUTE_DEFINITIONS: RouteDefinition[] = [
   // The code-owned root derives visibility from resolveHomeVisibility. The gate
-  // promotes "/" only when the self-project case study is public
-  // with verified, resolvable evidence and every registered homepage proof claim carries an
-  // evidence ref; otherwise it stays noindex (fail-closed — crawlable but
-  // excluded from discovery). Flipping the case study to draft keeps "/" noindex.
+  // promotes "/" only when the featured résumé-bot case study is public
+  // with verified, fresh, resolvable evidence and every registered homepage proof claim
+  // carries a fresh evidence ref; otherwise it stays noindex (fail-closed — crawlable but
+  // excluded from discovery). Flipping the featured case study to draft keeps "/" noindex.
   {
     id: "home",
     kind: "singleton",

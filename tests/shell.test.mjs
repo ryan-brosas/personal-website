@@ -464,7 +464,7 @@ describe("C2 noindex variant (copied production)", () => {
       "src",
       "content",
       "case-studies",
-      "this-site.md",
+      "mastra-resume-bot.md",
     );
     const caseStudyContent = fs
       .readFileSync(caseStudyPath, "utf-8")
@@ -502,7 +502,7 @@ describe("C2 noindex variant (copied production)", () => {
   });
 
   test("a noindex case study stays routable while its public sibling keeps the hub discoverable", () => {
-    const route = "/case-studies/this-site/";
+    const route = "/case-studies/mastra-resume-bot/";
     const html = readHtml(variantDist, route);
     assert.ok(html, "variant case-study HTML must exist");
     assert.deepEqual(canonicalsOf(html), [`${SITE}${route}`]);
@@ -511,12 +511,17 @@ describe("C2 noindex variant (copied production)", () => {
     const sitemap = fs.readFileSync(path.join(variantDist, "sitemap.xml"), "utf-8");
     assert.ok(!sitemap.includes(`${SITE}${route}`), "noindex case study is absent from sitemap");
 
-    const publicSibling = `${SITE}/case-studies/mastra-resume-bot/`;
+    const publicSibling = `${SITE}/case-studies/this-site/`;
     assert.ok(sitemap.includes(publicSibling), "public sibling remains in the sitemap");
 
     const hub = readHtml(variantDist, "/case-studies/");
     assert.ok(hub, "case-study hub remains available");
     assert.match(hub, /<meta\s+name="robots"\s+content="index,follow"/i);
+
+    const home = readHtml(variantDist, "/");
+    assert.match(home, /<meta\s+name="robots"\s+content="noindex,follow"/i);
+    assert.doesNotMatch(home, /Ask one question\. See the source\./);
+    assert.doesNotMatch(home, /href="\/case-studies\/mastra-resume-bot\/"/i);
   });
 
   test("public resource activates its entry, hub, nav, and sitemap", () => {

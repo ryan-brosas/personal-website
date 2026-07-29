@@ -166,6 +166,19 @@ export const PERSON_ENTITY: PersonEntity = {
   knowsAbout: TOPIC_PILLARS,
 };
 
+// Checked claims for the homepage's featured résumé-bot case study. These
+// stay narrow to the public source path and make no hiring or quality claim.
+export const MASTRA_RESUME_BOT_CLAIMS: readonly ClaimRecord[] = [
+  {
+    id: "claim-mastra-resume-bot-source-path-001",
+    statement:
+      "The live résumé bot answers from a versioned three-page document. Each checked answer includes a page-linked source passage.",
+    kind: "fact",
+    sourceIds: ["source-mastra-resume-bot-live-001"],
+    status: "approved",
+  },
+];
+
 // The only approved claim at launch: the transparent self-project. It is backed solely
 // by self-referential, directly observable evidence (the live static build + public
 // source repository). No metrics, testimonials, or client claims are asserted.

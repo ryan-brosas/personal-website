@@ -1852,6 +1852,26 @@ describe("T6 content data models", () => {
     assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
   });
 
+  test("CaseStudyRecord validates a bounded case-study diagram", () => {
+    const stage = { label: "Trace", detail: "Follow one checked step." };
+    const diagram = { caption: "A checked flow.", stages: [stage, stage, stage, stage] };
+    assert.equal(CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram }).success, true);
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({
+        ...validCaseStudy,
+        diagram: { ...diagram, stages: [stage, stage] },
+      }).success,
+      false,
+    );
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({
+        ...validCaseStudy,
+        diagram: { ...diagram, stages: [stage, stage, stage, stage, stage, stage] },
+      }).success,
+      false,
+    );
+  });
+
   test("CaseStudyRecord REJECTS a public record with NO evidence (T6/INV-09)", () => {
     const { evidence, ...withoutEvidence } = validCaseStudy;
     const r = CaseStudyRecordSchema.safeParse(withoutEvidence);

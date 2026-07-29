@@ -9,6 +9,17 @@ pillar: ai-workflow-systems
 evidence:
   kind: verified
   sourceId: source-self-project-build-001
+diagram:
+  caption: "One route list, one proof gate, one checked release."
+  stages:
+    - label: "Register"
+      detail: "One list owns each public path."
+    - label: "Write"
+      detail: "Checked content holds its public state and proof."
+    - label: "Check"
+      detail: "Build tests check links, page data, and files."
+    - label: "Release"
+      detail: "One checked static build ships in one step."
 ---
 
 This is a self-project, not a client success story. There are no invented metrics,

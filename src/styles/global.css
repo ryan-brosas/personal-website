@@ -1172,7 +1172,9 @@ main a {
   display: grid;
   width: min(100%, 30rem);
   gap: var(--space-2);
+  margin: 0;
   padding: var(--space-3);
+  list-style: none;
   border: 1px solid var(--text-1);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -1180,7 +1182,7 @@ main a {
   transform: rotate(2deg);
 }
 
-.architecture-map div {
+.architecture-map li {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1272,6 +1274,10 @@ main a {
 
 .case-study-shell {
   width: 100%;
+}
+
+.case-study-shell > .process-diagram {
+  margin: var(--rhythm-block) 0 var(--rhythm-section);
 }
 
 .page-header,

@@ -152,6 +152,19 @@ export const ServiceRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchema
   slug: z.string().min(1),
 });
 
+export const CaseStudyDiagramSchema = z.object({
+  caption: z.string().min(1),
+  stages: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        detail: z.string().min(1),
+      }),
+    )
+    .min(3)
+    .max(5),
+});
+
 // Case-study records add a discriminant and slug to publication, SEO, and topic
 // fields.
 // TODO: Add challenge, decisions, verification, and claimIds when structured
@@ -167,6 +180,7 @@ export const CaseStudyRecordSchema = PublicationRecordSchema.merge(SeoFieldsSche
   .extend({
     kind: z.literal("case-study"),
     slug: z.string().min(1),
+    diagram: CaseStudyDiagramSchema.optional(),
   })
   .superRefine((record, ctx) => {
     if (record.visibility !== "public") return;

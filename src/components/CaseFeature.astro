@@ -13,6 +13,7 @@ interface Props {
   primaryLabel: string;
   secondaryHref: string;
   secondaryLabel: string;
+  itemsLabel: string;
   items: readonly ArchitectureItem[];
 }
 
@@ -25,6 +26,7 @@ const {
   primaryLabel,
   secondaryHref,
   secondaryLabel,
+  itemsLabel,
   items,
 } = Astro.props;
 ---
@@ -42,11 +44,11 @@ const {
       </div>
     </div>
   </div>
-  <div class="case-feature__visual" aria-hidden="true">
-    <div class="architecture-map">
+  <div class="case-feature__visual">
+    <ul class="architecture-map" aria-label={itemsLabel}>
       {items.map((item) => (
-        <div><strong>{item.label}</strong><span>{item.status}</span></div>
+        <li><strong>{item.label}</strong><span>{item.status}</span></li>
       ))}
-    </div>
+    </ul>
   </div>
 </div>

@@ -123,36 +123,21 @@ test("the homepage outcome columns are a shared Brand Lab composition", () => {
   assert.match(lab, /<OutcomeColumns/);
 });
 
-test("the homepage case feature is a shared Brand Lab composition", () => {
-  const componentPath = path.join(repoRoot, "src", "components", "CaseFeature.astro");
-  assert.ok(fs.existsSync(componentPath), "CaseFeature owns the proof feature composition");
-  const component = fs.readFileSync(componentPath, "utf-8");
-  assert.match(component, /class="case-feature"/);
-  assert.match(component, /class="architecture-map"/);
-
-  const home = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
-  assert.match(home, /import CaseFeature/);
-  assert.match(home, /<CaseFeature/);
-  assert.doesNotMatch(home, /<div class="case-feature">/);
-
-  const lab = fs.readFileSync(
-    path.join(repoRoot, "src", "components", "brand", "BrandSystemLab.astro"),
-    "utf-8",
-  );
-  assert.match(lab, /data-pattern="case-feature"/);
-  assert.match(lab, /<CaseFeature/);
-});
-
-test("the homepage features the source-backed résumé bot case study", () => {
-  const home = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
-  assert.match(home, /slug: "mastra-resume-bot"/);
-  assert.match(home, /title="Ask one question\. See the source\."/);
-  assert.match(home, /The résumé bot answers from a three-page document/);
-  assert.match(home, /\{ label: "Résumé", status: "versioned" \}/);
-  assert.match(home, /\{ label: "Answers", status: "source-bound" \}/);
-  assert.match(home, /\{ label: "Citations", status: "page-linked" \}/);
-  assert.match(home, /\{ label: "Failures", status: "controlled" \}/);
-  assert.doesNotMatch(home, /title="This site shows how the rules work\."/);
+test("the homepage renders the source-backed résumé bot feature as a semantic proof list", () => {
+  const home = readRoute("/");
+  assert.match(home, /<h2[^>]*id="case-title"[^>]*>Ask one question\. See the source\.<\/h2>/i);
+  assert.match(home, /href="\/case-studies\/mastra-resume-bot\/"/i);
+  assert.match(home, /<ul class="architecture-map"[^>]*aria-label="Résumé bot proof map"/i);
+  for (const [label, status] of [
+    ["Résumé", "versioned"],
+    ["Answers", "source-bound"],
+    ["Citations", "page-linked"],
+    ["Failures", "controlled"],
+  ]) {
+    assert.match(home, new RegExp(`<li>\\s*<strong>${label}<\\/strong>\\s*<span>${status}<\\/span>\\s*<\\/li>`, "i"));
+  }
+  assert.doesNotMatch(home, /class="case-feature__visual"[^>]*aria-hidden/i);
+  assert.doesNotMatch(home, /This site shows how the rules work\./);
 });
 
 test("the homepage delegates its hero and loop diagram to shared components", () => {
@@ -458,6 +443,32 @@ test("page motion progressively enhances scrolling and interaction", () => {
   assert.match(css, /--motion-enter-ease:\s*cubic-bezier\(0\.23, 1, 0\.32, 1\)/);
   assert.match(css, /html\[data-motion-ready\][^}]*data-reveal="pending"[^}]*opacity:/s);
   assert.match(css, /\.case-card\s*\{[^}]*transition:[^}]*transform/s);
+});
+
+test("both case studies render distinct animated system diagrams", () => {
+  const cases = [
+    {
+      route: "/case-studies/this-site/",
+      labels: ["Register", "Write", "Check", "Release"],
+      caption: "One route list, one proof gate, one checked release.",
+    },
+    {
+      route: "/case-studies/mastra-resume-bot/",
+      labels: ["Load", "Ask", "Answer", "Inspect"],
+      caption: "One question goes to a short answer, then back to the source.",
+    },
+  ];
+
+  for (const item of cases) {
+    const html = readRoute(item.route);
+    const figure = html.match(/<figure class="process-diagram">([\s\S]*?)<\/figure>/i)?.[0];
+    assert.ok(figure, `${item.route} renders the shared process diagram`);
+    assert.equal((figure.match(/<li(?:\s|>)/g) ?? []).length, 4);
+    for (const label of item.labels) assert.match(figure, new RegExp(`<b>${label}<\/b>`));
+    assert.match(figure, new RegExp(`<figcaption>${item.caption.replaceAll(".", "\\.")}<\/figcaption>`));
+    assert.equal((figure.match(/class="is-proven"/g) ?? []).length, 1);
+    assert.match(figure, /<li class="is-proven">[\s\S]*<span>04<\/span>/);
+  }
 });
 
 test("entry pages use the full editorial width and concise case-study naming", () => {
