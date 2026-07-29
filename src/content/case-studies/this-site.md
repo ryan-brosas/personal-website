@@ -25,6 +25,11 @@ diagram:
   output:
     label: "Static release"
     detail: "One checked build ships in one atomic step."
+cta:
+  eyebrow: "One list, one gate, one release"
+  title: "Ship a site you can check."
+  body: "When pages drift away from the claims behind them, the fix is one source of truth and a build that fails loudly. Bring me the site and the rules it has to keep."
+  primaryLabel: "Talk about your site"
 ---
 
 This is a self-project, not a client success story. There are no invented metrics,

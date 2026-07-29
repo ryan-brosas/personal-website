@@ -608,6 +608,37 @@ test("the résumé bot case study is a checked build story with explicit limits"
   assert.doesNotMatch(siteCaseStudy, /résumé assistant is still a later service/i);
 });
 
+// Every shipped page, not just the ones under review. The byline carried an em
+// dash onto 21 routes from a single shared component, which is exactly the kind
+// of drift a per-page copy review misses.
+test("no shipped page renders an em dash", () => {
+  const offenders = [];
+  const walk = (dir) => {
+    for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, item.name);
+      if (item.isDirectory()) walk(full);
+      else if (item.name.endsWith(".html") && fs.readFileSync(full, "utf-8").includes("\u2014")) {
+        offenders.push(path.relative(repoRoot, full));
+      }
+    }
+  };
+  walk(path.join(repoRoot, "dist"));
+  assert.deepEqual(offenders, [], "published copy uses a comma, a period, or a pipe");
+});
+
+test("each case study closes on its own next step", () => {
+  const cta = (route) =>
+    readRoute(route).match(
+      /<section[^>]*aria-labelledby="case-study-next-step"[\s\S]*?<\/section>/i,
+    )?.[0];
+  const bot = cta("/case-studies/mastra-resume-bot/");
+  const site = cta("/case-studies/this-site/");
+  assert.ok(bot && site, "both case studies render a closing step");
+  assert.notEqual(bot, site, "a shared CTA ignores the story the reader just finished");
+  assert.match(bot, /Talk about your documents/);
+  assert.match(site, /Talk about your site/);
+});
+
 test("the built résumé bot case study is public, evidenced, and discoverable", () => {
   const route = "/case-studies/mastra-resume-bot/";
   const html = readRoute(route);

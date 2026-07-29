@@ -1845,11 +1845,23 @@ describe("T6 content data models", () => {
     pillar: "ai-workflow-systems",
     // T6/INV-09: a public case study must cite verified evidence.
     evidence: { kind: "verified", sourceId: "source-self-project-build-001" },
+    cta: {
+      eyebrow: "Work like this",
+      title: "Start with one checked step.",
+      body: "Bring me the job and the proof it has to carry.",
+      primaryLabel: "Talk about the work",
+    },
   };
 
   test("CaseStudyRecord accepts a valid public record", () => {
     const r = CaseStudyRecordSchema.safeParse(validCaseStudy);
     assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
+  });
+
+  // The closing step is story-specific, so a case study cannot ship without one.
+  test("CaseStudyRecord REJECTS a record with no closing step", () => {
+    const { cta, ...withoutCta } = validCaseStudy;
+    assert.equal(CaseStudyRecordSchema.safeParse(withoutCta).success, false);
   });
 
   test("CaseStudyRecord validates distinct release and source-loop diagrams", () => {

@@ -200,12 +200,22 @@ export type CaseStudyDiagram = z.infer<typeof CaseStudyDiagramSchema>;
 // `kind: "verified"` when visibility is public.
 // draft/noindex records are exempt (no route / excluded from discovery), keeping
 // the fail-closed draft default frictionless for work-in-progress.
+// A case study's closing step belongs to the story it just told, so the words are
+// content. Destinations stay code-owned in ROUTE_REGISTRY.
+const CaseStudyCtaSchema = z.object({
+  eyebrow: z.string().min(1),
+  title: z.string().min(1),
+  body: z.string().min(1),
+  primaryLabel: z.string().min(1),
+});
+
 export const CaseStudyRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchema)
   .merge(TopicFieldsSchema)
   .extend({
     kind: z.literal("case-study"),
     slug: z.string().min(1),
     diagram: CaseStudyDiagramSchema.optional(),
+    cta: CaseStudyCtaSchema,
   })
   .superRefine((record, ctx) => {
     if (record.visibility !== "public") return;
