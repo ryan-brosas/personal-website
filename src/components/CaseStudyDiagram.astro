@@ -6,6 +6,34 @@ interface Props {
 }
 
 const { diagram } = Astro.props;
+
+// Sheet geometry for the source-loop document figure, in viewBox units. The
+// viewBox width is derived from the page count so the sheet row always fills the
+// panel, and the crop band keeps a fixed offset from the cited sheet's edges.
+const SHEET = { width: 74, height: 104, gap: 14, footer: 14, numberSize: 11 };
+const SHEET_LINES = [
+  { y: 14, width: 58 },
+  { y: 25, width: 50 },
+  { y: 36, width: 58 },
+  { y: 47, width: 54 },
+  { y: 58, width: 58 },
+  { y: 69, width: 44 },
+  { y: 80, width: 58 },
+  { y: 91, width: 32 },
+];
+const BAND = { x: 6, y: 44, width: 62, height: 21 };
+// Coordinate ticks in the sheet's margins mark where the crop starts and ends.
+// Corner brackets on the band itself crowd the two rows it frames.
+const CROP_TICKS = ["M 0 44 L 4 44", "M 70 44 L 74 44", "M 0 65 L 4 65", "M 70 65 L 74 65"];
+
+const source = diagram.kind === "source-loop" ? diagram.source : undefined;
+const sheets = Array.from({ length: source?.pages ?? 0 }, (_, index) => ({
+  page: index + 1,
+  x: index * (SHEET.width + SHEET.gap),
+  cited: index + 1 === source?.citedPage,
+}));
+const sheetsWidth = sheets.length * SHEET.width + (sheets.length - 1) * SHEET.gap;
+const isOnBand = (y: number) => y > BAND.y && y < BAND.y + BAND.height;
 ---
 {
   diagram.kind === "release-pipeline" ? (
@@ -39,21 +67,84 @@ const { diagram } = Astro.props;
   ) : (
     <figure class="case-diagram case-diagram--source-loop">
       <div class="source-loop">
-        <ol class="source-loop__path" aria-label="Checked answer path">
-          {diagram.path.map((node, index) => (
-            <li>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{node.label}</strong>
-              <small>{node.detail}</small>
-            </li>
-          ))}
-        </ol>
-        <div class="source-loop__fallback">
-          <span>Controlled failure</span>
-          <strong>{diagram.fallback.label}</strong>
-          <small>{diagram.fallback.detail}</small>
+        <div class="source-loop__ask">
+          <ol class="source-loop__path" aria-label="Answer path">
+            {diagram.path.slice(0, 3).map((node, index) => (
+              <li>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{node.label}</strong>
+                <small>{node.detail}</small>
+              </li>
+            ))}
+          </ol>
+          <i class="source-loop__signal" aria-hidden="true"></i>
         </div>
-        <i class="source-loop__signal" aria-hidden="true"></i>
+        <div class="source-loop__outcomes">
+          <section class="source-loop__landing">
+            <p class="source-loop__branch">Source found</p>
+            <span>04</span>
+            <strong>{diagram.path[3]?.label}</strong>
+            <small>{diagram.path[3]?.detail}</small>
+            <div class="source-loop__sheets">
+              <svg
+                class="source-sheets"
+                viewBox={`0 0 ${sheetsWidth} ${SHEET.height + SHEET.footer}`}
+                preserveAspectRatio="xMidYMid meet"
+                aria-hidden="true"
+                focusable="false"
+              >
+                {sheets.map((sheet) => (
+                  <g transform={`translate(${sheet.x} 0)`}>
+                    <rect
+                      class:list={["source-sheets__page", { "source-sheets__page--cited": sheet.cited }]}
+                      width={SHEET.width}
+                      height={SHEET.height}
+                    />
+                    {sheet.cited && (
+                      <rect class="source-sheets__band" x={BAND.x} y={BAND.y} width={BAND.width} height={BAND.height} />
+                    )}
+                    {SHEET_LINES.map((line) => (
+                      <rect
+                        class:list={[
+                          "source-sheets__line",
+                          { "source-sheets__line--cited": sheet.cited && isOnBand(line.y) },
+                        ]}
+                        x="8"
+                        y={line.y}
+                        width={line.width}
+                        height="3.5"
+                      />
+                    ))}
+                    {sheet.cited && CROP_TICKS.map((d) => <path class="source-sheets__crop" d={d} />)}
+                    <text
+                      class:list={["source-sheets__number", { "source-sheets__number--cited": sheet.cited }]}
+                      x={SHEET.width / 2}
+                      y={SHEET.height + SHEET.footer - 3}
+                      font-size={SHEET.numberSize}
+                      text-anchor="middle"
+                    >
+                      {sheet.page}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+              <p class="source-loop__meta">
+                <span>{source?.label}</span>
+                <span>
+                  Page {source?.citedPage} of {source?.pages}
+                </span>
+                <span class="source-loop__meta-cited">{source?.passageLabel}</span>
+              </p>
+            </div>
+          </section>
+          <section class="source-loop__fallback">
+            <p class="source-loop__branch source-loop__branch--none">No source</p>
+            <span>Controlled failure</span>
+            <strong>{diagram.fallback.label}</strong>
+            <small>{diagram.fallback.detail}</small>
+            <p class="source-loop__empty">No page. No quote. No crop.</p>
+          </section>
+        </div>
       </div>
       <figcaption>{diagram.caption}</figcaption>
     </figure>

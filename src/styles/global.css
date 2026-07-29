@@ -45,6 +45,9 @@
   --text-inverse: #f7f2e1;
   --line: #cbc5b3;
   --line-strong: #8f8878;
+  /* The hairline for charcoal panels. Decorative only: it divides figure
+   * regions and never carries text. */
+  --line-inverse: color-mix(in oklch, var(--text-inverse) 42%, transparent);
 
   /* Brand accents. Coral is the repeatable accent; yellow is a scarce signal. */
   --brand: #ff5555;
@@ -1016,40 +1019,45 @@ main a {
   }
 }
 
+/* ---------- Source loop ----------
+ * A forked answer path that ends inside the document it cites. Steps 01-03 share
+ * edges as one strip, so the sequence needs no connector rail. Below it the path
+ * forks once: the branch with a source lands on the résumé sheets and the branch
+ * without one lands on an empty frame. Both fork connectors are exactly one
+ * row-gap tall, so each terminates on the strip's own bottom border at any width.
+ */
 .case-diagram--source-loop {
   background: var(--surface-dark);
   color: var(--text-inverse);
 }
 
 .case-diagram--source-loop figcaption {
-  border-block-start-color: rgba(247, 242, 225, 0.42);
+  border-block-start-color: var(--line-inverse);
   color: var(--text-inverse);
 }
 
 .source-loop {
-  position: relative;
   display: grid;
-  min-height: 29rem;
-  align-content: center;
-  padding: var(--space-4);
+  row-gap: var(--space-8);
 }
 
-.source-loop::before {
-  position: absolute;
-  inset-block-start: 42%;
-  inset-inline: 4%;
-  border-block-start: 1px dashed rgba(247, 242, 225, 0.42);
-  content: "";
+.source-loop__outcomes {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.source-loop__ask {
+  position: relative;
 }
 
 .source-loop__path {
-  position: relative;
-  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   padding: 0;
+  border: 1px solid var(--line-inverse);
   list-style: none;
 }
 
@@ -1057,62 +1065,189 @@ main a {
   display: grid;
   align-content: start;
   gap: var(--space-2);
-  min-height: 12rem;
   padding: var(--space-3);
-  border: 1px solid rgba(247, 242, 225, 0.42);
-  background: var(--surface-dark);
 }
 
-.source-loop__path li:nth-child(even) {
-  transform: translateY(var(--space-4));
+.source-loop__path li + li {
+  border-inline-start: 1px solid var(--line-inverse);
 }
 
 .source-loop__path span,
-.source-loop__path small {
+.source-loop__path small,
+.source-loop__fallback span,
+.source-loop__fallback small,
+.source-loop__landing span,
+.source-loop__landing small {
   color: var(--text-inverse);
 }
 
-.source-loop__path li:last-child {
-  border-color: var(--signal);
-  background: var(--signal);
-  color: var(--text-1);
+.source-loop__landing,
+.source-loop__fallback {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
 }
 
-.source-loop__path li:last-child span,
-.source-loop__path li:last-child small {
-  color: var(--text-1);
+.source-loop__landing {
+  border: 1px solid var(--line-inverse);
 }
 
 .source-loop__fallback {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: min(100%, 28rem);
-  gap: var(--space-1);
-  margin: var(--space-8) auto 0;
-  padding: var(--space-3);
   border: 1px solid var(--brand);
-  background: var(--surface-dark);
 }
 
+/* The fork. Each connector rises exactly one row-gap, so it always meets the
+ * strip's bottom border instead of floating in the gap. The two lines sit on
+ * either side of the column gap so they read as one decision, not two starts. */
+.source-loop__landing::before,
 .source-loop__fallback::before {
   position: absolute;
   inset-block-end: 100%;
-  inset-inline-start: 50%;
   height: var(--space-8);
-  border-inline-start: 1px dashed var(--brand);
   content: "";
 }
 
-.source-loop__fallback span,
-.source-loop__fallback small {
+.source-loop__landing::before {
+  inset-inline-end: var(--space-6);
+  border-inline-start: 1px dashed var(--line-inverse);
+}
+
+.source-loop__fallback::before {
+  inset-inline-start: var(--space-6);
+  border-inline-start: 1px dashed var(--brand);
+}
+
+.source-loop__branch {
+  position: absolute;
+  inset-block-end: calc(100% + var(--space-2));
+  margin: 0;
   color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.source-loop__landing .source-loop__branch {
+  inset-inline-end: calc(var(--space-6) + var(--space-2));
+}
+
+.source-loop__fallback .source-loop__branch {
+  inset-inline-start: calc(var(--space-6) + var(--space-2));
+  color: var(--brand);
+}
+
+.source-loop__sheets {
+  display: grid;
+  gap: var(--space-3);
+  margin-block-start: var(--space-2);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--line-inverse);
+}
+
+.source-sheets {
+  display: block;
+  width: 100%;
+  max-width: 30rem;
+  height: auto;
+}
+
+.source-sheets__page {
+  fill: var(--surface-muted);
+}
+
+.source-sheets__page--cited {
+  fill: var(--canvas);
+}
+
+.source-sheets__line {
+  fill: var(--line);
+}
+
+.source-sheets__page--cited ~ .source-sheets__line {
+  fill: var(--line-strong);
+}
+
+.source-sheets__band {
+  fill: var(--signal);
+  stroke: var(--text-1);
+  stroke-width: 1;
+}
+
+/* Matches the sibling selector above so the highlighted rows stay darkest. */
+.source-sheets__page--cited ~ .source-sheets__line--cited {
+  fill: var(--text-1);
+}
+
+.source-sheets__crop {
+  fill: none;
+  stroke: var(--text-1);
+  stroke-width: 1.5;
+  stroke-linecap: square;
+}
+
+/* The page number's size is a viewBox coordinate, so it is set on the element
+ * alongside the rest of the sheet geometry. A rem role here would resolve
+ * against the root font size and then be read as user units. */
+.source-sheets__number {
+  fill: var(--line-strong);
+  font-family: var(--font-mono);
+}
+
+.source-sheets__number--cited {
+  fill: var(--text-inverse);
+}
+
+.source-loop__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-meta);
+  text-transform: uppercase;
+}
+
+.source-loop__meta-cited {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.source-loop__meta-cited::before {
+  width: 0.7em;
+  height: 0.7em;
+  background: var(--signal);
+  content: "";
+}
+
+/* The failure branch shows the same slot the sheets occupy, left empty. The
+ * absence is the point, so it keeps the frame and drops the contents. */
+.source-loop__empty {
+  display: grid;
+  min-height: 9rem;
+  align-content: center;
+  justify-items: center;
+  margin-block-start: calc(var(--space-2) + var(--space-3));
+  padding: var(--space-3);
+  border: 1px dashed var(--brand);
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-meta);
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .source-loop__signal {
   position: absolute;
   z-index: 2;
-  inset-block-start: calc(42% - var(--space-1));
+  inset-block-start: calc(var(--space-1) / -2);
   width: var(--space-2);
   height: var(--space-2);
   border: 1px solid var(--text-1);
@@ -1123,20 +1258,12 @@ main a {
 @keyframes source-loop-travel {
   0%,
   8% {
-    inset-inline-start: 3%;
-  }
-
-  35% {
-    inset-inline-start: 34%;
-  }
-
-  62% {
-    inset-inline-start: 65%;
+    inset-inline-start: 0;
   }
 
   90%,
   100% {
-    inset-inline-start: calc(97% - var(--space-2));
+    inset-inline-start: calc(100% - var(--space-2));
   }
 }
 
@@ -2531,42 +2658,51 @@ html[data-motion-ready] [data-reveal="visible"] {
     }
   }
 
-  .source-loop {
-    padding: 0;
-  }
-
-  .source-loop::before {
-    inset-block: 4% 24%;
-    inset-inline-start: var(--space-2);
-    border-block-start: 0;
-    border-inline-start: 1px dashed rgba(247, 242, 225, 0.42);
-  }
-
+  /* Stacked, the strip's shared edges run between rows instead of columns. */
   .source-loop__path {
     grid-template-columns: 1fr;
   }
 
-  .source-loop__path li:nth-child(even) {
-    transform: none;
+  .source-loop__path li + li {
+    border-block-start: 1px solid var(--line-inverse);
+    border-inline-start: 0;
+  }
+
+  .source-loop__outcomes {
+    grid-template-columns: 1fr;
+    row-gap: var(--space-4);
+  }
+
+  /* Stacked, a connector between the two outcomes would read as a sequence:
+   * cite, then fail. The fork only exists side by side, so each outcome carries
+   * its own branch label instead of a line. */
+  .source-loop__landing::before,
+  .source-loop__fallback::before {
+    content: none;
+  }
+
+  .source-loop__landing .source-loop__branch,
+  .source-loop__fallback .source-loop__branch {
+    position: static;
+    padding-block-end: var(--space-2);
+    border-block-end: 1px solid currentcolor;
   }
 
   .source-loop__signal {
-    inset-inline-start: calc(var(--space-2) - var(--space-1));
     animation-name: source-loop-travel-mobile;
   }
 
   @keyframes source-loop-travel-mobile {
     0%,
     8% {
-      inset-block-start: 3%;
+      inset-inline-start: 0;
     }
 
     90%,
     100% {
-      inset-block-start: 70%;
+      inset-inline-start: calc(100% - var(--space-2));
     }
   }
-
 
 
   .page-header__copy {

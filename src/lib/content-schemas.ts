@@ -157,6 +157,20 @@ const CaseStudyDiagramNodeSchema = z.object({
   detail: z.string().min(1),
 });
 
+// The cited artefact a source-loop lands on. `citedPage` is validated against
+// `pages` so a diagram can never point at a page the document does not have.
+const CaseStudyDiagramSourceSchema = z
+  .object({
+    label: z.string().min(1),
+    pages: z.number().int().min(1).max(12),
+    citedPage: z.number().int().min(1),
+    passageLabel: z.string().min(1),
+  })
+  .refine((source) => source.citedPage <= source.pages, {
+    message: "citedPage must fall inside the document",
+    path: ["citedPage"],
+  });
+
 export const CaseStudyDiagramSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("release-pipeline"),
@@ -170,6 +184,7 @@ export const CaseStudyDiagramSchema = z.discriminatedUnion("kind", [
     caption: z.string().min(1),
     path: z.array(CaseStudyDiagramNodeSchema).length(4),
     fallback: CaseStudyDiagramNodeSchema,
+    source: CaseStudyDiagramSourceSchema,
   }),
 ]);
 

@@ -1866,6 +1866,7 @@ describe("T6 content data models", () => {
       caption: "A checked answer.",
       path: [node, node, node, node],
       fallback: node,
+      source: { label: "The source", pages: 3, citedPage: 3, passageLabel: "Quoted passage" },
     };
     assert.equal(
       CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram: release }).success,
@@ -1887,6 +1888,20 @@ describe("T6 content data models", () => {
         ...validCaseStudy,
         diagram: { ...sourceLoop, path: [node, node, node] },
       }).success,
+      false,
+    );
+    // A source-loop lands on a real page, so a citation outside the document
+    // and a missing source block both fail closed.
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({
+        ...validCaseStudy,
+        diagram: { ...sourceLoop, source: { ...sourceLoop.source, citedPage: 4 } },
+      }).success,
+      false,
+    );
+    const { source, ...withoutSource } = sourceLoop;
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram: withoutSource }).success,
       false,
     );
   });

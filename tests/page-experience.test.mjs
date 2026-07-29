@@ -484,8 +484,10 @@ test("the case studies use genuinely different animated diagrams", () => {
     /<figure class="case-diagram case-diagram--source-loop">([\s\S]*?)<\/figure>/i,
   )?.[0];
   assert.ok(sourceLoop, "the résumé bot case renders its source-answer loop");
+  // Steps 01-03 are the strip; step 04 is the landing that holds the document,
+  // so only three list items carry the shared-edge sequence.
   assert.match(sourceLoop, /class="source-loop__path"/);
-  assert.equal((sourceLoop.match(/<li(?:\s|>)/g) ?? []).length, 4);
+  assert.equal((sourceLoop.match(/<li(?:\s|>)/g) ?? []).length, 3);
   for (const label of ["Question", "Retrieve", "Bounded answer", "Citation"]) {
     assert.match(sourceLoop, new RegExp(`<strong>${label}<\/strong>`));
   }
@@ -496,6 +498,19 @@ test("the case studies use genuinely different animated diagrams", () => {
   assert.doesNotMatch(sourceLoop, /release-map/);
   assert.doesNotMatch(bot, /<figure class="process-diagram">/);
 
+  // The fork is the explanation: one branch lands on the cited sheet, the other
+  // on an empty frame. The document is decorative SVG, so its meaning has to
+  // survive in text beside it.
+  assert.match(sourceLoop, /class="source-loop__branch">Source found</);
+  assert.match(sourceLoop, /source-loop__branch--none">No source</);
+  assert.match(sourceLoop, /class="source-loop__empty">No page\. No quote\. No crop\./);
+  assert.match(sourceLoop, /<svg class="source-sheets"[^>]*aria-hidden="true"/);
+  assert.equal((sourceLoop.match(/class="source-sheets__page"/g) ?? []).length, 2);
+  assert.equal((sourceLoop.match(/source-sheets__page--cited"/g) ?? []).length, 1);
+  assert.equal((sourceLoop.match(/class="source-sheets__band"/g) ?? []).length, 1);
+  assert.match(sourceLoop, /Page 3 of 3/);
+  assert.match(sourceLoop, /source-loop__meta-cited">Quoted passage</);
+
   const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
   assert.match(css, /@keyframes release-packet-travel/);
   assert.match(css, /@keyframes source-loop-travel/);
@@ -503,6 +518,19 @@ test("the case studies use genuinely different animated diagrams", () => {
     css,
     /\.case-diagram--source-loop figcaption\s*\{[^}]*color:\s*var\(--text-inverse\)/s,
   );
+  // Both fork connectors are one row-gap tall, which is what keeps them landing
+  // on the strip's border instead of floating in the gap.
+  const forkGap = css.match(/\.source-loop\s*\{[^}]*row-gap:\s*var\((--space-\d)\)/s);
+  assert.ok(forkGap, "the source loop declares its fork gap");
+  assert.match(
+    css,
+    new RegExp(
+      `\\.source-loop__landing::before,\\s*\\.source-loop__fallback::before\\s*\\{[^}]*inset-block-end:\\s*100%[^}]*height:\\s*var\\(${forkGap[1]}\\)`,
+      "s",
+    ),
+  );
+  // The charcoal figure's hairline is a token now, not a repeated literal.
+  assert.doesNotMatch(css, /rgba\(247, 242, 225, 0\.42\)/);
   const reduced = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/);
   assert.ok(reduced);
   assert.match(reduced[1], /\.release-map__packet/);

@@ -24,6 +24,11 @@ diagram:
   fallback:
     label: "Cannot verify"
     detail: "The service names the limit instead of making up an answer."
+  source:
+    label: "The loaded résumé"
+    pages: 3
+    citedPage: 3
+    passageLabel: "Quoted passage"
 ---
 
 This is a self-project, not a client result. The live bot is the proof. It shows

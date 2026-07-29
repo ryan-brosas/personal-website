@@ -687,7 +687,7 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
       </div>
 
       <div class="brand-lab__specimen" data-pattern="case-study-diagrams">
-        <p class="brand-lab__specimen-rule"><code>CaseStudyDiagram</code> · two validated diagram kinds with different structures. Release pipelines converge through a gate; source loops expose the answer path and controlled failure.</p>
+        <p class="brand-lab__specimen-rule"><code>CaseStudyDiagram</code> · two validated diagram kinds with different structures. Release pipelines converge three inputs through a gate. Source loops run one strip of shared-edge steps, then fork once into the cited document or into an empty frame. Every fork connector is exactly one row-gap tall, so it always terminates on the strip's own border.</p>
         <CaseStudyDiagram
           diagram={{
             kind: "release-pipeline",
@@ -712,6 +712,12 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
               { label: "Citation", detail: "The source stays beside the reply." },
             ],
             fallback: { label: "Cannot verify", detail: "The service names the limit." },
+            source: {
+              label: "The loaded document",
+              pages: 3,
+              citedPage: 3,
+              passageLabel: "Quoted passage",
+            },
           }}
         />
       </div>
