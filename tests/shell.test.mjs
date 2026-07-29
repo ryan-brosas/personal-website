@@ -173,14 +173,14 @@ describe("B1 root shell", () => {
   assert.match(html, /"@type":"Person"[^}]*"name":"Ryan Brosas"/);
     assert.match(html, /<h2[^>]*id="case-title"/i, "case-study section uses an h2");
 
-    // Proof-led positioning + the self-project case study link (its evidence).
+    // Proof-led positioning + the live résumé bot case study link.
     assert.ok(
       /clear systems for work that keeps coming back/i.test(html),
       "homepage carries the reader-focused positioning",
     );
     assert.ok(
-      /<a[^>]+href="\/case-studies\/this-site\/"[^>]*>/i.test(html),
-      "homepage links the self-project case study as its evidence",
+      /<a[^>]+href="\/case-studies\/mastra-resume-bot\/"[^>]*>/i.test(html),
+      "homepage links the live résumé bot case study as its featured evidence",
     );
 
     // Person + WebSite + WebPage JSON-LD — the WebPage node is emitted ONLY for a

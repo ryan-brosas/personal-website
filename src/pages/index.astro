@@ -32,7 +32,7 @@ const visibility = home?.visibility ?? "noindex";
 const servicesHref = ROUTE_REGISTRY.pathFor("services");
 const contactHref = ROUTE_REGISTRY.pathFor("contact");
 const caseStudiesHref = ROUTE_REGISTRY.pathFor("case-studies");
-const caseStudyHref = ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: "this-site" });
+const caseStudyHref = ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: "mastra-resume-bot" });
 const resourcesHref = ROUTE_REGISTRY.pathFor("resources");
 const aboutHref = ROUTE_REGISTRY.pathFor("about");
 const claims = homepageVerifiedClaims();
@@ -126,17 +126,17 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
     <CaseFeature
       id="case-title"
       eyebrow="Proof you can inspect"
-      title="This site shows how the rules work."
-      body="This site uses one route list, clear rules for what goes live, proof checks, and build tests that must pass."
+      title="Ask one question. See the source."
+      body="The résumé bot answers from a three-page document, then shows the page and passage behind each answer."
       primaryHref={caseStudyHref}
       primaryLabel="Read the case study"
       secondaryHref={caseStudiesHref}
       secondaryLabel="All case studies"
       items={[
-        { label: "Content", status: "validated" },
-        { label: "Route registry", status: "canonical" },
-        { label: "Evidence policy", status: "fail-closed" },
-        { label: "Static build", status: "verified" },
+        { label: "Résumé", status: "versioned" },
+        { label: "Answers", status: "source-bound" },
+        { label: "Citations", status: "page-linked" },
+        { label: "Failures", status: "controlled" },
       ]}
     />
 

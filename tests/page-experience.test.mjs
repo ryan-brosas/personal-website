@@ -143,6 +143,18 @@ test("the homepage case feature is a shared Brand Lab composition", () => {
   assert.match(lab, /<CaseFeature/);
 });
 
+test("the homepage features the source-backed résumé bot case study", () => {
+  const home = fs.readFileSync(path.join(repoRoot, "src", "pages", "index.astro"), "utf-8");
+  assert.match(home, /slug: "mastra-resume-bot"/);
+  assert.match(home, /title="Ask one question\. See the source\."/);
+  assert.match(home, /The résumé bot answers from a three-page document/);
+  assert.match(home, /\{ label: "Résumé", status: "versioned" \}/);
+  assert.match(home, /\{ label: "Answers", status: "source-bound" \}/);
+  assert.match(home, /\{ label: "Citations", status: "page-linked" \}/);
+  assert.match(home, /\{ label: "Failures", status: "controlled" \}/);
+  assert.doesNotMatch(home, /title="This site shows how the rules work\."/);
+});
+
 test("the homepage delegates its hero and loop diagram to shared components", () => {
   const heroPath = path.join(repoRoot, "src", "components", "HomeHero.astro");
   const loopPath = path.join(repoRoot, "src", "components", "LoopField.astro");
