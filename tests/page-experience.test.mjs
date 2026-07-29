@@ -626,6 +626,28 @@ test("no shipped page renders an em dash", () => {
   assert.deepEqual(offenders, [], "published copy uses a comma, a period, or a pipe");
 });
 
+test("the disclosure split names what is withheld beside what ships", () => {
+  const html = readRoute("/case-studies/pi-telemetry-dashboard/");
+  const figure = html.match(
+    /<figure class="case-diagram case-diagram--disclosure">([\s\S]*?)<\/figure>/i,
+  )?.[1];
+  assert.ok(figure, "the telemetry case renders a disclosure split");
+  // The withheld side is the claim. If any of these ever appear in the released
+  // list the figure is asserting the opposite of what the page promises.
+  for (const withheld of ["Prompt text", "Tool arguments", "Tool results", "File paths", "Session transcripts"]) {
+    assert.match(figure, new RegExp(`<li>${withheld}</li>`));
+  }
+  const released = figure.match(
+    /disclosure-split__side--released[\s\S]*?<\/section>/i,
+  )?.[0];
+  assert.ok(released);
+  for (const withheld of ["Prompt text", "Tool arguments", "Tool results", "File paths", "Session transcripts"]) {
+    assert.doesNotMatch(released, new RegExp(withheld));
+  }
+  assert.match(figure, /disclosure-split__guard/);
+  assert.doesNotMatch(figure, /release-map|source-loop|reach-grid/);
+});
+
 test("the reach gap is counted at true scale, not summarised", () => {
   const html = readRoute("/case-studies/brainforge-search-visibility/");
   const figure = html.match(

@@ -39,5 +39,16 @@
     "reviewedAt": "2026-07-30T00:00:00.000Z",
     "notes": "Directly observable public evidence checked on 30 July 2026. The blog index is live and paginated. /llms.txt returns 200 with curated sections including agent-readable references. /robots.txt declares Content-Signal search=yes, ai-train=no, use=reference, disallows GPTBot, ClaudeBot, Google-Extended, CCBot, Bytespider, Applebot-Extended, Amazonbot and meta-externalagent, and leaves OAI-SearchBot, Claude-SearchBot, PerplexityBot, Googlebot and Bingbot allowed. Blog posts carry Article, BreadcrumbList, Person and WebPage structured data. Search Console figures are private and are NOT covered by this source.",
     "publicUrl": "https://brainforge.ai/llms.txt"
+  },
+  "source-pi-telemetry-dashboard-001": {
+    "id": "source-pi-telemetry-dashboard-001",
+    "title": "Live pi telemetry dashboard and its public metrics feed",
+    "type": "public-url",
+    "owner": "ryan",
+    "permission": "public",
+    "capturedAt": "2026-07-30T00:00:00.000Z",
+    "reviewedAt": "2026-07-30T00:00:00.000Z",
+    "notes": "Directly observable public evidence checked on 30 July 2026. The dashboard returns 200. The public feed at /feed/snapshot.json returns schema version 1 with 23,869 source records, 308 usage rows and 278 activity rows across 143 sessions. Every session id is a 16 character hex hash. The feed carries no prompt text, tool arguments, tool results, file paths or transcript fields, checked field by field against the emitted rows. Source is public at github.com/ryan-brosas/pi-dashboard.",
+    "publicUrl": "https://dashboard.ryanjosebrosas.dev/"
   }
 }

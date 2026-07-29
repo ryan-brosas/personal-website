@@ -55,7 +55,33 @@ const sheetsWidth = sheets.length * SHEET.width + (sheets.length - 1) * SHEET.ga
 const isOnBand = (y: number) => y > BAND.y && y < BAND.y + BAND.height;
 ---
 {
-  diagram.kind === "reach-gap" ? (
+  diagram.kind === "disclosure-split" ? (
+    <figure class="case-diagram case-diagram--disclosure">
+      <div class="disclosure-split">
+        <section class="disclosure-split__side disclosure-split__side--withheld">
+          <p>{diagram.withheld.label}</p>
+          <ul aria-label={diagram.withheld.label}>
+            {diagram.withheld.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </section>
+        <div class="disclosure-split__guard">
+          <span>{diagram.guard.label}</span>
+        </div>
+        <section class="disclosure-split__side disclosure-split__side--released">
+          <p>{diagram.released.label}</p>
+          <ul aria-label={diagram.released.label}>
+            {diagram.released.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </section>
+        <p class="disclosure-split__rule">{diagram.guard.detail}</p>
+      </div>
+      <figcaption>{diagram.caption}</figcaption>
+    </figure>
+  ) : diagram.kind === "reach-gap" ? (
     <figure class="case-diagram case-diagram--reach-gap">
       <div class="reach-gap">
         <dl class="reach-gap__measures">

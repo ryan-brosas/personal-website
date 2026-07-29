@@ -175,6 +175,13 @@ const CaseStudyDiagramSourceSchema = z
 // emit an unbounded figure. The cap is the honest ceiling for a countable grid.
 export const REACH_GAP_MAX_RATIO = 2000;
 
+// One side of a disclosure split. Both sides are bounded so the figure stays a
+// readable pair of lists rather than a wall of fields.
+const CaseStudyDiagramDisclosureSchema = z.object({
+  label: z.string().min(1),
+  items: z.array(z.string().min(1)).min(2).max(8),
+});
+
 // One counted measure in a reach gap. `value` is the raw figure so the component
 // owns both the grid and the formatting, and the two can never disagree.
 const CaseStudyDiagramMeasureSchema = z.object({
@@ -204,6 +211,13 @@ export const CaseStudyDiagramSchema = z.discriminatedUnion("kind", [
     total: CaseStudyDiagramMeasureSchema,
     captured: CaseStudyDiagramMeasureSchema,
     note: z.string().min(1),
+  }),
+  z.object({
+    kind: z.literal("disclosure-split"),
+    caption: z.string().min(1),
+    withheld: CaseStudyDiagramDisclosureSchema,
+    released: CaseStudyDiagramDisclosureSchema,
+    guard: CaseStudyDiagramNodeSchema,
   }),
 ])
   // A discriminated union cannot take refined members, because zod reads the

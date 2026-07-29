@@ -1019,6 +1019,100 @@ main a {
   }
 }
 
+/* ---------- Disclosure split ----------
+ * Two lists either side of a guard. The withheld side is charcoal because it is
+ * the side that never ships; the released side stays on paper. The guard is a
+ * real middle column, so the divider cannot drift off the panels it separates.
+ */
+.disclosure-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--space-8) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.disclosure-split__side {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line-strong);
+}
+
+.disclosure-split__side > p {
+  margin: 0;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.disclosure-split__side ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.disclosure-split__side li {
+  padding-block-end: var(--space-2);
+  border-block-end: 1px solid var(--line);
+  font-size: var(--type-small-size);
+  line-height: var(--leading-support);
+}
+
+.disclosure-split__side li:last-child {
+  padding-block-end: 0;
+  border-block-end: 0;
+}
+
+.disclosure-split__side--withheld {
+  border-color: var(--text-1);
+  background: var(--surface-dark);
+  color: var(--text-inverse);
+}
+
+.disclosure-split__side--withheld > p,
+.disclosure-split__side--withheld li {
+  color: var(--text-inverse);
+}
+
+.disclosure-split__side--withheld li {
+  border-block-end-color: var(--line-inverse);
+}
+
+.disclosure-split__side--released {
+  background: var(--canvas);
+}
+
+.disclosure-split__guard {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  border-block: 1px solid var(--brand);
+}
+
+.disclosure-split__guard span {
+  writing-mode: vertical-rl;
+  padding-block: var(--space-2);
+  color: var(--brand);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.disclosure-split__rule {
+  grid-column: 1 / -1;
+  margin: var(--space-4) 0 0;
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: var(--type-small-size);
+  line-height: var(--leading-support);
+}
+
 /* ---------- Reach gap ----------
  * One cell per unit of the ratio, with a single cell filled. The point is the
  * count, so the grid is drawn at true scale rather than summarised into a bar
@@ -2782,6 +2876,23 @@ html[data-motion-ready] [data-reveal="visible"] {
   }
 
   /* Stacked, the strip's shared edges run between rows instead of columns. */
+  .disclosure-split {
+    grid-template-columns: 1fr;
+  }
+
+  .disclosure-split__guard {
+    justify-items: start;
+    border-block: 0;
+    border-inline-start: 1px solid var(--brand);
+    margin-inline-start: var(--space-4);
+  }
+
+  .disclosure-split__guard span {
+    writing-mode: horizontal-tb;
+    padding-block: var(--space-3);
+    padding-inline-start: var(--space-3);
+  }
+
   .reach-gap__field {
     grid-template-columns: 1fr;
   }

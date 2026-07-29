@@ -487,7 +487,7 @@ test("accessibility evidence is strict and follows the build route manifest", ()
     encoding: "utf-8",
   });
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /matrix 288, 32 routes/);
+  assert.match(result.stdout, /matrix 297, 33 routes/);
 });
 
 test("adopted illustrations use the original approved palette", () => {
