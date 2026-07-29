@@ -34,7 +34,7 @@ test("the homepage opens more than one door", () => {
 });
 
 test("the homepage moves from problem to solution, proof, fit, and action", () => {
-  assert.match(html, /Stop doing the same work[\s\S]*class="brand-highlight">every week\.<\/span>/);
+  assert.match(html, /Make one repeated task run[\s\S]*class="brand-highlight">without you\.<\/span>/);
   const order = [
     "hero-title",
     "friction-title",
@@ -46,6 +46,12 @@ test("the homepage moves from problem to solution, proof, fit, and action", () =
   ].map((id) => html.indexOf(`aria-labelledby="${id}"`));
   assert.ok(order.every((position) => position >= 0), "every stage is present");
   assert.deepEqual(order, [...order].sort((a, b) => a - b), "stages follow the PAS sales path");
+});
+
+test("the homepage names the commitment behind its primary action", () => {
+  // INV-09 blocks an unbacked duration here, so the page names the shape of the
+  // next step instead of its length. The scheduler on /contact/ carries the exact time.
+  assert.match(html, /The first call covers that task/);
 });
 
 test("homepage copy stays within a Grade 6 sentence-length range", () => {

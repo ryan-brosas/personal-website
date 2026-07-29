@@ -1447,8 +1447,8 @@ test("homepage uses the hero composition and approved local typography", () => {
   const html = readHtml(distDir, "/");
   assert.match(html, /class="hero"/);
   // The hero headline names the visitor's outcome; the highlight carries the promise.
-  assert.match(html, /Stop doing the same work/);
-  assert.match(html, /class="brand-highlight">every week\.<\/span>/);
+  assert.match(html, /Make one repeated task run/);
+  assert.match(html, /class="brand-highlight">without you\.<\/span>/);
   assert.match(html, /class="hero__visual"/);
   assert.match(html, /class="loop-field"/);
   assert.ok(!html.includes("<title>The Operator</title>"), "homepage reserves the mascot for supporting pages");

@@ -29,7 +29,7 @@ const showBrandLab = import.meta.env.DEV && import.meta.env.PUBLIC_BRAND_LAB ===
 const title = showBrandLab ? "Ryan Brosas | Brand Lab" : "Ryan Brosas | Clear systems for work that keeps coming back";
 const description = showBrandLab
   ? "Local working reference for the Ryan Brosas brand system and website components."
-  : "I turn one repeated task into a clear system your team can run, check, and fix.";
+  : "I map one repeated task, build the smallest fix, and test it on real work.";
 
 const home = ROUTE_REGISTRY.byId("home");
 const visibility = home?.visibility ?? "noindex";
@@ -52,17 +52,17 @@ const caseStudyHref = showFeaturedCaseStudy
   ? ROUTE_REGISTRY.pathFor("case-studies-slug", { slug: HOME_FEATURED_CASE_STUDY_SLUG })
   : caseStudiesHref;
 const frictionSignals = [
-  { title: "The task starts from scratch", detail: "Someone gathers the same facts again." },
-  { title: "The easy path works", detail: "Then one odd case needs you to clean it up." },
-  { title: "The team does not trust the handoff", detail: "No clear check shows what ran or what needs help." },
+  { title: "It starts from scratch", detail: "Someone gathers the same facts again." },
+  { title: "The easy path works", detail: "Then one odd case lands back on you." },
+  { title: "No one trusts the handoff", detail: "Nothing shows what ran or what needs a person." },
 ];
 const processStages = [
   { label: "Trace", detail: "Find the start, the facts, the choices, the checks, and the breaks." },
-  { label: "Design", detail: "Make the smallest system that can do the job and ask for help." },
+  { label: "Design", detail: "Build the smallest system that can do the job and ask for help." },
   { label: "Prove", detail: "Run it on real work. Check the result. Fix the gaps.", proven: true },
 ];
 const entryPoints = [
-  { href: servicesHref, title: "How I work", detail: "See how one task becomes a clear loop." },
+  { href: servicesHref, title: "How I work", detail: "See how one task becomes a clear system." },
   { href: caseStudiesHref, title: "Case studies", detail: "See what was built and why." },
   { href: resourcesHref, title: "Resources", detail: "Run a simple check on your own work." },
   { href: aboutHref, title: "About", detail: "Learn what guides the work." },
@@ -101,11 +101,11 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
     <SectionHeading
       id="friction-title"
       eyebrow="The problem"
-      title="The work runs only while you watch it."
+      title="It works, but only while you watch it."
     >
       <p>
-        Facts hide in chats and files. Odd cases come back to you. No clear check shows if the
-        work is safe to use.
+        Does this sound like your week? The facts sit in chats and files. Odd cases come back to
+        you. Nothing shows whether the result is safe to use.
       </p>
     </SectionHeading>
 
@@ -120,16 +120,17 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
     <SectionHeading
       id="method-title"
       eyebrow="The fix"
-      title="Turn one stuck task into a clear loop."
+      title="Start with one task."
     >
       <p>
-        The answer may be an agent, a script, or a new step. We choose after we map the work.
+        Not a whole system, and not a stack of new tools. The answer may be an agent, a script, or
+        a new step. We pick that after we map the real work.
       </p>
     </SectionHeading>
 
     <ProcessDiagram
       stages={processStages}
-      caption="The loop must run on real work before it can earn more scope."
+      caption="It has to run on real work before it grows."
     />
 
     <div class="button-row section-actions">
@@ -144,7 +145,7 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
       id="case-title"
       eyebrow="Proof you can inspect"
       title="Ask one question. See the source."
-      body="The résumé bot answers from a three-page document, then shows the page and passage behind each answer."
+      body="The résumé bot answers from a three-page document. Each answer shows the page and passage behind it. This is my own build, not client work."
       primaryHref={caseStudyHref}
       primaryLabel="Read the case study"
       secondaryHref={caseStudiesHref}
@@ -171,10 +172,10 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
     <SectionHeading
       id="fit-title"
       eyebrow="What changes"
-      title="Your team gets a system it can use."
+      title="Your team gets a system it can run."
     >
       <p>
-        One task no longer rests on one person. Your team can run it, check it, and fix it.
+        The task stops resting on one person. Your team can run it, check it, and fix it.
       </p>
     </SectionHeading>
 
@@ -183,8 +184,8 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
         {
           title: "What you get",
           items: [
-            { title: "A clear map", detail: "The path from start to finish, with each check and odd case." },
-            { title: "A small working system", detail: "An agent, a script, a review step, or a mix that fits the task." },
+            { title: "A clear map", detail: "Every step, check, and odd case in one place." },
+            { title: "A small working system", detail: "An agent, a script, a review step, or a mix." },
             { title: "A safe handoff", detail: "Clear checks, a safe stop, and notes your team can use." },
           ],
         },
@@ -212,8 +213,8 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
       title="Start where you are."
     >
       <p>
-        You do not need to talk yet. See the method, read the proof, or run a check on your own
-        work.
+        You do not need to talk yet. See the method, read the proof, or check one task on your
+        own.
       </p>
     </SectionHeading>
 
@@ -223,9 +224,9 @@ const graph = buildEntityGraph({ site, page: { routeId, title, description, visi
   <PageCta
     class="home-section"
     id="contact-title"
-    eyebrow="Start with one stubborn loop"
+    eyebrow="One stubborn task"
     title="Which task keeps coming back?"
-    body="Bring one task, how it works now, and where it gets stuck."
+    body="Bring one task, how it runs now, and where it breaks. The first call covers that task, and we decide the next step together. It may be an agent, a script, a change in process, or nothing."
     primaryHref={contactHref}
     primaryLabel="Start with one task"
   />
