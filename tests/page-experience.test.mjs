@@ -218,11 +218,29 @@ test("editorial entries render the validated site-author byline", () => {
 
 test("first prose headings do not add phantom section spacing", () => {
   const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
-  assert.match(
-    css,
-    /\.prose > \* \+ h2,\s*\.prose > \* \+ h3\s*\{[^}]*margin-block-start:\s*var\(--space-8\)/s,
-  );
+  // Both stay on the adjacent-sibling combinator, so the first heading in a block
+  // still gets no top margin. They take different steps because sharing one made
+  // the three h3 headings inside a section read as three more sections.
+  assert.match(css, /\.prose > \* \+ h2\s*\{[^}]*margin-block-start:\s*var\(--prose-section\)/s);
+  assert.match(css, /\.prose > \* \+ h3\s*\{[^}]*margin-block-start:\s*var\(--prose-subsection\)/s);
+  assert.match(css, /\.prose > \* \+ \*\s*\{[^}]*margin-block-start:\s*var\(--prose-paragraph\)/s);
   assert.doesNotMatch(css, /\.prose h2,\s*\.prose h3\s*\{[^}]*margin-block-start/s);
+
+  // The ladder must not invert at any width, so every step is a fixed length.
+  // A viewport-clamped step shrinks as the screen narrows while a leading-derived
+  // paragraph gap does not: at 390px the two crossed, and an h3 sat 29px below its
+  // previous block where ordinary paragraph breaks took 34px.
+  const stepPx = (token) => {
+    const declared = css.match(new RegExp("--" + token + ":\\s*([0-9.]+)(rem|em);"));
+    assert.ok(declared, "--" + token + " is a fixed length, not a clamp");
+    // em resolves against the prose font-size (--type-emphasis-size, 1.125rem).
+    return parseFloat(declared[1]) * (declared[2] === "em" ? 18 : 16);
+  };
+  const paragraph = stepPx("prose-paragraph");
+  const subsection = stepPx("prose-subsection");
+  const section = stepPx("prose-section");
+  assert.ok(subsection > paragraph, "subsection " + subsection + "px must clear paragraph " + paragraph + "px");
+  assert.ok(section > subsection, "section " + section + "px must clear subsection " + subsection + "px");
 });
 
 test("entry bylines keep a shared gap before prose", () => {
@@ -614,8 +632,11 @@ test("commercial route modifiers target structures that current content actually
   assert.doesNotMatch(css, /\.page-shell--about \.prose (?:ul|li)/);
   assert.match(contact, /^1\. /m);
   assert.match(css, /\.page-shell--contact \.prose ol/);
+  // About and Services share the long-form section-rule treatment, so both have
+  // to actually render the h2 the shared selector styles.
   assert.match(services, /^## /m);
-  assert.match(css, /\.page-shell--services \.prose h2/);
+  assert.match(about, /^## /m);
+  assert.match(css, /:is\(\.page-shell--about, \.page-shell--services\) \.prose h2/);
 });
 
 test("page patterns contain no stale wrappers or unused selector contracts", () => {

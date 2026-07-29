@@ -57,3 +57,15 @@ test("loop motion is decorative and stops for reduced motion", () => {
   assert.match(reduced[1], /animation-duration:\s*0\.01ms\s*!important/);
   assert.match(reduced[1], /animation-iteration-count:\s*1\s*!important/);
 });
+
+test("the actor row's charcoal fill carries its inverse text", () => {
+  // ".loop-field__cycle li" outranks a bare ".loop-field__actor", so an unscoped
+  // rule silently loses both the colour and the border resets and renders
+  // charcoal on charcoal at 1.73:1. The selector has to clear that specificity.
+  const rule = css.match(/\.loop-field__cycle \.loop-field__actor \{([^}]*)\}/);
+  assert.ok(rule, "the actor rule is scoped through the cycle");
+  assert.match(rule[1], /background: var\(--surface-dark\)/);
+  assert.match(rule[1], /color: var\(--text-inverse\)/);
+  // A full-bleed fill inside a rounded frame has to clip, or it squares the corners.
+  assert.match(css, /\.loop-field__cycle \{[^}]*overflow: hidden/s);
+});

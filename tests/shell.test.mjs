@@ -1008,10 +1008,11 @@ describe("D2 token shell", () => {
     for (const value of rhythmRoles) {
       assert.match(value, /^var\(--space-[a-z0-9-]+\)$/);
     }
-    // Every nonzero padding/gap component must consume --space-* or a
-    // --rhythm-* role (no arbitrary hardcoded rem/px values that bypass the 8px
-    // rhythm). Handles shorthand values like "var(--space-2) 13px" by checking
-    // each component independently, including across multiline declarations.
+    // Every nonzero padding/gap component must consume --space-* or a derived
+    // --rhythm-* / --shell-* role (no arbitrary hardcoded rem/px values that
+    // bypass the 8px rhythm). Handles shorthand values like "var(--space-2)
+    // 13px" by checking each component independently, including across
+    // multiline declarations.
     const nonzeroPaddingGap = [...css.matchAll(/(?:padding|gap)\s*:\s*([^;}]+)/gis)].map((m) =>
       m[1].trim(),
     );
@@ -1020,8 +1021,8 @@ describe("D2 token shell", () => {
       for (const component of value.split(/\s+/)) {
         if (component === "0") continue;
         assert.ok(
-          /^var\(--(?:space|rhythm)-[a-z0-9-]+\)$/i.test(component),
-          `padding/gap component "${component}" in "${value}" must be exactly 0, var(--space-*), or var(--rhythm-*) (no hardcoded rem/px, no mixed shorthand)`,
+          /^var\(--(?:space|rhythm|shell)-[a-z0-9-]+\)$/i.test(component),
+          `padding/gap component "${component}" in "${value}" must be exactly 0, var(--space-*), var(--rhythm-*), or var(--shell-*) (no hardcoded rem/px, no mixed shorthand)`,
         );
       }
     }

@@ -76,11 +76,22 @@ test("repeated supporting type sizes use semantic roles", () => {
   assert.match(css, /\.button\s*\{[^}]*font-size:\s*var\(--type-control-size\)/s);
   assert.match(css, /\.freshness-notice\s*\{[^}]*font-size:\s*var\(--type-auxiliary-size\)/s);
 
+  assert.match(css, /\.loop-field__cycle li\s*\{[^}]*font-size:\s*var\(--type-label-size\)/s);
+  assert.match(css, /\.case-meta\s*\{[^}]*font-size:\s*var\(--type-meta-size\)/s);
+  assert.match(css, /\.prose\s*\{[^}]*font-size:\s*var\(--type-emphasis-size\)/s);
+
+  assert.match(css, /\.case-card__title\s*\{[^}]*font-size:\s*var\(--type-h3-size\)/s);
+  assert.match(css, /\.proof-strip strong\s*\{[^}]*font-size:\s*var\(--type-h3-size\)/s);
+
+  // Catching only repeats let every component mint its own rung. The supporting
+  // tier drifted to eighteen rendered sizes with 9.6px diagram text, and seven
+  // bespoke clamps shadowed the h-levels they sat beside: .case-feature h2 landed
+  // 4px off h2, .case-card__title 3px off h3. Every size now resolves to a role
+  // declared once in :root, so the fluid scale is defined in exactly one place.
   const rawSizes = [...css.matchAll(/font-size:\s*([^;]+);/g)]
     .map((match) => match[1].trim())
     .filter((value) => !value.startsWith("var("));
-  const duplicates = [...new Set(rawSizes.filter((value, index) => rawSizes.indexOf(value) !== index))];
-  assert.deepEqual(duplicates, [], "repeated sizes must become semantic roles");
+  assert.deepEqual(rawSizes, [], "every font-size must consume a semantic role");
 });
 
 test("repeated supporting tracking and leading use semantic roles", () => {
@@ -137,7 +148,7 @@ test("reading typography follows sourced measure and spacing fundamentals", () =
     "utf-8",
   );
   assert.match(css, /--measure-narrow:\s*45ch;/);
-  assert.match(css, /--measure-reading:\s*66ch;/);
+  assert.match(css, /--measure-reading:\s*38rem;/);
   assert.match(css, /--measure-wide:\s*72ch;/);
   assert.match(css, /--prose-max:\s*var\(--measure-reading\);/);
   assert.match(css, /\.page-lead,[^}]*max-width:\s*var\(--measure-narrow\)/s);
@@ -221,7 +232,7 @@ test("Brand Lab derives a token reference and states the motion policy", () => {
   assert.match(lab, /id=["']brand-motion["']/);
   assert.match(lab, /readFileSync\(new URL\("\.\.\/\.\.\/styles\/global\.css", import\.meta\.url\), "utf-8"\)/);
   assert.match(lab, /Type: \["font-", "type-", "tracking-", "leading-", "weight-", "highlight-"\]/);
-  assert.match(lab, /Space: \["space-", "rhythm-"\]/);
+  assert.match(lab, /Space: \["space-", "rhythm-", "shell-"\]/);
   assert.match(lab, /Layout: \[[^\]]*"texture-"/);
   assert.match(lab, /Color: \[[^\]]*"canvas\$"/);
   assert.match(lab, /prefix\.endsWith\("\$"\)/);
@@ -348,7 +359,7 @@ test("production padding and gaps consume the shared spacing roles", () => {
     assert.ok(
       values.every((value) =>
         value === "0" ||
-        /^var\(--(?:space-|rhythm-)/.test(value) ||
+        /^var\(--(?:space-|rhythm-|shell-)/.test(value) ||
         value === "var(--highlight-inset)",
       ),
       `${declaration.property}: ${declaration.value} uses a spacing role`,
@@ -366,10 +377,12 @@ test("production margins use spacing roles or documented layout geometry", () =>
   for (const value of declarations) {
     const withoutTokens = value.replace(/var\(--[^)]+\)/g, "");
     assert.doesNotMatch(withoutTokens, /\d+(?:\.\d+)?(?:px|r?em|ch|v[wh])/);
-    if (value.includes("%")) assert.equal(value, "5%", "only the process rail uses proportional inset");
   }
-  assert.equal(declarations.filter((value) => value.includes("%")).length, 1);
-  assert.match(css, /\.process-rail\s*\{[^}]*margin-inline:\s*5%/s);
+  // The rail's 5% inset left the connector ending in open space at both ends,
+  // matching neither the stage row edge nor any card centre. It now spans the
+  // row, so no margin depends on a proportional guess.
+  assert.equal(declarations.filter((value) => value.includes("%")).length, 0);
+  assert.doesNotMatch(css, /\.process-rail\s*\{[^}]*margin-inline/s);
 });
 
 test("layout rhythm comes from tokens, not per-pattern guesses", () => {
@@ -382,9 +395,18 @@ test("layout rhythm comes from tokens, not per-pattern guesses", () => {
   assert.match(css, /\.signal-list li\s*\{[^}]*padding:\s*var\(--rhythm-row\) 0/s);
   assert.match(css, /\.page-header__copy\s*\{[^}]*align-content:\s*start/s);
   assert.doesNotMatch(css, /\.page-header__copy\s*\{[^}]*min-height:\s*30rem/s);
+  // The shell gutter is one token so anything bleeding past the content column
+  // offsets by the same value main is padded with. Two independent copies drift:
+  // a band pinned to --space-3 overflowed once main narrowed to --space-2.
+  assert.match(css, /--shell-inline:\s*var\(--space-3\);/);
+  assert.match(css, /main\s*\{[^}]*padding:\s*0 var\(--shell-inline\)/s);
   assert.match(
     css,
-    /@media \(max-width: 600px\)\s*\{[\s\S]*?main\s*\{\s*padding-inline:\s*var\(--space-2\);\s*\}/,
+    /@media \(max-width: 600px\)\s*\{[\s\S]*?:root\s*\{\s*--shell-inline:\s*var\(--space-2\);\s*\}/,
+  );
+  assert.match(
+    css,
+    /\.home-section--band\s*\{[^}]*margin-inline:\s*calc\(-1 \* var\(--shell-inline\)\)[^}]*padding-inline:\s*var\(--shell-inline\)/s,
   );
 });
 

@@ -13,7 +13,9 @@
  * consumed by every
  * selector; the five contrast-critical tokens (canvas/surface/surface-muted/
  * surface-dark/text-3) are literal #hex so the contrast tests can
- * read them. Padding/gap are exactly `0` or var(--space-*) (8px rhythm). */
+ * read them. Padding/gap are exactly `0`, var(--space-*) (8px rhythm), or a role
+ * derived from it: var(--rhythm-*) for vertical density, var(--shell-inline) for
+ * the gutter that content bleeding past the column has to match. */
 :root {
   color-scheme: light;
 
@@ -24,19 +26,25 @@
   --color-paper: #fdfcf7;
   --color-raised: #fffefa;
 
-  /* Contrast-critical semantic surfaces (literal hex — read by contrast tests). */
+  /* Contrast-critical semantic surfaces (literal hex — read by contrast tests).
+   * Paper sits at 98% luminance, so there is no headroom above the canvas: every
+   * step in the scale runs downward into the warm tint. --surface stays near-white
+   * and reads as a lifted plate through its border, not its fill, so it needs a
+   * band behind it; --surface-muted is that band and carries the separation alone. */
   --canvas: #fdfcf7;
   --surface: #fffefa;
-  --surface-muted: #f2f0e8;
+  --surface-muted: #ebe6d5;
   --surface-dark: #1a1a1a;
   --text-3: #5c5c54;
 
-  /* Text and strokes. */
+  /* Text and strokes. Both rules clear a visible step against paper: the hairline
+   * at 1.68:1 divides content, and --line-strong at 3.43:1 is the only one that
+   * may carry a real boundary, so it meets the 3:1 non-text minimum. */
   --text-1: #1a1a1a;
   --text-2: #43423f;
   --text-inverse: #f7f2e1;
-  --line: #dedbd2;
-  --line-strong: #b9b5aa;
+  --line: #cbc5b3;
+  --line-strong: #8f8878;
 
   /* Brand accents. Coral is the repeatable accent; yellow is a scarce signal. */
   --brand: #ff5555;
@@ -47,10 +55,10 @@
 
   /* Navigation. */
   --nav-bg: #fdfcf7;
-  --nav-border: #dedbd2;
+  --nav-border: #cbc5b3;
   --nav-fg: #1a1a1a;
   --nav-hover-fg: #1a1a1a;
-  --nav-hover-bg: #f2f0e8;
+  --nav-hover-bg: #ebe6d5;
   --nav-current-fg: #1a1a1a;
   --nav-current-rule: #ff5555;
 
@@ -104,6 +112,15 @@
   --tracking-label: 0.1em;
   --tracking-meta: 0.08em;
   --leading-body: 1.65;
+  /* Prose vertical rhythm: paragraph, subsection, section. Every step is
+   * viewport-independent so the ladder cannot inverse. A clamped spacing step
+   * shrinks with the viewport while a leading-derived paragraph gap does not, and
+   * at 390px the two crossed: subsection headings sat 29px below their previous
+   * block while ordinary paragraph breaks took 34px, so a heading had less air
+   * around it than the body text. h2 > h3 > paragraph now holds at every width. */
+  --prose-paragraph: 1.9em;
+  --prose-subsection: 3.25rem;
+  --prose-section: 5rem;
   --leading-support: 1.5;
   --leading-compact: 1.12;
   --weight-medium: 550;
@@ -117,10 +134,21 @@
   --highlight-inset: 0.16em;
   --highlight-leading: 1.22;
 
-  /* Measure and geometry. */
+  /* Measure and geometry. --shell-inline is the gutter between the content
+   * column and the viewport. Anything that bleeds past the column must offset by
+   * this token rather than by a spacing step, or it drifts out of alignment at
+   * the width where the gutter changes. */
   --content-max: 82rem;
+  --shell-inline: var(--space-3);
   --measure-narrow: 45ch;
-  --measure-reading: 66ch;
+  /* The reading column is a length, not a ch count. "ch" is the advance width of
+   * "0", which is wider than an average lowercase glyph, so 66ch shipped about 82
+   * characters per line — past the 60 to 75 the cited guidance actually asks for.
+   * A length also holds one column width across the whole reading block: the
+   * evidence panel sets 16px against the prose's 18px, and under ch the two
+   * resolved 83px apart and left a visibly ragged right edge. The narrow and wide
+   * measures stay in ch; they size single elements, not a shared column. */
+  --measure-reading: 38rem;
   --measure-wide: 72ch;
   --measure-heading: 18ch;
   --prose-max: var(--measure-reading);
@@ -439,7 +467,7 @@ a:hover {
 main {
   width: min(100%, var(--content-max));
   margin-inline: auto;
-  padding: 0 var(--space-3);
+  padding: 0 var(--shell-inline);
 }
 
 main a {
@@ -456,7 +484,7 @@ main a {
   margin: 0;
   color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 0.74rem;
+  font-size: var(--type-label-size);
   font-weight: var(--weight-strong);
   letter-spacing: 0.12em;
   line-height: 1.3;
@@ -640,6 +668,17 @@ main a {
   margin-block-start: var(--space-5);
 }
 
+/* Figure plate. A diagram is one object, so it sits on the raised surface inside
+ * a boundary; left bare on paper it reads as loose marks floating in the column.
+ * Outer plate boundaries take --line-strong, dividers inside a plate take --line. */
+.hero__visual,
+.process-diagram,
+.workflow-rail {
+  padding: var(--space-5);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
 .hero__visual {
   margin: 0;
 }
@@ -685,7 +724,7 @@ main a {
 .loop-field__label {
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: var(--type-label-size);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
@@ -701,6 +740,8 @@ main a {
   border-radius: var(--radius-sm);
   background: var(--canvas);
   list-style: none;
+  /* The actor row is a full-bleed fill, so it has to clip to the rounded frame. */
+  overflow: hidden;
 }
 
 .loop-field__cycle li {
@@ -712,7 +753,7 @@ main a {
   border-inline-end: 1px solid var(--line);
   color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: var(--type-label-size);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -744,19 +785,29 @@ main a {
   animation-delay: calc(var(--motion-ambient) / -4);
 }
 
-.loop-field__actor {
+/* Each cycle's payoff row: who owns the loop. Charcoal marks the payoff here for
+ * the same reason it marks the proven stage in the process diagram, and it gives
+ * the figure the one piece of mass it was missing against a 80px headline. The
+ * fill supplies the division, so the hairline above it goes.
+ *
+ * Scoped through the cycle because ".loop-field__cycle li" outranks a lone class
+ * on this element. Unscoped, the colour and the border resets below were both
+ * discarded, which put charcoal-on-charcoal text at 1.73:1. */
+.loop-field__cycle .loop-field__actor {
   grid-column: 1 / -1;
   padding: var(--space-1);
   border-block-end: 0;
   border-inline-end: 0;
-  border-block-start: 1px solid var(--line-strong);
-  background: var(--surface);
-  color: var(--text-1);
+  background: var(--surface-dark);
+  color: var(--text-inverse);
   font-family: var(--font-mono);
   font-size: var(--type-label-size);
   font-weight: var(--weight-strong);
   letter-spacing: var(--tracking-meta);
-  text-align: center;
+  /* The row inherits display:flex from ".loop-field__cycle li", so its text is an
+   * anonymous flex item and text-align never reaches it. Centring is the flex
+   * property or it does not happen. */
+  justify-content: center;
   text-transform: uppercase;
 }
 
@@ -766,10 +817,11 @@ main a {
   gap: var(--space-1);
 }
 
+/* The handoff is the point of the figure, so it is not the faintest label in it. */
 .loop-field__bridge > span:first-child {
-  color: var(--text-3);
+  color: var(--text-1);
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: var(--type-label-size);
   letter-spacing: var(--tracking-meta);
   text-transform: uppercase;
   white-space: nowrap;
@@ -1096,15 +1148,25 @@ main a {
  */
 .process-diagram {
   margin: 0;
-  padding: var(--space-5);
-  border: 1px solid var(--line);
-  background: var(--surface);
+  container-type: inline-size;
 }
 
+/* The stage grid falls to one column once the plate cannot hold two 13rem
+ * tracks plus the gap. A horizontal rail above a vertical stack asserts a
+ * left-to-right sequence that is no longer on screen, so the rail withdraws
+ * and the numbered cards carry the order themselves. */
+@container (max-width: 27rem) {
+  .process-rail {
+    display: none;
+  }
+}
+
+/* The rail spans the stage row exactly. A percentage inset pulled its endpoints
+ * to a width that matched neither the row edge nor any card centre, so the
+ * connector ended in open space at both ends. */
 .process-rail {
   position: relative;
   height: var(--space-4);
-  margin-inline: 5%;
   border-block-start: 1px dashed var(--line-strong);
 }
 
@@ -1216,9 +1278,6 @@ main a {
 /* ---------- Workflow rail ---------- */
 .workflow-rail {
   margin: var(--rhythm-block) 0;
-  padding: var(--space-4);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
 }
 
 .workflow-rail > .eyebrow {
@@ -1255,7 +1314,7 @@ main a {
 
 .workflow-rail__steps strong {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: var(--type-subheading-size);
   line-height: 1.15;
 }
 
@@ -1304,6 +1363,24 @@ main a {
   border-bottom: 0;
 }
 
+/* Section surface role. A long page alternates paper, recessed band, and
+ * charcoal plate so the scroll has rhythm instead of one continuous wash, and
+ * so the near-white card fill finally has something to sit against. The band
+ * bleeds to main's padding edge rather than 100vw, which would overflow by the
+ * width of the scrollbar. */
+.home-section--band {
+  margin-inline: calc(-1 * var(--shell-inline));
+  padding-inline: var(--shell-inline);
+  border-bottom: 0;
+  background: var(--surface-muted);
+}
+
+/* The change of surface is the division, so a hairline landing on a band edge
+ * would read as a seam on top of it. */
+.home-section:has(+ .home-section--band) {
+  border-bottom: 0;
+}
+
 .section-heading {
   display: grid;
   grid-template-columns: minmax(18rem, 1fr) minmax(0, 1fr);
@@ -1336,7 +1413,7 @@ main a {
   max-width: 38rem;
   align-self: end;
   color: var(--text-2);
-  font-size: 1.15rem;
+  font-size: var(--type-emphasis-size);
 }
 
 .page-header--wide-title h1 {
@@ -1352,9 +1429,13 @@ main a {
   list-style: none;
 }
 
+/* Both text columns are capped rather than fractional. Fractions stretched the
+ * heading track to the full row, which parked each detail ~440px from the
+ * heading it explains and broke the pair apart; capping leaves the slack at the
+ * end of the row instead, and holds the detail to a readable measure. */
 .signal-list li {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr) minmax(16rem, 0.55fr);
+  grid-template-columns: 3.5rem minmax(0, 26rem) minmax(0, 32rem);
   align-items: baseline;
   gap: var(--space-3);
   padding: var(--rhythm-row) 0;
@@ -1371,7 +1452,7 @@ main a {
 }
 
 .signal-list strong {
-  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  font-size: var(--type-h4-size);
   font-weight: var(--weight-medium);
   letter-spacing: -0.025em;
 }
@@ -1400,7 +1481,7 @@ main a {
 }
 
 .case-feature h2 {
-  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-size: var(--type-h2-size);
 }
 
 .case-feature__copy p {
@@ -1519,7 +1600,7 @@ main a {
   max-width: 34rem;
   margin-block-start: var(--space-3);
   color: color-mix(in oklch, var(--text-inverse) 72%, transparent);
-  font-size: 1.1rem;
+  font-size: var(--type-emphasis-size);
 }
 
 .cta-panel .button--primary {
@@ -1583,7 +1664,7 @@ main a {
 .case-study-lead {
   max-width: var(--measure-narrow);
   color: var(--text-2);
-  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-size: var(--type-subheading-size);
 }
 
 /* ---------- Commercial page compositions ---------- */
@@ -1693,7 +1774,19 @@ main a {
   width: 100%;
 }
 
-.page-shell--services .prose h2 {
+/* Long-form pages: a section rule carries the full shell while the reading column
+ * keeps its measure. Constraining the heading too left the rules as short ragged
+ * lines with the right half of the page permanently empty. Contact is excluded
+ * because it composes its own panels and its header already divides the page. */
+:is(.page-shell--about, .page-shell--services) .prose {
+  max-width: none;
+}
+
+:is(.page-shell--about, .page-shell--services) .prose > :not(h2) {
+  max-width: var(--prose-max);
+}
+
+:is(.page-shell--about, .page-shell--services) .prose h2 {
   padding-block-start: var(--space-3);
   border-top: 1px solid var(--line-strong);
 }
@@ -1751,11 +1844,11 @@ main a {
 /* ---------- Prose ---------- */
 .prose {
   max-width: var(--prose-max);
-  font-size: 1.08rem;
+  font-size: var(--type-emphasis-size);
 }
 
 .prose > * + * {
-  margin-block-start: var(--space-3);
+  margin-block-start: var(--prose-paragraph);
 }
 
 /* Two adjacent prose blocks (e.g. a wiki entry body followed by its Source
@@ -1764,13 +1857,18 @@ main a {
   margin-block-start: var(--space-8);
 }
 
-.prose > * + h2,
+.prose > * + h2 {
+  margin-block-start: var(--prose-section);
+}
+
+/* A subsection break has to read as smaller than a section break. Sharing one
+ * step made the three h3 headings inside a section read as three more sections. */
 .prose > * + h3 {
-  margin-block-start: var(--space-8);
+  margin-block-start: var(--prose-subsection);
 }
 
 .prose h2 {
-  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-size: var(--type-h2-size);
 }
 
 .prose ul,
@@ -1990,6 +2088,9 @@ main a {
 
 .case-card {
   display: grid;
+  /* The list item stretches to the tallest row peer; without this the card
+   * keeps its content height and short cards leave a ragged bottom edge. */
+  height: 100%;
   min-height: 20rem;
   align-content: space-between;
   gap: var(--space-4);
@@ -2022,7 +2123,7 @@ main a {
 }
 
 .case-card__title {
-  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  font-size: var(--type-h3-size);
   line-height: var(--leading-compact);
 }
 
@@ -2042,7 +2143,7 @@ main a {
 .case-meta {
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--type-meta-size);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
@@ -2053,7 +2154,7 @@ main a {
 
 .empty-state {
   color: var(--text-2);
-  font-size: 1.05rem;
+  font-size: var(--type-body-size);
 }
 
 /* ---------- Evidence note ---------- */
@@ -2156,7 +2257,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 
 .site-footer__statement {
   max-width: 24ch;
-  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-size: var(--type-h3-size);
   font-weight: var(--weight-medium);
   letter-spacing: -0.035em;
   line-height: var(--leading-compact);
@@ -2215,7 +2316,7 @@ footer nav a {
 
 .proof-strip strong {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  font-size: var(--type-h3-size);
   font-weight: var(--weight-strong);
   letter-spacing: -0.03em;
   line-height: 1.05;
@@ -2511,8 +2612,8 @@ html[data-motion-ready] [data-reveal="visible"] {
     padding-inline: 0;
   }
 
-  main {
-    padding-inline: var(--space-2);
+  :root {
+    --shell-inline: var(--space-2);
   }
 
   .site-header {
