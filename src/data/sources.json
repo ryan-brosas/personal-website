@@ -18,5 +18,15 @@
     "reviewedAt": "2026-07-29T00:00:00.000Z",
     "notes": "Directly observable self-project evidence at the live deployment. The public document endpoint, client bundle, answer response, citation payload, controlled invalid-input response, and rendered interface were checked. No hiring, traffic, sales, or time-saved result is asserted.",
     "publicUrl": "https://resume.ryanjosebrosas.dev/"
+  },
+  "source-mastra-resume-bot-repo-001": {
+    "id": "source-mastra-resume-bot-repo-001",
+    "title": "Public source repository for the Mastra résumé citation bot",
+    "type": "public-url",
+    "owner": "ryan",
+    "permission": "public",
+    "reviewedAt": "2026-07-30T00:00:00.000Z",
+    "notes": "Public repository read directly on 2026-07-30. The package manifest, module layout, tests directory, and CI workflow were checked. Sixteen test files, the pinned Mastra package versions, and the CI steps are observable in the tree. No test-pass rate, coverage figure, or performance result is asserted.",
+    "publicUrl": "https://github.com/ryan-brosas/mastra-resume-citation-bot"
   }
 }

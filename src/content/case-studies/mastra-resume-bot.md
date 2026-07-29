@@ -1,6 +1,6 @@
 ---
 title: "A Résumé Bot That Shows Its Source"
-description: "How I turned a three-page résumé into a live Mastra bot that answers questions and shows the passage behind each answer."
+description: "A reader can ask one question about my work and see the exact résumé passage behind the answer."
 visibility: public
 owner: ryan
 kind: case-study
@@ -32,101 +32,138 @@ return a checked answer.
 
 ## The problem
 
-A résumé can hold the right facts and still make a reader do the search. A
-recruiter may want one detail about a role, tool, or project. Reading every page
-is not always the fastest path.
+A recruiter opens a three-page résumé to check one thing. Maybe it is a tool, a
+role, or a project. The facts are in there. The document just does not point to
+them, so the reader scans all three pages.
 
-A plain chatbot would make that search easier, but it would add a new trust
-problem. A smooth answer is not enough. The reader needs to see which part of
-the résumé supports it.
+A plain chatbot makes that search faster. It also adds a new problem. A smooth
+answer gives the reader nothing to check, so the reader has to trust it.
 
-The goal was narrow. Let a person ask about my work, then show the source passage
-behind the answer.
+That is why the goal stayed narrow. Let a person ask about my work. Then show the
+exact passage that supports the answer.
 
 ## What had to be true
 
-I set four rules for the build.
+I set four rules before writing the service.
 
-- **The résumé stays in charge.** The bot should answer from the loaded document,
-  not from a broad web search.
-- **The source stays visible.** Each cited answer needs a page, excerpt, and view
-  of the matching part of the document.
-- **Failure stays honest.** Bad input, missing source data, search trouble, and a
-  failed model call need clear states.
-- **The scope stays small.** The bot answers questions. It does not take actions,
-  change the résumé, or pretend to know what the source does not contain.
+- **The résumé stays in charge.** Answers come from the loaded document, not from
+  a broad web search.
+- **The source stays visible.** Every cited answer carries a page, an excerpt,
+  and a view of the matching part of the document.
+- **Failure stays honest.** Bad input, a missing source, search trouble, and a
+  failed model call each get their own state.
+- **The scope stays small.** The bot answers questions. It does not act, edit the
+  résumé, or fill gaps the source does not cover.
 
-These rules turned the work from a chat demo into a source-bound question path.
+Those rules changed the shape of the build. It stopped being a chat demo and
+became a path from question to source.
 
 ## What I built
 
+### What it runs on
+
+The service is TypeScript on Node 22. Mastra handles the agent and the routes. A
+LibSQL store holds the indexed passages. Zod checks the shape of every request
+and reply, so a bad request stops at the edge.
+
+The Mastra packages sit at pinned versions. A lockfile and a frozen install keep
+each build on the versions I checked.
+
+The code splits along the same line as the problem. One half owns citations,
+which covers the PDF source, the page manifest, the figures, and the trust rules.
+The other half owns Mastra, which covers indexing, routes, and the request
+boundary.
+
 ### A versioned source bundle
 
-The live service exposes one three-page résumé. A content version ties the source
-document to the page images and citation data used by the interface.
+The service exposes one three-page résumé. A content version ties that document
+to the page images and citation data the interface uses.
 
-A citation carries the page number, source excerpt, selected quote, and a set of
-page coordinates. Those coordinates let the client crop the page around the
-matching passage instead of showing a full page with no clue where to look.
+Each citation carries a page number, a source excerpt, the selected quote, and a
+set of page coordinates. The coordinates are the part the reader feels. They let
+the client crop the page around the passage, so a reader sees the sentence
+instead of hunting through a full page.
 
 ### A small answer path
 
-The browser sends a question and a short prior history to the same origin. The
-Mastra service returns the answer with its citations, source pages, content
-version, and any figures it could not support.
+The browser sends a question and a short history to the same origin. The service
+returns the answer, its citations, the source pages, the content version, and
+anything it could not support.
 
-The client then builds the answer from text and source cards. If no citation
-comes back, it says the résumé does not cover the question. It does not turn a
-missing source into visual proof.
+The client builds the reply from text and source cards. When no citation comes
+back, it tells the reader the résumé does not cover the question. A missing
+source never turns into visual proof.
 
 ### Controlled failure states
 
-The request boundary rejects an empty question with a clear error. The interface
-also has named states for rate limits, a missing résumé, search trouble, and a
-failed model call.
+An empty question is rejected at the request boundary with a clear error. The
+interface also names states for rate limits, a missing résumé, search trouble,
+and a failed model call.
 
-Each state gives the reader a next step. A retry replaces the failed reply in the
-same turn, so the thread does not fill with copies of one question.
+Each state gives the reader a next step. A retry replaces the failed reply in
+place, so one question does not stack up copies of itself in the thread.
 
 ## What changed during the build
 
-The evidence view created a layout problem. A cropped résumé passage can be much
-taller than a short chat reply. Scrolling to the end left the answer above the
-visible area and made the thread look stuck.
+The evidence view broke the layout. A cropped passage can run much taller than a
+short answer. Scrolling to the bottom pushed the answer above the screen, and the
+thread looked stuck.
 
-I changed the scroll rule. The newest question now sits near the top, while the
-page keeps enough room below the answer. A reader can follow the question,
-answer, and source in one place.
+So I changed the scroll rule. The newest question now settles near the top, and
+the page keeps room below the answer. A reader can see the question, the answer,
+and the source in one place.
 
-The retry path also needed care. Running the request as a new turn would repeat
-the question. The final client reuses the same answer slot and keeps the history
-from before that question.
+Retry needed the same care. Running it as a new turn repeated the question. The
+client now reuses the same answer slot and keeps the history from before that
+question.
 
-These are small details, but they decide whether the proof feels connected to
-the answer or bolted on after it.
+Both are small fixes. They decide whether the proof reads as part of the answer
+or as something bolted on after it.
+
+## How it is checked
+
+The code is public at
+[github.com/ryan-brosas/mastra-resume-citation-bot](https://github.com/ryan-brosas/mastra-resume-citation-bot).
+You can read it and run the same checks I run.
+
+Sixteen test files cover the parts that fail quietly. There are tests for the
+request boundary, the routes, route failures, missing assets, retrieval,
+segmentation, page geometry, image drift, and the trust rules.
+
+Two of them carry most of the weight for a citation bot. The geometry test guards
+the page coordinates that crop a passage. The image drift test catches a page
+image that no longer matches the source it claims to show. Both protect one
+promise. The crop a reader sees is the passage the answer used.
+
+The citation bundle has a build step and a separate verify step. If the bundle
+and the source document disagree, the check fails before anything ships.
+
+CI runs on every push to main and on every pull request. It installs from a
+frozen lockfile, audits production dependencies at high severity, adds the PDF
+tools, and requires a real Chromium for the browser tests.
 
 ## The result
 
-The résumé bot is live as a separate service. In a checked public run, the
-question about my Bluelogic role returned one answer, one page-three citation,
-the matching excerpt, and a crop of the source passage.
+The résumé bot runs live as its own service.
 
-The document endpoint reports the same three-page source and content version
-used by the answer. An empty question returns a controlled client error before
-an answer is generated.
+In a checked public run, a question about my Bluelogic role returned one answer,
+one page-three citation, the matching excerpt, and a crop of the source passage.
+The document endpoint reported the same three-page source and content version the
+answer used. An empty question returned a controlled error before any answer was
+generated.
 
-This result proves the public question, answer, and source path works for the
-checked run. It does not prove every possible answer is correct. It also does not
-show a hiring result, time saved, or a change in recruiter behavior.
+That run proves the public path from question to answer to source works.
+It does not prove every possible answer is correct.
+It also does not show a hiring result, time saved, or a change in recruiter behavior.
 
 ## What remains limited
 
-The bot knows only the résumé loaded into this service. If the document is old,
-the answer can also be old. A citation shows where an answer came from, but it
-does not make the source claim true by itself.
+The bot knows only the résumé loaded into this service. If that document is old,
+the answer is old with it. A citation shows where an answer came from. It does
+not make the source claim true.
 
-One public run is not a quality benchmark. Broader answer checks still need a
-fixed question set, expected source passages, and repeated results over time.
+One public run is not a benchmark. Real answer checks still need a fixed question
+set, expected source passages, and repeated results over time.
 
-The useful proof today is smaller. A reader can ask one question, inspect the
-answer, and see the exact part of the résumé used to support it.
+So the proof today is small and specific. A reader can ask one question, read the
+answer, and see the exact part of the résumé behind it.
