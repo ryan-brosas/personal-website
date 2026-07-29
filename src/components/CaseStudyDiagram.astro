@@ -1,0 +1,61 @@
+---
+import type { CaseStudyDiagram as Diagram } from "../lib/content-schemas.ts";
+
+interface Props {
+  diagram: Diagram;
+}
+
+const { diagram } = Astro.props;
+---
+{
+  diagram.kind === "release-pipeline" ? (
+    <figure class="case-diagram case-diagram--release">
+      <div class="release-map">
+        <ul class="release-map__sources" aria-label="Release inputs">
+          {diagram.sources.map((source, index) => (
+            <li>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{source.label}</strong>
+              <small>{source.detail}</small>
+            </li>
+          ))}
+        </ul>
+        <div class="release-map__channel" aria-hidden="true"></div>
+        <div class="release-map__gate">
+          <span>Gate</span>
+          <strong>{diagram.gate.label}</strong>
+          <small>{diagram.gate.detail}</small>
+        </div>
+        <div class="release-map__channel" aria-hidden="true"></div>
+        <div class="release-map__output">
+          <span>Published</span>
+          <strong>{diagram.output.label}</strong>
+          <small>{diagram.output.detail}</small>
+        </div>
+        <i class="release-map__packet" aria-hidden="true"></i>
+      </div>
+      <figcaption>{diagram.caption}</figcaption>
+    </figure>
+  ) : (
+    <figure class="case-diagram case-diagram--source-loop">
+      <div class="source-loop">
+        <ol class="source-loop__path" aria-label="Checked answer path">
+          {diagram.path.map((node, index) => (
+            <li>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{node.label}</strong>
+              <small>{node.detail}</small>
+            </li>
+          ))}
+        </ol>
+        <div class="source-loop__fallback">
+          <span>Controlled failure</span>
+          <strong>{diagram.fallback.label}</strong>
+          <small>{diagram.fallback.detail}</small>
+        </div>
+        <i class="source-loop__signal" aria-hidden="true"></i>
+      </div>
+      <figcaption>{diagram.caption}</figcaption>
+    </figure>
+  )
+}

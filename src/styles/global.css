@@ -815,6 +815,274 @@ main a {
   }
 }
 
+/* ---------- Case-study diagrams ---------- */
+.case-diagram {
+  position: relative;
+  overflow: hidden;
+  margin: var(--rhythm-block) 0 var(--rhythm-section);
+  padding: var(--space-5);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.case-diagram figcaption {
+  margin-block-start: var(--space-4);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--line);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-meta);
+  text-transform: uppercase;
+}
+
+.release-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(15rem, 1.2fr) var(--space-6) minmax(11rem, 0.8fr) var(--space-6) minmax(13rem, 1fr);
+  min-height: 24rem;
+  align-items: center;
+}
+
+.release-map::before {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 20% 8%;
+  border-block-start: 1px dashed var(--line-strong);
+  content: "";
+}
+
+.release-map__sources {
+  z-index: 1;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border-block-start: 1px solid var(--line);
+  list-style: none;
+}
+
+.release-map__sources li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-2);
+  border-inline-start: 3px solid var(--brand);
+  border-block-end: 1px solid var(--line);
+  background: var(--canvas);
+}
+
+.release-map__sources span,
+.release-map__gate span,
+.release-map__output span,
+.source-loop__path span,
+.source-loop__fallback span {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.release-map__sources strong,
+.release-map__sources small {
+  grid-column: 2;
+}
+
+.release-map__sources strong,
+.release-map__gate strong,
+.release-map__output strong,
+.source-loop__path strong,
+.source-loop__fallback strong {
+  font-family: var(--font-display);
+  font-size: var(--type-subheading-size);
+  line-height: var(--leading-compact);
+}
+
+.release-map__sources small,
+.release-map__gate small,
+.release-map__output small,
+.source-loop__path small,
+.source-loop__fallback small {
+  color: var(--text-2);
+  font-size: var(--type-small-size);
+  line-height: var(--leading-support);
+}
+
+.release-map__channel {
+  z-index: 1;
+}
+
+.release-map__gate,
+.release-map__output {
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+  min-height: 14rem;
+  padding: var(--space-3);
+  border: 1px solid var(--text-1);
+}
+
+.release-map__gate {
+  background: var(--signal);
+}
+
+.release-map__output {
+  background: var(--surface-dark);
+  color: var(--text-inverse);
+}
+
+.release-map__output span,
+.release-map__output small {
+  color: var(--text-inverse);
+}
+
+.release-map__packet {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: calc(50% - var(--space-1));
+  width: var(--space-2);
+  height: var(--space-2);
+  border: 1px solid var(--text-1);
+  background: var(--brand);
+  animation: release-packet-travel var(--motion-process) var(--motion-process-ease) infinite;
+}
+
+@keyframes release-packet-travel {
+  0%,
+  12% {
+    inset-inline-start: 19%;
+  }
+
+  52% {
+    inset-inline-start: 52%;
+  }
+
+  88%,
+  100% {
+    inset-inline-start: calc(92% - var(--space-2));
+  }
+}
+
+.case-diagram--source-loop {
+  background: var(--surface-dark);
+  color: var(--text-inverse);
+}
+
+.source-loop {
+  position: relative;
+  display: grid;
+  min-height: 29rem;
+  align-content: center;
+  padding: var(--space-4);
+}
+
+.source-loop::before {
+  position: absolute;
+  inset-block-start: 42%;
+  inset-inline: 4%;
+  border-block-start: 1px dashed rgba(247, 242, 225, 0.42);
+  content: "";
+}
+
+.source-loop__path {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source-loop__path li {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-height: 12rem;
+  padding: var(--space-3);
+  border: 1px solid rgba(247, 242, 225, 0.42);
+  background: var(--surface-dark);
+}
+
+.source-loop__path li:nth-child(even) {
+  transform: translateY(var(--space-4));
+}
+
+.source-loop__path span,
+.source-loop__path small {
+  color: var(--text-inverse);
+}
+
+.source-loop__path li:last-child {
+  border-color: var(--signal);
+  background: var(--signal);
+  color: var(--text-1);
+}
+
+.source-loop__path li:last-child span,
+.source-loop__path li:last-child small {
+  color: var(--text-1);
+}
+
+.source-loop__fallback {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 28rem);
+  gap: var(--space-1);
+  margin: var(--space-8) auto 0;
+  padding: var(--space-3);
+  border: 1px solid var(--brand);
+  background: var(--surface-dark);
+}
+
+.source-loop__fallback::before {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-start: 50%;
+  height: var(--space-8);
+  border-inline-start: 1px dashed var(--brand);
+  content: "";
+}
+
+.source-loop__fallback span,
+.source-loop__fallback small {
+  color: var(--text-inverse);
+}
+
+.source-loop__signal {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: calc(42% - var(--space-1));
+  width: var(--space-2);
+  height: var(--space-2);
+  border: 1px solid var(--text-1);
+  background: var(--brand);
+  animation: source-loop-travel var(--motion-process) var(--motion-process-ease) infinite;
+}
+
+@keyframes source-loop-travel {
+  0%,
+  8% {
+    inset-inline-start: 3%;
+  }
+
+  35% {
+    inset-inline-start: 34%;
+  }
+
+  62% {
+    inset-inline-start: 65%;
+  }
+
+  90%,
+  100% {
+    inset-inline-start: calc(97% - var(--space-2));
+  }
+}
+
 /* ---------- Process diagram ----------
  * A sequence of stages under a dashed rail. The last stage is the committed
  * one: charcoal stays scarce, so inverting only the payoff keeps it meaningful.
@@ -1274,10 +1542,6 @@ main a {
 
 .case-study-shell {
   width: 100%;
-}
-
-.case-study-shell > .process-diagram {
-  margin: var(--rhythm-block) 0 var(--rhythm-section);
 }
 
 .page-header,
@@ -2119,6 +2383,86 @@ html[data-motion-ready] [data-reveal="visible"] {
     grid-column: auto;
   }
 
+  .release-map {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .release-map::before {
+    inset-block: 12% 8%;
+    inset-inline-start: 50%;
+    border-block-start: 0;
+    border-inline-start: 1px dashed var(--line-strong);
+  }
+
+  .release-map__channel {
+    min-height: var(--space-4);
+  }
+
+  .release-map__gate,
+  .release-map__output {
+    min-height: 11rem;
+  }
+
+  .release-map__packet {
+    inset-inline-start: calc(50% - var(--space-1));
+    animation-name: release-packet-travel-mobile;
+  }
+
+  @keyframes release-packet-travel-mobile {
+    0%,
+    12% {
+      inset-block-start: 13%;
+    }
+
+    52% {
+      inset-block-start: 58%;
+    }
+
+    88%,
+    100% {
+      inset-block-start: calc(92% - var(--space-2));
+    }
+  }
+
+  .source-loop {
+    padding: 0;
+  }
+
+  .source-loop::before {
+    inset-block: 4% 24%;
+    inset-inline-start: var(--space-2);
+    border-block-start: 0;
+    border-inline-start: 1px dashed rgba(247, 242, 225, 0.42);
+  }
+
+  .source-loop__path {
+    grid-template-columns: 1fr;
+  }
+
+  .source-loop__path li:nth-child(even) {
+    transform: none;
+  }
+
+  .source-loop__signal {
+    inset-inline-start: calc(var(--space-2) - var(--space-1));
+    animation-name: source-loop-travel-mobile;
+  }
+
+  @keyframes source-loop-travel-mobile {
+    0%,
+    8% {
+      inset-block-start: 3%;
+    }
+
+    90%,
+    100% {
+      inset-block-start: 70%;
+    }
+  }
+
+
+
   .page-header__copy {
     padding-block: 0;
   }
@@ -2256,6 +2600,13 @@ html[data-motion-ready] [data-reveal="visible"] {
     animation: none;
     inset-inline-start: calc(100% - 7px);
   }
+
+  .release-map__packet,
+  .source-loop__signal {
+    animation: none;
+  }
+
+
 
   html {
     scroll-behavior: auto;

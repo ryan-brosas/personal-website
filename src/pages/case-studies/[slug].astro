@@ -6,7 +6,7 @@ import EvidenceNote from "../../components/EvidenceNote.astro";
 import PageCta from "../../components/PageCta.astro";
 import EntryHeader from "../../components/EntryHeader.astro";
 import Byline from "../../components/Byline.astro";
-import ProcessDiagram from "../../components/ProcessDiagram.astro";
+import CaseStudyDiagram from "../../components/CaseStudyDiagram.astro";
 import { parseSourceRegistryOrThrow } from "../../config/entities.ts";
 import { ROUTE_REGISTRY } from "../../config/routes.ts";
 import { isRoutable } from "../../lib/publishing.ts";
@@ -39,11 +39,6 @@ const claim: ClaimRecord | undefined =
 // Fail-closed: a PUBLIC case study must ship with resolvable public-safe evidence.
 // A verified claim whose sourceId is absent from the registry, or backed only by an
 // internal-only source, fails the build rather than silently rendering no evidence.
-const diagramStages = entry.data.diagram?.stages.map((stage, index, stages) => ({
-  ...stage,
-  proven: index === stages.length - 1,
-}));
-
 if (entry.data.visibility === "public") {
   if (!claim || !resolvePublicClaim(claim, registry).ok) {
     throw new Error(
@@ -67,11 +62,7 @@ if (entry.data.visibility === "public") {
     />
     <Byline />
 
-    {
-      entry.data.diagram && diagramStages && (
-        <ProcessDiagram stages={diagramStages} caption={entry.data.diagram.caption} />
-      )
-    }
+    {entry.data.diagram && <CaseStudyDiagram diagram={entry.data.diagram} />}
 
     <div class="prose">
       <Content />

@@ -1852,21 +1852,40 @@ describe("T6 content data models", () => {
     assert.equal(r.success, true, r.success ? "" : JSON.stringify(r.error.issues));
   });
 
-  test("CaseStudyRecord validates a bounded case-study diagram", () => {
-    const stage = { label: "Trace", detail: "Follow one checked step." };
-    const diagram = { caption: "A checked flow.", stages: [stage, stage, stage, stage] };
-    assert.equal(CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram }).success, true);
+  test("CaseStudyRecord validates distinct release and source-loop diagrams", () => {
+    const node = { label: "Trace", detail: "Follow one checked step." };
+    const release = {
+      kind: "release-pipeline",
+      caption: "A checked release.",
+      sources: [node, node, node],
+      gate: node,
+      output: node,
+    };
+    const sourceLoop = {
+      kind: "source-loop",
+      caption: "A checked answer.",
+      path: [node, node, node, node],
+      fallback: node,
+    };
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram: release }).success,
+      true,
+    );
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram: sourceLoop }).success,
+      true,
+    );
     assert.equal(
       CaseStudyRecordSchema.safeParse({
         ...validCaseStudy,
-        diagram: { ...diagram, stages: [stage, stage] },
+        diagram: { ...release, sources: [node, node] },
       }).success,
       false,
     );
     assert.equal(
       CaseStudyRecordSchema.safeParse({
         ...validCaseStudy,
-        diagram: { ...diagram, stages: [stage, stage, stage, stage, stage, stage] },
+        diagram: { ...sourceLoop, path: [node, node, node] },
       }).success,
       false,
     );

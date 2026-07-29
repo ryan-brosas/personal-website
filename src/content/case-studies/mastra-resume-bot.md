@@ -10,16 +10,20 @@ evidence:
   kind: verified
   sourceId: source-mastra-resume-bot-live-001
 diagram:
-  caption: "One question goes to a short answer, then back to the source."
-  stages:
-    - label: "Load"
-      detail: "A fixed version of the three-page résumé is the only source."
-    - label: "Ask"
-      detail: "The request sends one question and short chat history."
-    - label: "Answer"
-      detail: "The service sends a short reply with source links."
-    - label: "Inspect"
-      detail: "The page and quote stay next to the answer."
+  kind: source-loop
+  caption: "A checked answer returns to the résumé passage that supports it."
+  path:
+    - label: "Question"
+      detail: "The reader asks about one part of the work."
+    - label: "Retrieve"
+      detail: "The service finds matching résumé passages."
+    - label: "Bounded answer"
+      detail: "The reply stays inside the source facts."
+    - label: "Citation"
+      detail: "The page and quote stay beside the reply."
+  fallback:
+    label: "Cannot verify"
+    detail: "The service names the limit instead of making up an answer."
 ---
 
 This is a self-project, not a client result. The live bot is the proof. It shows

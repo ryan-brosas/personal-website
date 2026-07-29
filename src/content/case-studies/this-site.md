@@ -10,16 +10,21 @@ evidence:
   kind: verified
   sourceId: source-self-project-build-001
 diagram:
-  caption: "One route list, one proof gate, one checked release."
-  stages:
-    - label: "Register"
-      detail: "One list owns each public path."
-    - label: "Write"
-      detail: "Checked content holds its public state and proof."
-    - label: "Check"
-      detail: "Build tests check links, page data, and files."
-    - label: "Release"
-      detail: "One checked static build ships in one step."
+  kind: release-pipeline
+  caption: "One route list and one proof gate produce one checked release."
+  sources:
+    - label: "Routes"
+      detail: "One registry owns each public path."
+    - label: "Content"
+      detail: "Checked records hold page state and copy."
+    - label: "Evidence"
+      detail: "Public claims point to approved sources."
+  gate:
+    label: "Verify"
+    detail: "Tests inspect links, metadata, output, and proof."
+  output:
+    label: "Static release"
+    detail: "One checked build ships in one atomic step."
 ---
 
 This is a self-project, not a client success story. There are no invented metrics,

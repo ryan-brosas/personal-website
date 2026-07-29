@@ -15,6 +15,7 @@ import SignalList from "../SignalList.astro";
 import ProcessDiagram from "../ProcessDiagram.astro";
 import EntryPoints from "../EntryPoints.astro";
 import CaseFeature from "../CaseFeature.astro";
+import CaseStudyDiagram from "../CaseStudyDiagram.astro";
 import OutcomeColumns from "../OutcomeColumns.astro";
 import VerifiedClaims from "../VerifiedClaims.astro";
 import BrandLogo from "../../assets/brand/logo-charcoal.svg";
@@ -673,6 +674,36 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
             { label: "Evidence", status: "fail-closed" },
             { label: "Build", status: "verified" },
           ]}
+        />
+      </div>
+
+      <div class="brand-lab__specimen" data-pattern="case-study-diagrams">
+        <p class="brand-lab__specimen-rule"><code>CaseStudyDiagram</code> · two validated diagram kinds with different structures. Release pipelines converge through a gate; source loops expose the answer path and controlled failure.</p>
+        <CaseStudyDiagram
+          diagram={{
+            kind: "release-pipeline",
+            caption: "Release pipeline specimen.",
+            sources: [
+              { label: "Routes", detail: "One registry owns each path." },
+              { label: "Content", detail: "Checked records hold page state." },
+              { label: "Evidence", detail: "Claims point to approved sources." },
+            ],
+            gate: { label: "Verify", detail: "Tests inspect the complete output." },
+            output: { label: "Static release", detail: "One checked build ships." },
+          }}
+        />
+        <CaseStudyDiagram
+          diagram={{
+            kind: "source-loop",
+            caption: "Source-answer loop specimen.",
+            path: [
+              { label: "Question", detail: "A reader asks about the work." },
+              { label: "Retrieve", detail: "The service finds source text." },
+              { label: "Bounded answer", detail: "The reply stays inside those facts." },
+              { label: "Citation", detail: "The source stays beside the reply." },
+            ],
+            fallback: { label: "Cannot verify", detail: "The service names the limit." },
+          }}
         />
       </div>
 

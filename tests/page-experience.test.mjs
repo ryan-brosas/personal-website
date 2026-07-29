@@ -445,30 +445,46 @@ test("page motion progressively enhances scrolling and interaction", () => {
   assert.match(css, /\.case-card\s*\{[^}]*transition:[^}]*transform/s);
 });
 
-test("both case studies render distinct animated system diagrams", () => {
-  const cases = [
-    {
-      route: "/case-studies/this-site/",
-      labels: ["Register", "Write", "Check", "Release"],
-      caption: "One route list, one proof gate, one checked release.",
-    },
-    {
-      route: "/case-studies/mastra-resume-bot/",
-      labels: ["Load", "Ask", "Answer", "Inspect"],
-      caption: "One question goes to a short answer, then back to the source.",
-    },
-  ];
-
-  for (const item of cases) {
-    const html = readRoute(item.route);
-    const figure = html.match(/<figure class="process-diagram">([\s\S]*?)<\/figure>/i)?.[0];
-    assert.ok(figure, `${item.route} renders the shared process diagram`);
-    assert.equal((figure.match(/<li(?:\s|>)/g) ?? []).length, 4);
-    for (const label of item.labels) assert.match(figure, new RegExp(`<b>${label}<\/b>`));
-    assert.match(figure, new RegExp(`<figcaption>${item.caption.replaceAll(".", "\\.")}<\/figcaption>`));
-    assert.equal((figure.match(/class="is-proven"/g) ?? []).length, 1);
-    assert.match(figure, /<li class="is-proven">[\s\S]*<span>04<\/span>/);
+test("the case studies use genuinely different animated diagrams", () => {
+  const site = readRoute("/case-studies/this-site/");
+  const release = site.match(
+    /<figure class="case-diagram case-diagram--release">([\s\S]*?)<\/figure>/i,
+  )?.[0];
+  assert.ok(release, "the website case renders its release architecture");
+  assert.match(release, /class="release-map__sources"/);
+  assert.equal((release.match(/<li(?:\s|>)/g) ?? []).length, 3);
+  for (const label of ["Routes", "Content", "Evidence", "Verify", "Static release"]) {
+    assert.match(release, new RegExp(`<strong>${label}<\/strong>`));
   }
+  assert.match(release, /class="release-map__packet" aria-hidden="true"/);
+  assert.match(release, /One route list and one proof gate produce one checked release\./);
+  assert.doesNotMatch(release, /source-loop/);
+  assert.doesNotMatch(site, /<figure class="process-diagram">/);
+
+  const bot = readRoute("/case-studies/mastra-resume-bot/");
+  const sourceLoop = bot.match(
+    /<figure class="case-diagram case-diagram--source-loop">([\s\S]*?)<\/figure>/i,
+  )?.[0];
+  assert.ok(sourceLoop, "the résumé bot case renders its source-answer loop");
+  assert.match(sourceLoop, /class="source-loop__path"/);
+  assert.equal((sourceLoop.match(/<li(?:\s|>)/g) ?? []).length, 4);
+  for (const label of ["Question", "Retrieve", "Bounded answer", "Citation"]) {
+    assert.match(sourceLoop, new RegExp(`<strong>${label}<\/strong>`));
+  }
+  assert.match(sourceLoop, /class="source-loop__fallback"/);
+  assert.match(sourceLoop, /Cannot verify/);
+  assert.match(sourceLoop, /class="source-loop__signal" aria-hidden="true"/);
+  assert.match(sourceLoop, /A checked answer returns to the résumé passage that supports it\./);
+  assert.doesNotMatch(sourceLoop, /release-map/);
+  assert.doesNotMatch(bot, /<figure class="process-diagram">/);
+
+  const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
+  assert.match(css, /@keyframes release-packet-travel/);
+  assert.match(css, /@keyframes source-loop-travel/);
+  const reduced = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/);
+  assert.ok(reduced);
+  assert.match(reduced[1], /\.release-map__packet/);
+  assert.match(reduced[1], /\.source-loop__signal/);
 });
 
 test("entry pages use the full editorial width and concise case-study naming", () => {

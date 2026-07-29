@@ -152,18 +152,28 @@ export const ServiceRecordSchema = PublicationRecordSchema.merge(SeoFieldsSchema
   slug: z.string().min(1),
 });
 
-export const CaseStudyDiagramSchema = z.object({
-  caption: z.string().min(1),
-  stages: z
-    .array(
-      z.object({
-        label: z.string().min(1),
-        detail: z.string().min(1),
-      }),
-    )
-    .min(3)
-    .max(5),
+const CaseStudyDiagramNodeSchema = z.object({
+  label: z.string().min(1),
+  detail: z.string().min(1),
 });
+
+export const CaseStudyDiagramSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("release-pipeline"),
+    caption: z.string().min(1),
+    sources: z.array(CaseStudyDiagramNodeSchema).length(3),
+    gate: CaseStudyDiagramNodeSchema,
+    output: CaseStudyDiagramNodeSchema,
+  }),
+  z.object({
+    kind: z.literal("source-loop"),
+    caption: z.string().min(1),
+    path: z.array(CaseStudyDiagramNodeSchema).length(4),
+    fallback: CaseStudyDiagramNodeSchema,
+  }),
+]);
+
+export type CaseStudyDiagram = z.infer<typeof CaseStudyDiagramSchema>;
 
 // Case-study records add a discriminant and slug to publication, SEO, and topic
 // fields.
