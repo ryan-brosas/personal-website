@@ -1,5 +1,5 @@
 ---
-title: "A Résumé Bot That Shows Its Source"
+title: "Building a Résumé Bot"
 description: "A reader can ask one question about my work and see the exact résumé passage behind the answer."
 visibility: public
 owner: ryan

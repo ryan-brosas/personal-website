@@ -585,7 +585,7 @@ test("the résumé bot case study is a checked build story with explicit limits"
   ]) {
     assert.match(caseStudy, new RegExp("^## " + heading + "$", "m"));
   }
-  assert.match(caseStudy, /^title: "A Résumé Bot That Shows Its Source"$/m);
+  assert.match(caseStudy, /^title: "Building a Résumé Bot"$/m);
   assert.match(caseStudy, /sourceId: source-mastra-resume-bot-live-001/);
   assert.match(caseStudy, /does not prove every possible answer is correct/i);
   assert.match(
@@ -611,14 +611,14 @@ test("the résumé bot case study is a checked build story with explicit limits"
 test("the built résumé bot case study is public, evidenced, and discoverable", () => {
   const route = "/case-studies/mastra-resume-bot/";
   const html = readRoute(route);
-  assert.match(html, /<h1[^>]*>\s*A Résumé Bot That Shows Its Source\s*<\/h1>/);
+  assert.match(html, /<h1[^>]*>\s*Building a Résumé Bot\s*<\/h1>/);
   assert.match(html, /<meta name="robots" content="index,follow">/);
   assert.ok(html.includes('href="https://resume.ryanjosebrosas.dev/"'));
   assert.match(html, /Live Mastra résumé bot deployment/);
 
   const hub = readRoute("/case-studies/");
   assert.match(hub, /href="\/case-studies\/mastra-resume-bot\/"/);
-  assert.match(hub, /A Résumé Bot That Shows Its Source/);
+  assert.match(hub, /Building a Résumé Bot/);
 
   const sitemap = fs.readFileSync(path.join(repoRoot, "dist", "sitemap.xml"), "utf-8");
   assert.match(sitemap, /\/case-studies\/mastra-resume-bot\//);
