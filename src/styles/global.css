@@ -1019,6 +1019,129 @@ main a {
   }
 }
 
+/* ---------- Reach gap ----------
+ * One cell per unit of the ratio, with a single cell filled. The point is the
+ * count, so the grid is drawn at true scale rather than summarised into a bar
+ * that would hide how large the gap actually is.
+ */
+.reach-gap {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.reach-gap__measures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.reach-gap__measure {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--line-strong);
+  background: var(--canvas);
+}
+
+.reach-gap__measure--captured {
+  border-inline-start-color: var(--signal);
+}
+
+.reach-gap__measure dt {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.reach-gap__measure dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-h3-size);
+  font-weight: var(--type-h3-weight);
+  letter-spacing: var(--type-h3-tracking);
+  line-height: var(--leading-compact);
+}
+
+.reach-gap__measure p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--type-small-size);
+  line-height: var(--leading-support);
+}
+
+/* The grid takes the width it needs to stay countable, and the reading of it sits
+ * in the space left over rather than stacking below and pushing the figure tall. */
+.reach-gap__field {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-5);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--line);
+}
+
+.reach-gap__ratio {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.reach-gap__ratio p {
+  margin: 0;
+}
+
+.reach-gap__ratio strong {
+  display: block;
+  padding-inline: var(--space-2);
+  background: var(--signal);
+  color: var(--text-1);
+  font-family: var(--font-display);
+  font-size: var(--type-h2-size);
+  font-weight: var(--type-h2-weight);
+  letter-spacing: var(--type-h2-tracking);
+  line-height: var(--leading-compact);
+}
+
+.reach-gap__ratio span {
+  display: block;
+  margin-block-start: var(--space-1);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--tracking-meta);
+  text-transform: uppercase;
+}
+
+.reach-gap__note {
+  color: var(--text-2);
+  font-size: var(--type-small-size);
+  line-height: var(--leading-support);
+}
+
+.reach-grid {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  height: auto;
+}
+
+.reach-grid__cell {
+  fill: var(--surface-muted);
+}
+
+.reach-grid__cell--captured {
+  fill: var(--signal);
+  stroke: var(--text-1);
+  stroke-width: 2;
+}
+
 /* ---------- Source loop ----------
  * A forked answer path that ends inside the document it cites. Steps 01-03 share
  * edges as one strip, so the sequence needs no connector rail. Below it the path
@@ -2659,6 +2782,16 @@ html[data-motion-ready] [data-reveal="visible"] {
   }
 
   /* Stacked, the strip's shared edges run between rows instead of columns. */
+  .reach-gap__field {
+    grid-template-columns: 1fr;
+  }
+
+  .reach-gap__ratio,
+  .reach-grid {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
   .source-loop__path {
     grid-template-columns: 1fr;
   }

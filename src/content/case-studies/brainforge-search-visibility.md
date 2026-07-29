@@ -9,6 +9,18 @@ pillar: content-research-operations
 evidence:
   kind: verified
   sourceId: source-brainforge-ai-access-001
+diagram:
+  kind: reach-gap
+  caption: "Every cell is one impression. The filled cell is the click."
+  total:
+    label: "Impressions"
+    value: 915000
+    detail: "People who saw a result in the 28 days ending 10 March 2026."
+  captured:
+    label: "Clicks"
+    value: 1690
+    detail: "People who came through to the blog in the same window."
+  note: "Being seen is solved. Being chosen is the work that is left."
 cta:
   eyebrow: "Search visibility from zero"
   title: "Get found before the sales call."

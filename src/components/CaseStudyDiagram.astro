@@ -26,6 +26,25 @@ const BAND = { x: 6, y: 44, width: 62, height: 21 };
 // Corner brackets on the band itself crowd the two rows it frames.
 const CROP_TICKS = ["M 0 44 L 4 44", "M 70 44 L 74 44", "M 0 65 L 4 65", "M 70 65 L 74 65"];
 
+// Reach-gap grid. 29 columns leaves a naturally filled part-row for the ratios
+// this figure is used for, instead of a single orphan cell on the last line.
+const GAP_COLUMNS = 29;
+const GAP_CELL = { size: 8, gap: 4 };
+const gapRatio =
+  diagram.kind === "reach-gap" ? Math.round(diagram.total.value / diagram.captured.value) : 0;
+const gapCells = Array.from({ length: gapRatio }, (_, index) => ({
+  index,
+  x: (index % GAP_COLUMNS) * (GAP_CELL.size + GAP_CELL.gap),
+  y: Math.floor(index / GAP_COLUMNS) * (GAP_CELL.size + GAP_CELL.gap),
+}));
+const gapRows = Math.ceil(gapRatio / GAP_COLUMNS);
+const gapWidth = GAP_COLUMNS * (GAP_CELL.size + GAP_CELL.gap) - GAP_CELL.gap;
+const gapHeight = Math.max(gapRows, 1) * (GAP_CELL.size + GAP_CELL.gap) - GAP_CELL.gap;
+// The single captured cell sits inside the block rather than trailing it, so the
+// grid reads as one crowd with one person in it.
+const gapCapturedIndex = Math.floor(gapRatio / 2) + Math.floor(GAP_COLUMNS / 2);
+const count = new Intl.NumberFormat("en-US");
+
 const source = diagram.kind === "source-loop" ? diagram.source : undefined;
 const sheets = Array.from({ length: source?.pages ?? 0 }, (_, index) => ({
   page: index + 1,
@@ -36,7 +55,54 @@ const sheetsWidth = sheets.length * SHEET.width + (sheets.length - 1) * SHEET.ga
 const isOnBand = (y: number) => y > BAND.y && y < BAND.y + BAND.height;
 ---
 {
-  diagram.kind === "release-pipeline" ? (
+  diagram.kind === "reach-gap" ? (
+    <figure class="case-diagram case-diagram--reach-gap">
+      <div class="reach-gap">
+        <dl class="reach-gap__measures">
+          <div class="reach-gap__measure">
+            <dt>{diagram.total.label}</dt>
+            <dd>{count.format(diagram.total.value)}</dd>
+            <p>{diagram.total.detail}</p>
+          </div>
+          <div class="reach-gap__measure reach-gap__measure--captured">
+            <dt>{diagram.captured.label}</dt>
+            <dd>{count.format(diagram.captured.value)}</dd>
+            <p>{diagram.captured.detail}</p>
+          </div>
+        </dl>
+        <div class="reach-gap__field">
+          <div class="reach-gap__ratio">
+            <p>
+              <strong>1</strong>
+              <span>in about {count.format(gapRatio)}</span>
+            </p>
+            <p class="reach-gap__note">{diagram.note}</p>
+          </div>
+          <svg
+            class="reach-grid"
+            viewBox={`0 0 ${gapWidth} ${gapHeight}`}
+            preserveAspectRatio="xMinYMin meet"
+            aria-hidden="true"
+            focusable="false"
+          >
+            {gapCells.map((cell) => (
+              <rect
+                class:list={[
+                  "reach-grid__cell",
+                  { "reach-grid__cell--captured": cell.index === gapCapturedIndex },
+                ]}
+                x={cell.x}
+                y={cell.y}
+                width={GAP_CELL.size}
+                height={GAP_CELL.size}
+              />
+            ))}
+          </svg>
+        </div>
+      </div>
+      <figcaption>{diagram.caption}</figcaption>
+    </figure>
+  ) : diagram.kind === "release-pipeline" ? (
     <figure class="case-diagram case-diagram--release">
       <div class="release-map">
         <ul class="release-map__sources" aria-label="Release inputs">

@@ -687,7 +687,7 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
       </div>
 
       <div class="brand-lab__specimen" data-pattern="case-study-diagrams">
-        <p class="brand-lab__specimen-rule"><code>CaseStudyDiagram</code> · two validated diagram kinds with different structures. Release pipelines converge three inputs through a gate. Source loops run one strip of shared-edge steps, then fork once into the cited document or into an empty frame. Every fork connector is exactly one row-gap tall, so it always terminates on the strip's own border.</p>
+        <p class="brand-lab__specimen-rule"><code>CaseStudyDiagram</code> · three validated diagram kinds with different structures. Release pipelines converge three inputs through a gate. Source loops run one strip of shared-edge steps, then fork once into the cited document or into an empty frame, with every fork connector exactly one row-gap tall so it terminates on the strip's own border. Reach gaps draw one cell per unit of the ratio and fill exactly one, so the figure is counted rather than summarised into a bar.</p>
         <CaseStudyDiagram
           diagram={{
             kind: "release-pipeline",
@@ -718,6 +718,15 @@ const sectionNumber = (id: string) => String(sections.findIndex(([sectionId]) =>
               citedPage: 3,
               passageLabel: "Quoted passage",
             },
+          }}
+        />
+        <CaseStudyDiagram
+          diagram={{
+            kind: "reach-gap",
+            caption: "Reach gap specimen.",
+            total: { label: "Seen", value: 24000, detail: "Everyone the work reached." },
+            captured: { label: "Acted", value: 200, detail: "Everyone who did the next thing." },
+            note: "The filled cell is the one that carried through.",
           }}
         />
       </div>

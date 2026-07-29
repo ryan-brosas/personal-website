@@ -1916,6 +1916,36 @@ describe("T6 content data models", () => {
       CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram: withoutSource }).success,
       false,
     );
+
+    // A reach gap draws one cell per unit of the ratio, so the ratio has to be
+    // countable and the captured measure has to be the smaller one.
+    const reachGap = {
+      kind: "reach-gap",
+      caption: "A counted gap.",
+      total: { label: "Seen", value: 24000, detail: "Everyone reached." },
+      captured: { label: "Acted", value: 200, detail: "Everyone who acted." },
+      note: "The filled cell carried through.",
+    };
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({ ...validCaseStudy, diagram: reachGap }).success,
+      true,
+    );
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({
+        ...validCaseStudy,
+        diagram: { ...reachGap, captured: { ...reachGap.captured, value: 24000 } },
+      }).success,
+      false,
+      "captured must be smaller than total",
+    );
+    assert.equal(
+      CaseStudyRecordSchema.safeParse({
+        ...validCaseStudy,
+        diagram: { ...reachGap, captured: { ...reachGap.captured, value: 1 } },
+      }).success,
+      false,
+      "a ratio past the cap would emit an unbounded grid",
+    );
   });
 
   test("CaseStudyRecord REJECTS a public record with NO evidence (T6/INV-09)", () => {

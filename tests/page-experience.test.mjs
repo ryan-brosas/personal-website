@@ -626,6 +626,27 @@ test("no shipped page renders an em dash", () => {
   assert.deepEqual(offenders, [], "published copy uses a comma, a period, or a pipe");
 });
 
+test("the reach gap is counted at true scale, not summarised", () => {
+  const html = readRoute("/case-studies/brainforge-search-visibility/");
+  const figure = html.match(
+    /<figure class="case-diagram case-diagram--reach-gap">([\s\S]*?)<\/figure>/i,
+  )?.[1];
+  assert.ok(figure, "the search visibility case renders a reach gap");
+  // 915000 / 1690 rounds to 541, and the grid must draw every one of them so a
+  // reader can count instead of trusting a bar.
+  const ratio = Math.round(915000 / 1690);
+  assert.equal((figure.match(/class="reach-grid__cell/g) ?? []).length, ratio);
+  assert.equal((figure.match(/reach-grid__cell--captured/g) ?? []).length, 1);
+  assert.match(figure, new RegExp(`in about ${ratio}`));
+  assert.match(figure, /915,000/);
+  assert.match(figure, /1,690/);
+  assert.doesNotMatch(figure, /release-map|source-loop/);
+
+  // Each case study still owns a structurally different figure.
+  assert.doesNotMatch(readRoute("/case-studies/this-site/"), /case-diagram--reach-gap/);
+  assert.doesNotMatch(readRoute("/case-studies/mastra-resume-bot/"), /case-diagram--reach-gap/);
+});
+
 test("each case study closes on its own next step", () => {
   const cta = (route) =>
     readRoute(route).match(

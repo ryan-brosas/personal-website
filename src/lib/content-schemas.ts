@@ -171,6 +171,18 @@ const CaseStudyDiagramSourceSchema = z
     path: ["citedPage"],
   });
 
+// A reach-gap draws one cell per unit of the ratio, so an unbounded ratio would
+// emit an unbounded figure. The cap is the honest ceiling for a countable grid.
+export const REACH_GAP_MAX_RATIO = 2000;
+
+// One counted measure in a reach gap. `value` is the raw figure so the component
+// owns both the grid and the formatting, and the two can never disagree.
+const CaseStudyDiagramMeasureSchema = z.object({
+  label: z.string().min(1),
+  value: z.number().int().positive(),
+  detail: z.string().min(1),
+});
+
 export const CaseStudyDiagramSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("release-pipeline"),
@@ -186,7 +198,34 @@ export const CaseStudyDiagramSchema = z.discriminatedUnion("kind", [
     fallback: CaseStudyDiagramNodeSchema,
     source: CaseStudyDiagramSourceSchema,
   }),
-]);
+  z.object({
+    kind: z.literal("reach-gap"),
+    caption: z.string().min(1),
+    total: CaseStudyDiagramMeasureSchema,
+    captured: CaseStudyDiagramMeasureSchema,
+    note: z.string().min(1),
+  }),
+])
+  // A discriminated union cannot take refined members, because zod reads the
+  // discriminator off the raw object. Reach-gap bounds live here instead.
+  .superRefine((diagram, ctx) => {
+    if (diagram.kind !== "reach-gap") return;
+    if (diagram.captured.value >= diagram.total.value) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["captured", "value"],
+        message: "captured must be smaller than total",
+      });
+      return;
+    }
+    if (Math.round(diagram.total.value / diagram.captured.value) > REACH_GAP_MAX_RATIO) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["total", "value"],
+        message: `ratio must not exceed ${REACH_GAP_MAX_RATIO} to stay countable`,
+      });
+    }
+  });
 
 export type CaseStudyDiagram = z.infer<typeof CaseStudyDiagramSchema>;
 
