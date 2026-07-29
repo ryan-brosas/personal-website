@@ -481,6 +481,10 @@ test("the case studies use genuinely different animated diagrams", () => {
   const css = fs.readFileSync(path.join(repoRoot, "src", "styles", "global.css"), "utf-8");
   assert.match(css, /@keyframes release-packet-travel/);
   assert.match(css, /@keyframes source-loop-travel/);
+  assert.match(
+    css,
+    /\.case-diagram--source-loop figcaption\s*\{[^}]*color:\s*var\(--text-inverse\)/s,
+  );
   const reduced = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/);
   assert.ok(reduced);
   assert.match(reduced[1], /\.release-map__packet/);

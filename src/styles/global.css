@@ -969,6 +969,11 @@ main a {
   color: var(--text-inverse);
 }
 
+.case-diagram--source-loop figcaption {
+  border-block-start-color: rgba(247, 242, 225, 0.42);
+  color: var(--text-inverse);
+}
+
 .source-loop {
   position: relative;
   display: grid;
